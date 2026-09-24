@@ -1,2 +1,1 @@
-"""Public API request and response schemas."""
-
+"""公共 API 请求与响应的数据结构。"""

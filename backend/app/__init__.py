@@ -1,2 +1,1 @@
-"""SecondHand Agent backend package."""
-
+"""SecondHand Agent 后端应用包。"""

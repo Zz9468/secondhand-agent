@@ -1,2 +1,1 @@
-"""Seller Agent integration boundary."""
-
+"""卖家 Agent 的集成边界。"""

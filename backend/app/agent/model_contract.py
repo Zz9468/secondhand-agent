@@ -7,7 +7,7 @@ from app.core.config import Settings
 
 
 class ModelCapabilities(BaseModel):
-    """Capabilities required before a model may drive negotiation decisions."""
+    """模型参与协商决策前必须具备的能力。"""
 
     tool_calling: bool
     structured_output: bool
@@ -24,9 +24,8 @@ def require_negotiation_capabilities(capabilities: ModelCapabilities) -> None:
 
 
 class ChatModelFactory(Protocol):
-    """Provider-neutral factory implemented when the real model is connected."""
+    """与服务商无关的模型工厂协议，在接入真实模型时实现。"""
 
     def create(self, settings: Settings) -> BaseChatModel:
-        """Build a configured LangChain chat model without exposing credentials."""
+        """创建已配置的 LangChain 聊天模型，同时避免暴露访问凭据。"""
         ...
-
