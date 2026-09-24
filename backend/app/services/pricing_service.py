@@ -122,6 +122,13 @@ class OfferEvaluation:
         return self.zone is PriceZone.PROHIBITED
 
 
+class PricingService:
+    """向业务编排层提供无数据库依赖的价格授权判断。"""
+
+    def evaluate(self, *, terms: OfferTerms, policy: PricingPolicy) -> OfferEvaluation:
+        return evaluate_offer(terms=terms, policy=policy)
+
+
 def calculate_net_income(terms: OfferTerms) -> Decimal:
     """准确计算卖家净收入；卖家承担的成本未知时拒绝计算。"""
 

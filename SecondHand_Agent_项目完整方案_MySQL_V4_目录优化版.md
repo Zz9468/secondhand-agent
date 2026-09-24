@@ -1345,7 +1345,7 @@ secondhand-agent/
 
 - [x] 初始化 FastAPI、LangChain、MySQL 8.x（InnoDB）与最简聊天界面。
 - [x] 建立商品、规则、消息、报价和单会话基础表；业务数据模型放在 `db/models/`，用 `scripts/seed_data.py` 初始化演示商品。
-- [ ] 实现 `get_product_info`、`get_negotiation_state`、`evaluate_offer`、`submit_counter_offer`、`accept_offer`。
+- [x] 实现 `get_product_info`、`get_negotiation_state`、`evaluate_offer`、`submit_counter_offer`、`accept_offer`。
 - [x] 使用 `Decimal` 实现净收入计算、自动接受区/审批区/禁止接受区校验。
 - [ ] 实现结构化决策、正式报价持久化和最终回复承诺校验。
 - [ ] 完成商品咨询、多轮还价和底价越权测试。
@@ -1366,6 +1366,8 @@ secondhand-agent/
 | 6. 最小聊天闭环与 V1 验收 | 接通发送消息、读取聊天记录和协商状态的 API 及最简聊天界面，串联商品查询、Agent 决策、业务校验、正式报价持久化和回复展示。完成商品咨询、多轮还价、重复低价、包邮条件、审批区提示及 Prompt Injection 等测试。 | 一个演示卖家、一个商品和一个买家会话可以完成可重复演示；审批区只安全提示“需要卖家确认”，不在 V1 实现完整审批 UI 和审批恢复。 |
 
 阶段之间允许进行少量必要的交叉调整，但任何阶段都不能以“后续由 Prompt 限制”为理由跳过业务校验。推荐的依赖主线为：
+
+每个实施阶段结束前必须执行一次自检：复核本阶段业务边界和权限边界，运行相关单元测试与集成测试、静态检查、数据库迁移一致性检查及受影响的前端构建，并检查待提交差异中是否包含密钥、临时文件或超出阶段范围的改动。自检发现的问题应先修复并重新验证，再将阶段标记为完成。
 
 ```text
 工程骨架

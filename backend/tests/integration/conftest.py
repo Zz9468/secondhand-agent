@@ -2,8 +2,8 @@ import os
 from collections.abc import Iterator
 
 import pytest
-from sqlalchemy import Engine
-from sqlalchemy.orm import Session
+from sqlalchemy import Connection, Engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.session import get_engine
 
@@ -22,12 +22,30 @@ def mysql_engine() -> Engine:
 
 
 @pytest.fixture
-def db_session(mysql_engine: Engine) -> Iterator[Session]:
+def mysql_connection(mysql_engine: Engine) -> Iterator[Connection]:
     """每个用例结束后回滚，使集成测试不污染演示数据。"""
 
     with mysql_engine.connect() as connection:
         connection = connection.execution_options(isolation_level="READ COMMITTED")
         transaction = connection.begin()
-        with Session(bind=connection) as db:
-            yield db
+        yield connection
         transaction.rollback()
+
+
+@pytest.fixture
+def db_session(mysql_connection: Connection) -> Iterator[Session]:
+    with Session(bind=mysql_connection) as db:
+        yield db
+
+
+@pytest.fixture
+def service_session_factory(
+    mysql_connection: Connection,
+) -> sessionmaker[Session]:
+    """让 Service 自主管理事务，同时由测试外层事务统一回滚。"""
+
+    return sessionmaker(
+        bind=mysql_connection,
+        expire_on_commit=False,
+        join_transaction_mode="create_savepoint",
+    )
