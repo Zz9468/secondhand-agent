@@ -1,0 +1,2 @@
+"""Seller Agent integration boundary."""
+
