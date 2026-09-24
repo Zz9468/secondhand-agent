@@ -21,6 +21,14 @@ V1 阶段二已增加独立的价格规则核心：
 - 成本未知时拒绝进行授权判断，避免 Agent 对不可计算条件作出承诺；
 - 价格规则不依赖 HTTP、数据库和大模型，可通过单元测试独立验证。
 
+V1 阶段三已建立持久化基础：
+
+- 商品、卖家规则、协商会话、消息和报价 SQLAlchemy ORM 模型；
+- 使用 Alembic 管理 MySQL 表结构；
+- 使用 `DECIMAL(12,2)` 保存业务金额，报价条件以快照形式持久化；
+- 可重复执行的演示数据脚本，固定创建演示商品 `1001` 和会话 `1001`；
+- MySQL 集成测试覆盖基础增删查改、金额精度和种子数据幂等性。
+
 当前阶段不会调用真实模型，也不需要模型 API Key。实际千问接入在 V1 阶段五完成。
 
 ## 开发约定
@@ -45,14 +53,21 @@ docker compose up -d mysql
 docker compose ps
 ```
 
+安装后端依赖，执行迁移并初始化演示数据：
+
+```powershell
+conda activate secondhand-agent
+Set-Location backend
+python -m pip install -e ".[dev]"
+python -m alembic upgrade head
+python scripts/seed_data.py
+```
+
 启动后端：
 
 ```powershell
 Set-Location backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
 ```
 
 启动前端：
@@ -74,7 +89,12 @@ npm run dev
 ```powershell
 Set-Location backend
 pytest
-ruff check app tests
+ruff check app tests scripts migrations
+
+# MySQL 运行且已迁移时，额外执行集成测试
+$env:RUN_MYSQL_INTEGRATION = "1"
+pytest tests/integration
+Remove-Item Env:RUN_MYSQL_INTEGRATION
 
 Set-Location ..\frontend
 npm run type-check
@@ -84,9 +104,9 @@ npm run build
 ## 目录
 
 ```text
-backend/      FastAPI、配置、数据库连接、模型能力边界和测试
+backend/      FastAPI、ORM 模型、Alembic 迁移、种子脚本和测试
 frontend/     Vue 3 最简页面
 compose.yaml 本地 MySQL
 ```
 
-ORM 模型、Agent 工具和正式聊天闭环将在后续 V1 阶段依次加入。
+业务 Service、Agent 工具和正式聊天闭环将在后续 V1 阶段依次加入。

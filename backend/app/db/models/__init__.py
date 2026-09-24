@@ -1,0 +1,31 @@
+"""集中导出 ORM 模型，确保 Alembic 能完整加载元数据。"""
+
+from app.db.models.enums import (
+    MessageRole,
+    NegotiationStatus,
+    NegotiationStyle,
+    OfferProposer,
+    OfferStatus,
+    ProductStatus,
+    ShippingPayer,
+)
+from app.db.models.message import Message
+from app.db.models.negotiation import NegotiationSession
+from app.db.models.offer import Offer
+from app.db.models.policy import SellerPolicy
+from app.db.models.product import Product
+
+__all__ = [
+    "Message",
+    "MessageRole",
+    "NegotiationSession",
+    "NegotiationStatus",
+    "NegotiationStyle",
+    "Offer",
+    "OfferProposer",
+    "OfferStatus",
+    "Product",
+    "ProductStatus",
+    "SellerPolicy",
+    "ShippingPayer",
+]

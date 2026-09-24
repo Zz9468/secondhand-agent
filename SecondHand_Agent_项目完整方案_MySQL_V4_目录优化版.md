@@ -1343,8 +1343,8 @@ secondhand-agent/
 
 目标：一个演示卖家、一个商品、一个买家会话，先把 Agent 的自主协商与硬约束跑通。商品与规则可使用初始化种子数据，简化登录和管理 UI。
 
-- [ ] 初始化 FastAPI、LangChain、MySQL 8.x（InnoDB）与最简聊天界面。
-- [ ] 建立商品、规则、消息、报价和单会话基础表；业务数据模型放在 `db/models/`，用 `scripts/seed_data.py` 初始化演示商品。
+- [x] 初始化 FastAPI、LangChain、MySQL 8.x（InnoDB）与最简聊天界面。
+- [x] 建立商品、规则、消息、报价和单会话基础表；业务数据模型放在 `db/models/`，用 `scripts/seed_data.py` 初始化演示商品。
 - [ ] 实现 `get_product_info`、`get_negotiation_state`、`evaluate_offer`、`submit_counter_offer`、`accept_offer`。
 - [x] 使用 `Decimal` 实现净收入计算、自动接受区/审批区/禁止接受区校验。
 - [ ] 实现结构化决策、正式报价持久化和最终回复承诺校验。
