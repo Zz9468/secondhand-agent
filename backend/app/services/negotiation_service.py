@@ -42,6 +42,7 @@ from app.services.pricing_service import (
 @dataclass(frozen=True, slots=True)
 class OfferAuthorization:
     zone: PriceZone
+    conditions_valid: bool
     can_accept_automatically: bool
     can_submit_counter_offer: bool
     can_request_approval: bool
@@ -122,6 +123,7 @@ class NegotiationService:
         session_id: int,
         buyer_id: str,
         terms: OfferTerms,
+        additional_terms: Mapping[str, object] | None = None,
     ) -> OfferAuthorization:
         with self._session_factory() as db:
             negotiation = self._get_negotiation(
@@ -131,7 +133,11 @@ class NegotiationService:
             )
             self._require_negotiable(db, negotiation)
             policy = self._get_policy(db, negotiation.product_id)
-            return self._authorize(terms=terms, policy=policy)
+            return self._authorize(
+                terms=terms,
+                policy=policy,
+                additional_terms=additional_terms,
+            )
 
     def record_buyer_offer(
         self,
@@ -156,7 +162,11 @@ class NegotiationService:
             self._require_negotiable(db, negotiation, for_update=True)
             policy = self._get_policy(db, negotiation.product_id, for_update=True)
             # 买家可以提出任意价格，但成本必须已知且能够安全计算。
-            self._authorize(terms=terms, policy=policy)
+            self._authorize(
+                terms=terms,
+                policy=policy,
+                additional_terms=stored_terms,
+            )
             self._supersede_current_offer(
                 db,
                 negotiation=negotiation,
@@ -199,7 +209,11 @@ class NegotiationService:
             )
             self._require_negotiable(db, negotiation, for_update=True)
             policy = self._get_policy(db, negotiation.product_id, for_update=True)
-            authorization = self._authorize(terms=terms, policy=policy)
+            authorization = self._authorize(
+                terms=terms,
+                policy=policy,
+                additional_terms=stored_terms,
+            )
             if not authorization.can_submit_counter_offer:
                 raise OfferNotAuthorizedError(
                     "该还价不在 Agent 自动授权区，不能写入正式报价"
@@ -269,6 +283,7 @@ class NegotiationService:
             authorization = self._authorize(
                 terms=self._terms_from_offer(offer),
                 policy=policy,
+                additional_terms=offer.terms,
             )
             if not authorization.can_accept_automatically:
                 raise OfferNotAuthorizedError(
@@ -332,6 +347,7 @@ class NegotiationService:
         *,
         terms: OfferTerms,
         policy: SellerPolicy,
+        additional_terms: Mapping[str, object] | None = None,
     ) -> OfferAuthorization:
         try:
             evaluation = self._pricing_service.evaluate(
@@ -344,6 +360,18 @@ class NegotiationService:
         except PricingError as exc:
             raise InvalidOfferTermsError("交易条件无法安全计算") from exc
 
+        conditions_valid = self._additional_terms_are_authorized(additional_terms)
+        if not conditions_valid:
+            return OfferAuthorization(
+                zone=evaluation.zone,
+                conditions_valid=False,
+                can_accept_automatically=False,
+                can_submit_counter_offer=False,
+                can_request_approval=False,
+                is_acceptance_prohibited=True,
+                reason_code="UNSUPPORTED_ADDITIONAL_TERMS",
+            )
+
         reason_codes = {
             PriceZone.AUTO_ACCEPT: "AUTO_AUTHORIZED",
             PriceZone.APPROVAL_REQUIRED: "SELLER_APPROVAL_REQUIRED",
@@ -351,12 +379,25 @@ class NegotiationService:
         }
         return OfferAuthorization(
             zone=evaluation.zone,
+            conditions_valid=True,
             can_accept_automatically=evaluation.can_accept_automatically,
             can_submit_counter_offer=evaluation.can_accept_automatically,
             can_request_approval=evaluation.can_request_approval,
             is_acceptance_prohibited=evaluation.is_acceptance_prohibited,
             reason_code=reason_codes[evaluation.zone],
         )
+
+    @staticmethod
+    def _additional_terms_are_authorized(
+        additional_terms: Mapping[str, object] | None,
+    ) -> bool:
+        """V1 只自动承诺可验证的配送方式，其他条件留待卖家确认。"""
+
+        if not additional_terms:
+            return True
+        if set(additional_terms) != {"delivery_method"}:
+            return False
+        return additional_terms["delivery_method"] in {"shipping", "pickup"}
 
     @staticmethod
     def _supersede_current_offer(

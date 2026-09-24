@@ -37,6 +37,7 @@ def authorization_result(authorization: OfferAuthorization) -> dict[str, object]
     return {
         "ok": True,
         "authorization": {
+            "conditions_valid": authorization.conditions_valid,
             "can_accept_automatically": authorization.can_accept_automatically,
             "can_submit_counter_offer": authorization.can_submit_counter_offer,
             "can_request_approval": authorization.can_request_approval,

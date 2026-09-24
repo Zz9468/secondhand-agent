@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -30,9 +30,11 @@ class Settings(BaseSettings):
     model_name: str = "qwen-plus"
     model_base_url: str | None = None
     model_api_key: SecretStr | None = None
+    model_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    model_timeout_seconds: float = Field(default=30.0, gt=0.0)
+    model_max_retries: int = Field(default=2, ge=0, le=10)
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

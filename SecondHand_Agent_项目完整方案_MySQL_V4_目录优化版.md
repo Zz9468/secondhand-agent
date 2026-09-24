@@ -1347,7 +1347,7 @@ secondhand-agent/
 - [x] 建立商品、规则、消息、报价和单会话基础表；业务数据模型放在 `db/models/`，用 `scripts/seed_data.py` 初始化演示商品。
 - [x] 实现 `get_product_info`、`get_negotiation_state`、`evaluate_offer`、`submit_counter_offer`、`accept_offer`。
 - [x] 使用 `Decimal` 实现净收入计算、自动接受区/审批区/禁止接受区校验。
-- [ ] 实现结构化决策、正式报价持久化和最终回复承诺校验。
+- [x] 实现结构化决策、正式报价持久化和最终回复承诺校验。
 - [ ] 完成商品咨询、多轮还价和底价越权测试。
 
 #### V1 实施方式与阶段

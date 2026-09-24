@@ -15,7 +15,7 @@ def build_seller_tools(
     product_service: ProductService,
     negotiation_service: NegotiationService,
 ) -> list[BaseTool]:
-    """按已验证上下文组装阶段四的五个工具。"""
+    """按已验证上下文组装 V1 Seller Agent 的五个工具。"""
 
     return [
         *build_product_tools(context=context, product_service=product_service),

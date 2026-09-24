@@ -45,6 +45,7 @@ def test_tools_bind_identity_outside_model_visible_arguments(
     assert approval_result == {
         "ok": True,
         "authorization": {
+            "conditions_valid": True,
             "can_accept_automatically": False,
             "can_submit_counter_offer": False,
             "can_request_approval": True,
@@ -74,7 +75,7 @@ def test_mutating_tool_rejects_unauthorized_counter_without_database_write(
         {
             "price": "2850.00",
             "shipping_paid_by": "buyer",
-            "additional_terms": {"delivery": "buyer_pickup"},
+            "additional_terms": {"delivery_method": "pickup"},
         }
     )
     state = tools_by_name["get_negotiation_state"].invoke({})

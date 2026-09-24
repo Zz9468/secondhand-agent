@@ -86,12 +86,12 @@ def test_counter_offer_is_persisted_only_in_automatic_zone(
         session_id=session_id,
         buyer_id=buyer_id,
         terms=buyer_terms("2850.00"),
-        additional_terms={"delivery": "buyer_pickup"},
+        additional_terms={"delivery_method": "pickup"},
     )
 
     assert counter_offer.proposer is OfferProposer.AGENT
     assert counter_offer.status is OfferStatus.PROPOSED
-    assert counter_offer.additional_terms == {"delivery": "buyer_pickup"}
+    assert counter_offer.additional_terms == {"delivery_method": "pickup"}
     with service_session_factory() as db:
         assert db.get(Offer, buyer_offer.id).status is OfferStatus.REJECTED
         negotiation = db.get(NegotiationSession, session_id)
@@ -195,4 +195,35 @@ def test_services_hide_private_policy_and_reject_cross_buyer_access(
         negotiation_service.get_state(
             session_id=session_id,
             buyer_id="another-buyer",
+        )
+
+
+def test_unknown_additional_terms_can_be_recorded_but_never_auto_authorized(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    service = NegotiationService(service_session_factory)
+    additional_terms = {"ship_by": "today"}
+
+    authorization = service.evaluate_offer(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        terms=buyer_terms("3000.00"),
+        additional_terms=additional_terms,
+    )
+    buyer_offer = service.record_buyer_offer(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        terms=buyer_terms("3000.00"),
+        additional_terms=additional_terms,
+    )
+
+    assert authorization.conditions_valid is False
+    assert authorization.can_accept_automatically is False
+    assert buyer_offer.additional_terms == additional_terms
+    with pytest.raises(OfferNotAuthorizedError):
+        service.accept_offer(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            offer_id=buyer_offer.id,
         )
