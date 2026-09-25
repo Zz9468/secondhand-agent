@@ -79,47 +79,102 @@ V1 阶段六已完成最小聊天闭环与验收场景：
 
 ## 本地启动
 
-先复制环境变量模板并启动 MySQL：
+以下示例使用 Windows PowerShell，并默认在项目根目录执行。后端必须运行在 Python 3.11 虚拟环境中；推荐使用 Conda，也可以使用 Python 自带的 `venv`。虚拟环境只需创建一次，但每次打开新的终端都要重新激活。macOS/Linux 用户可将 `Copy-Item` 换成 `cp`，并使用 `source .venv/bin/activate` 激活 `venv`。
+
+### 首次安装
+
+复制环境变量模板：
 
 ```powershell
 Copy-Item .env.example .env
-# 打开 .env，将两个 CHANGE_ME 数据库口令替换为不同的随机值，
-# 并把 MYSQL_PASSWORD 的值同步写入 DATABASE_URL。
+```
+
+打开根目录下的 `.env`，将两个 `CHANGE_ME` 数据库口令替换为不同的随机值，并把 `MYSQL_PASSWORD` 的值同步写入 `DATABASE_URL`。真实模型配置可以暂时留空；未配置模型时仍可查看页面和演示数据，但不能发送协商消息。
+
+启动 MySQL：
+
+```powershell
 docker compose up -d mysql
 docker compose ps
 ```
 
-安装后端依赖，执行迁移并初始化演示数据：
+创建并激活 Python 3.11 虚拟环境。以下两种方式任选一种。
+
+使用 Conda：
 
 ```powershell
+conda create -n secondhand-agent python=3.11 pip
 conda activate secondhand-agent
-Set-Location backend
+python --version
+```
+
+不使用 Conda 时，可以使用标准 `venv`（需要本机已经安装 Python 3.11）：
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python --version
+```
+
+`python --version` 应显示 Python 3.11。然后安装后端依赖、执行数据库迁移并初始化演示数据：
+
+```powershell
+cd backend
 python -m pip install -r requirements.lock
 python -m pip install -e . --no-deps
 python -m alembic upgrade head
 python scripts/seed_data.py
+cd ..
+```
+
+安装前端依赖：
+
+```powershell
+cd frontend
+npm install
+cd ..
 ```
 
 如需清空固定演示会话 `1001` 的消息和报价并重新演示，请显式执行：
 
 ```powershell
+cd backend
 python scripts/seed_data.py --reset-session
+cd ..
 ```
 
 该选项只重置固定演示会话；不带参数执行时仍是非破坏性的幂等初始化。
 
-启动后端：
+### 日常启动
+
+先确保 Docker Desktop 已启动，然后在项目根目录启动 MySQL：
 
 ```powershell
-Set-Location backend
+docker compose up -d mysql
+```
+
+打开第一个终端，激活首次安装时创建的虚拟环境并启动后端。
+
+Conda 用户：
+
+```powershell
+conda activate secondhand-agent
+cd backend
 python -m uvicorn app.main:app --reload
 ```
 
-启动前端：
+`venv` 用户：
 
 ```powershell
-Set-Location frontend
-npm install
+.\.venv\Scripts\Activate.ps1
+cd backend
+python -m uvicorn app.main:app --reload
+```
+
+保持后端终端运行，再打开第二个终端，在项目根目录启动前端：
+
+```powershell
+cd frontend
 npm run dev
 ```
 
@@ -139,14 +194,14 @@ npm run dev
 配置真实千问地址和密钥后，可显式执行一次结构化输出冒烟测试；该命令会真实调用模型并可能产生少量费用：
 
 ```powershell
-Set-Location backend
+cd backend
 python scripts/smoke_model.py
 ```
 
 ## 验证
 
 ```powershell
-Set-Location backend
+cd backend
 pytest
 ruff check app tests scripts migrations
 python -m pip_audit -r requirements.lock
@@ -156,7 +211,7 @@ $env:RUN_MYSQL_INTEGRATION = "1"
 pytest tests/integration
 Remove-Item Env:RUN_MYSQL_INTEGRATION
 
-Set-Location ..\frontend
+cd ..\frontend
 npm run type-check
 npm run build
 npm audit --omit=dev --registry=https://registry.npmjs.org
