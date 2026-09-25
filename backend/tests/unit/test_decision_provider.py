@@ -1,6 +1,6 @@
 from typing import Any
 
-from langchain.agents.structured_output import ToolStrategy
+from langchain.agents.structured_output import ProviderStrategy
 
 from app.agent import decision_provider as provider_module
 from app.agent.decision import NegotiationAction, NegotiationDecision
@@ -60,7 +60,8 @@ def test_langchain_provider_wraps_untrusted_message_and_validates_result(
     assert captured["tools"] == []
     assert captured["system_prompt"] == provider_module.SELLER_AGENT_SYSTEM_PROMPT
     response_format = captured["response_format"]
-    assert isinstance(response_format, ToolStrategy)
+    assert isinstance(response_format, ProviderStrategy)
+    assert response_format.schema_spec.strict is True
     assert "可信上下文 JSON" in str(agent.messages[0].content)
     assert '"current_turn_offer_id":42' in str(agent.messages[0].content)
     assert "历史买家消息" in str(agent.messages[1].content)

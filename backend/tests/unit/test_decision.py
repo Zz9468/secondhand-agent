@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 import pytest
@@ -47,3 +48,34 @@ def test_valid_counter_decision_is_normalized() -> None:
 
     assert decision.proposed_price == Decimal("2850")
     assert decision.additional_terms == {}
+
+
+def test_money_schema_is_qwen_compatible_and_keeps_decimal_validation() -> None:
+    """模型 Schema 不含千问不支持的正则，运行时仍使用 Decimal。"""
+
+    schema_text = json.dumps(NegotiationDecision.model_json_schema())
+    assert "(?=" not in schema_text
+    assert "(?!" not in schema_text
+
+    decision = NegotiationDecision.model_validate(
+        {
+            "action": "COUNTER",
+            "proposed_price": "2850.25",
+            "shipping_paid_by": "buyer",
+            "reason": "处于自动授权范围",
+            "reply": "候选回复",
+        }
+    )
+    assert decision.proposed_price == Decimal("2850.25")
+    assert isinstance(decision.proposed_price, Decimal)
+
+    with pytest.raises(ValidationError):
+        NegotiationDecision.model_validate(
+            {
+                "action": "COUNTER",
+                "proposed_price": "2850.001",
+                "shipping_paid_by": "buyer",
+                "reason": "小数位超限",
+                "reply": "候选回复",
+            }
+        )

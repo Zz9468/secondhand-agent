@@ -40,7 +40,7 @@ V1 阶段四已接通业务服务与 Agent 工具：
 
 V1 阶段五已完成 Agent 与正式回复安全层：
 
-- 使用 Pydantic 定义结构化协商决策，并通过 LangChain `create_agent` 与 `ToolStrategy` 约束模型输出；
+- 使用 Pydantic 定义结构化协商决策，并通过 LangChain `create_agent` 与模型原生 JSON Schema 约束输出；
 - 提供千问 OpenAI 兼容接口适配层，模型地址、名称、超时和重试次数均通过环境变量配置；
 - Seller Agent 先读取可信商品与会话状态，再执行结构化决策，模型不能直接调用写库工具；
 - 普通咨询只从数据库公开商品字段生成确定性回复，不发送模型自由文本；

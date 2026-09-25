@@ -1,5 +1,6 @@
-"""显式调用真实模型，验证千问兼容接口的结构化输出能力。"""
+"""显式调用真实模型，验证千问结构化输出和基础咨询决策。"""
 
+from app.agent.decision import NegotiationAction
 from app.agent.decision_provider import DecisionRequest, LangChainDecisionProvider
 from app.agent.model_factory import QwenChatModelFactory
 from app.core.config import get_settings
@@ -37,6 +38,10 @@ def main() -> None:
             },
         )
     )
+    if decision.action is not NegotiationAction.INQUIRY:
+        raise SystemExit(
+            f"模型结构化输出有效，但商品咨询动作错误：{decision.action.value}"
+        )
     print(decision.model_dump_json(indent=2))
 
 

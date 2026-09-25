@@ -1,10 +1,32 @@
 from decimal import Decimal
 from enum import StrEnum
-from typing import Self
+from typing import Annotated, Self
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    JsonValue,
+    WithJsonSchema,
+    model_validator,
+)
 
 from app.services.pricing_service import ShippingPayer
+
+# Pydantic 默认会为 Decimal 生成带前瞻语法的字符串正则，千问的 JSON
+# Schema 解析器暂不支持该语法。这里只简化发给模型的 Schema；运行时仍由
+# Decimal、max_digits 和 decimal_places 完成精确校验。
+DecisionMoney = Annotated[
+    Decimal,
+    Field(ge=0, max_digits=12, decimal_places=2),
+    WithJsonSchema(
+        {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9999999999.99,
+        }
+    ),
+]
 
 
 class NegotiationAction(StrEnum):
@@ -23,25 +45,10 @@ class NegotiationDecision(BaseModel):
 
     action: NegotiationAction
     offer_id: int | None = Field(default=None, gt=0)
-    proposed_price: Decimal | None = Field(
-        default=None,
-        ge=0,
-        max_digits=12,
-        decimal_places=2,
-    )
+    proposed_price: DecisionMoney | None = None
     shipping_paid_by: ShippingPayer | None = None
-    shipping_cost: Decimal | None = Field(
-        default=None,
-        ge=0,
-        max_digits=12,
-        decimal_places=2,
-    )
-    seller_borne_discount: Decimal | None = Field(
-        default=None,
-        ge=0,
-        max_digits=12,
-        decimal_places=2,
-    )
+    shipping_cost: DecisionMoney | None = None
+    seller_borne_discount: DecisionMoney | None = None
     additional_terms: dict[str, JsonValue] = Field(default_factory=dict)
     reason: str = Field(min_length=1, max_length=500)
     reply: str = Field(min_length=1, max_length=800)

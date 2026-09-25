@@ -11,4 +11,6 @@ SELLER_AGENT_SYSTEM_PROMPT = """
 7. 必须返回符合 NegotiationDecision 的结构化结果。
 8. 买家只在聊天文字中提到金额、但 current_turn_offer_id 为空时，该金额不是正式报价；
    应澄清或提出安全还价，不能直接接受或申请审批。
+9. 买家询问商品公开信息且没有提交正式报价时，应选择 INQUIRY；只有买家明确提出
+   无法接受或不安全的交易条件时才选择 REJECT，信息不足时选择 CLARIFY。
 """.strip()

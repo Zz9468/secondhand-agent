@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from langchain.agents import create_agent
-from langchain.agents.structured_output import ToolStrategy
+from langchain.agents.structured_output import ProviderStrategy
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 
@@ -34,18 +34,16 @@ class DecisionProvider(Protocol):
 
 
 class LangChainDecisionProvider:
-    """使用 LangChain Agent 和 Pydantic 工具策略获取结构化决策。"""
+    """使用 LangChain Agent 和模型原生 JSON Schema 获取结构化决策。"""
 
     def __init__(self, model: BaseChatModel) -> None:
-        # 业务写工具由 SellerAgent 在结构化决策后调用，模型不能直接绕过编排器写库。
+        # 千问不支持 ToolStrategy 使用的强制工具调用，因此只使用模型原生的
+        # JSON Schema 输出。业务写工具仍由 SellerAgent 在校验决策后调用。
         self._agent = create_agent(
             model=model,
             tools=[],
             system_prompt=SELLER_AGENT_SYSTEM_PROMPT,
-            response_format=ToolStrategy(
-                NegotiationDecision,
-                handle_errors="结构化决策无效，请严格按照字段要求重新输出。",
-            ),
+            response_format=ProviderStrategy(NegotiationDecision, strict=True),
         )
 
     def decide(self, request: DecisionRequest) -> NegotiationDecision:
