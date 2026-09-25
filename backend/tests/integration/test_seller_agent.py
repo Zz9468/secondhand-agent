@@ -182,6 +182,51 @@ def test_accept_reply_ignores_false_approval_claim_and_matches_database(
         assert negotiation.status is NegotiationStatus.ACTIVE
 
 
+def test_current_offer_authorization_is_available_to_decision_provider(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    service = NegotiationService(service_session_factory)
+    buyer_offer = service.record_buyer_offer(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        terms=OfferTerms(
+            buyer_payment=Decimal("2900.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+    provider = ScriptedDecisionProvider(
+        [
+            NegotiationDecision(
+                action=NegotiationAction.ACCEPT,
+                offer_id=buyer_offer.id,
+                reason="后端授权自动接受",
+                reply="候选接受文案。",
+            )
+        ]
+    )
+    tools = build_seller_tools(
+        context=AgentToolContext(session_id=session_id, buyer_id=buyer_id),
+        product_service=ProductService(service_session_factory),
+        negotiation_service=service,
+    )
+    agent = SellerAgent(decision_provider=provider, tools=tools)
+
+    result = agent.handle_turn(
+        "2900 元行不行？",
+        current_turn_offer_id=buyer_offer.id,
+    )
+
+    authorization = provider.requests[0].negotiation_context[
+        "current_offer_authorization"
+    ]
+    assert isinstance(authorization, dict)
+    assert authorization["can_accept_automatically"] is True
+    assert authorization["can_request_approval"] is False
+    assert authorization["is_acceptance_prohibited"] is False
+    assert result.outcome is AgentTurnOutcome.OFFER_ACCEPTED
+
+
 def test_approval_zone_only_returns_safe_hint_without_fake_approval(
     service_session_factory: sessionmaker[Session],
 ) -> None:

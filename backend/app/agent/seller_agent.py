@@ -88,12 +88,23 @@ class SellerAgent:
                 decision=None,
             )
 
+        decision_negotiation_context = self._with_current_offer_authorization(
+            negotiation_result,
+            current_turn_offer_id=current_turn_offer_id,
+        )
+        if decision_negotiation_context is None:
+            return AgentTurnResult(
+                reply=self._generic_failure_reply,
+                outcome=AgentTurnOutcome.SAFE_FAILURE,
+                decision=None,
+            )
+
         try:
             decision = self._decision_provider.decide(
                 DecisionRequest(
                     buyer_message=normalized_message,
                     product_context=product_result,
-                    negotiation_context=negotiation_result,
+                    negotiation_context=decision_negotiation_context,
                     conversation_history=conversation_history,
                     current_turn_offer_id=current_turn_offer_id,
                 )
@@ -109,7 +120,7 @@ class SellerAgent:
         return self._execute_decision(
             decision=decision,
             product_result=product_result,
-            negotiation_result=negotiation_result,
+            negotiation_result=decision_negotiation_context,
             current_turn_offer_id=current_turn_offer_id,
         )
 
@@ -263,6 +274,37 @@ class SellerAgent:
             outcome=AgentTurnOutcome.SAFE_FAILURE,
             decision=decision,
         )
+
+    def _with_current_offer_authorization(
+        self,
+        negotiation_result: dict[str, object],
+        *,
+        current_turn_offer_id: int | None,
+    ) -> dict[str, object] | None:
+        """向模型提供非敏感执行权限，不暴露卖家的具体价格阈值。"""
+
+        if current_turn_offer_id is None:
+            return negotiation_result
+        offer = self._current_offer(negotiation_result, current_turn_offer_id)
+        if offer is None or offer.get("proposer") != "BUYER":
+            return None
+        evaluation = self._invoke(
+            "evaluate_offer",
+            {
+                "price": offer.get("price"),
+                "shipping_paid_by": offer.get("shipping_paid_by"),
+                "shipping_cost": offer.get("shipping_cost"),
+                "seller_borne_discount": offer.get("seller_borne_discount"),
+                "additional_terms": offer.get("additional_terms") or {},
+            },
+        )
+        authorization = evaluation.get("authorization")
+        if evaluation.get("ok") is not True or not isinstance(authorization, dict):
+            return None
+        return {
+            **negotiation_result,
+            "current_offer_authorization": dict(authorization),
+        }
 
     @staticmethod
     def _offer_id(tool_result: dict[str, object]) -> int:

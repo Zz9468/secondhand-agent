@@ -45,3 +45,18 @@ def test_qwen_factory_builds_openai_compatible_chat_model_without_network_call()
 
     assert model.model_name == "qwen-plus"
     assert str(model.openai_api_base) == "https://example.invalid/compatible-mode/v1"
+    assert model.extra_body == {"enable_thinking": False}
+
+
+def test_qwen_factory_can_enable_thinking_explicitly() -> None:
+    model = QwenChatModelFactory().create(
+        Settings(
+            _env_file=None,
+            database_url=TEST_DATABASE_URL,
+            model_api_key=SecretStr("test-key"),
+            model_base_url="https://example.invalid/compatible-mode/v1",
+            model_enable_thinking=True,
+        )
+    )
+
+    assert model.extra_body == {"enable_thinking": True}

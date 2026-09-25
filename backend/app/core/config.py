@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     model_base_url: str | None = None
     model_api_key: SecretStr | None = None
     model_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    model_enable_thinking: bool = False
     model_timeout_seconds: float = Field(default=30.0, gt=0.0)
     model_max_retries: int = Field(default=2, ge=0, le=10)
 

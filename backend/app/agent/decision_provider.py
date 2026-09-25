@@ -3,12 +3,15 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from langchain.agents import create_agent
-from langchain.agents.structured_output import ProviderStrategy
+from langchain.agents.structured_output import (
+    ProviderStrategy,
+    StructuredOutputValidationError,
+)
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 
 from app.agent.decision import NegotiationDecision
-from app.agent.prompts import SELLER_AGENT_SYSTEM_PROMPT
+from app.agent.prompts import DECISION_FIELD_RULES, SELLER_AGENT_SYSTEM_PROMPT
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,7 +50,26 @@ class LangChainDecisionProvider:
         )
 
     def decide(self, request: DecisionRequest) -> NegotiationDecision:
-        result = self._agent.invoke({"messages": self._messages(request)})
+        messages = self._messages(request)
+        try:
+            result = self._agent.invoke({"messages": messages})
+        except StructuredOutputValidationError:
+            # 原生 JSON Schema 无法表达所有跨字段条件。仅在结构化结果字段组合
+            # 无效时补充规则重试一次；价格和权限仍由后端业务层重新校验。
+            result = self._agent.invoke(
+                {
+                    "messages": [
+                        *messages,
+                        SystemMessage(
+                            content=(
+                                "上一份结构化决策未通过字段组合校验。"
+                                "请重新决策，并严格遵守：\n"
+                                f"{DECISION_FIELD_RULES}"
+                            )
+                        ),
+                    ]
+                }
+            )
         structured_response = result.get("structured_response")
         if isinstance(structured_response, NegotiationDecision):
             return structured_response

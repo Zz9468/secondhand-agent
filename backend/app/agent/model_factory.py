@@ -35,4 +35,6 @@ class QwenChatModelFactory:
             temperature=settings.model_temperature,
             timeout=settings.model_timeout_seconds,
             max_retries=settings.model_max_retries,
+            # 协商决策由后端规则重新校验，不需要长思考；默认关闭可降低超时概率。
+            extra_body={"enable_thinking": settings.model_enable_thinking},
         )
