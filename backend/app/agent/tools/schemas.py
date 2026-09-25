@@ -41,3 +41,12 @@ class AcceptOfferInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     offer_id: int = Field(gt=0)
+
+
+class RequestApprovalInput(BaseModel):
+    """审批工具只接受本轮报价编号和用于卖家理解的申请原因。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    offer_id: int = Field(gt=0)
+    reason: str = Field(min_length=1, max_length=500)

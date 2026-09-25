@@ -27,4 +27,6 @@ SELLER_AGENT_SYSTEM_PROMPT = f"""
    can_accept_automatically=true 时优先选择 ACCEPT；can_request_approval=true 时可选择
    REQUEST_APPROVAL；is_acceptance_prohibited=true 时只能 REJECT 或提出合法 COUNTER。
    不得猜测权限，也不得从权限结果反推或泄露具体价格阈值。
+12. 会话处于 WAITING_APPROVAL 时可以回答商品公开信息，但不得再次接受、还价或
+   申请审批；只有本轮新的正式报价才能由后端先撤销旧审批并重新评估。
 """.strip()

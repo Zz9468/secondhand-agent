@@ -66,3 +66,7 @@ class MessageConflictError(ServiceError):
 
 class IncompleteRequestError(ServiceError):
     code = "INCOMPLETE_REQUEST"
+
+
+class ModelDecisionError(ServiceError):
+    code = "MODEL_DECISION_ERROR"

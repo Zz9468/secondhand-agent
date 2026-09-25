@@ -7,9 +7,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.decision import NegotiationAction, NegotiationDecision
+from app.agent.decision_provider import DecisionRequest
 from app.db.models import (
+    ApprovalRequest,
+    ApprovalStatus,
     Message,
     NegotiationSession,
+    NegotiationStatus,
     Offer,
     OfferProposer,
     OfferStatus,
@@ -17,7 +21,11 @@ from app.db.models import (
     SellerPolicy,
 )
 from app.services.chat_service import BuyerOfferSubmission, ChatService
-from app.services.errors import MessageConflictError, NegotiationNotFoundError
+from app.services.errors import (
+    MessageConflictError,
+    ModelDecisionError,
+    NegotiationNotFoundError,
+)
 from app.services.pricing_service import ShippingPayer
 from tests.fakes import RoutingDecisionProvider, demo_negotiation_decision
 from tests.integration.factories import create_negotiation
@@ -105,7 +113,7 @@ def test_multi_round_low_offers_only_create_authorized_agent_counters(
     assert offers[-1].status is OfferStatus.PROPOSED
 
 
-def test_shipping_cost_uses_net_income_and_approval_zone_only_returns_hint(
+def test_shipping_cost_uses_net_income_and_creates_approval_request(
     service_session_factory: sessionmaker[Session],
 ) -> None:
     session_id, buyer_id = create_negotiation(service_session_factory)
@@ -128,7 +136,7 @@ def test_shipping_cost_uses_net_income_and_approval_zone_only_returns_hint(
     )
 
     assert result.outcome == "NEEDS_SELLER_CONFIRMATION"
-    assert "需要卖家确认" in result.agent_message.content
+    assert "已将这份报价提交卖家确认" in result.agent_message.content
     assert result.formal_offer_id is None
     with service_session_factory() as db:
         buyer_offer = db.scalar(
@@ -139,6 +147,246 @@ def test_shipping_cost_uses_net_income_and_approval_zone_only_returns_hint(
         )
         assert buyer_offer is not None
         assert buyer_offer.status is OfferStatus.PROPOSED
+        approval = db.scalar(
+            select(ApprovalRequest).where(ApprovalRequest.session_id == session_id)
+        )
+        negotiation = db.get(NegotiationSession, session_id)
+        assert approval is not None
+        assert approval.offer_id == buyer_offer.id
+        assert approval.status is ApprovalStatus.PENDING
+        assert negotiation is not None
+        assert negotiation.status is NegotiationStatus.WAITING_APPROVAL
+
+
+def test_waiting_approval_allows_inquiry_and_new_offer_cancels_old_request(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    provider = RoutingDecisionProvider(demo_negotiation_decision)
+    service = ChatService(service_session_factory, provider)
+
+    first = service.send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-approval-first-001",
+        content="2800 元可以吗？",
+        offer=BuyerOfferSubmission(
+            price=Decimal("2800.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+    inquiry = service.send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-waiting-inquiry-001",
+        content="顺便介绍一下商品。",
+    )
+    replacement = service.send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-replacement-offer-001",
+        content="我改成 2900 元。",
+        offer=BuyerOfferSubmission(
+            price=Decimal("2900.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+
+    assert first.outcome == "NEEDS_SELLER_CONFIRMATION"
+    assert inquiry.outcome == "INFORMATIONAL"
+    assert replacement.outcome == "OFFER_ACCEPTED"
+    with service_session_factory() as db:
+        approvals = list(
+            db.scalars(
+                select(ApprovalRequest)
+                .where(ApprovalRequest.session_id == session_id)
+                .order_by(ApprovalRequest.id)
+            )
+        )
+        offers = list(
+            db.scalars(
+                select(Offer)
+                .where(Offer.session_id == session_id)
+                .order_by(Offer.id)
+            )
+        )
+        negotiation = db.get(NegotiationSession, session_id)
+        assert len(approvals) == 1
+        assert approvals[0].status is ApprovalStatus.CANCELLED
+        assert [offer.status for offer in offers] == [
+            OfferStatus.WITHDRAWN,
+            OfferStatus.ACCEPTED,
+        ]
+        assert negotiation is not None
+        assert negotiation.status is NegotiationStatus.ACTIVE
+
+
+def test_model_failure_rolls_back_new_offer_and_old_approval_cancellation(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    ChatService(
+        service_session_factory,
+        RoutingDecisionProvider(demo_negotiation_decision),
+    ).send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-before-model-failure-001",
+        content="2800 元可以吗？",
+        offer=BuyerOfferSubmission(
+            price=Decimal("2800.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+
+    def fail_decision(_: object) -> NegotiationDecision:
+        raise ValueError("模拟模型结构化输出失败")
+
+    failing_service = ChatService(
+        service_session_factory,
+        RoutingDecisionProvider(fail_decision),
+    )
+    with pytest.raises(ModelDecisionError):
+        failing_service.send_buyer_message(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            request_id="request-model-failure-001",
+            content="我改成 2900 元。",
+            offer=BuyerOfferSubmission(
+                price=Decimal("2900.00"),
+                shipping_paid_by=ShippingPayer.BUYER,
+            ),
+        )
+
+    with service_session_factory() as db:
+        approvals = list(
+            db.scalars(
+                select(ApprovalRequest).where(
+                    ApprovalRequest.session_id == session_id
+                )
+            )
+        )
+        offers = list(
+            db.scalars(select(Offer).where(Offer.session_id == session_id))
+        )
+        messages = list(
+            db.scalars(select(Message).where(Message.session_id == session_id))
+        )
+        negotiation = db.get(NegotiationSession, session_id)
+        assert len(approvals) == 1
+        assert approvals[0].status is ApprovalStatus.PENDING
+        assert len(offers) == 1
+        assert offers[0].price == Decimal("2800.00")
+        assert offers[0].status is OfferStatus.PROPOSED
+        assert len(messages) == 2
+        assert negotiation is not None
+        assert negotiation.status is NegotiationStatus.WAITING_APPROVAL
+
+
+def test_new_approval_zone_offer_replaces_pending_request_atomically(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    service = ChatService(
+        service_session_factory,
+        RoutingDecisionProvider(demo_negotiation_decision),
+    )
+    service.send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-old-approval-001",
+        content="2800 元可以吗？",
+        offer=BuyerOfferSubmission(
+            price=Decimal("2800.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+
+    replacement = service.send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-new-approval-001",
+        content="我改成 2750 元。",
+        offer=BuyerOfferSubmission(
+            price=Decimal("2750.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+
+    assert replacement.outcome == "NEEDS_SELLER_CONFIRMATION"
+    with service_session_factory() as db:
+        approvals = list(
+            db.scalars(
+                select(ApprovalRequest)
+                .where(ApprovalRequest.session_id == session_id)
+                .order_by(ApprovalRequest.id)
+            )
+        )
+        offers = list(
+            db.scalars(
+                select(Offer)
+                .where(Offer.session_id == session_id)
+                .order_by(Offer.id)
+            )
+        )
+        negotiation = db.get(NegotiationSession, session_id)
+        assert [approval.status for approval in approvals] == [
+            ApprovalStatus.CANCELLED,
+            ApprovalStatus.PENDING,
+        ]
+        assert approvals[1].offer_id == offers[1].id
+        assert [offer.status for offer in offers] == [
+            OfferStatus.WITHDRAWN,
+            OfferStatus.PROPOSED,
+        ]
+        assert negotiation is not None
+        assert negotiation.current_offer_id == offers[1].id
+        assert negotiation.status is NegotiationStatus.WAITING_APPROVAL
+
+
+def test_prohibited_offer_cannot_be_forced_into_approval_by_model(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+
+    def force_approval(request: DecisionRequest) -> NegotiationDecision:
+        offer_id = request.current_turn_offer_id
+        return NegotiationDecision(
+            action=NegotiationAction.REQUEST_APPROVAL,
+            offer_id=offer_id,
+            reason="模型尝试越权申请审批",
+            reply="已经批准。",
+        )
+
+    result = ChatService(
+        service_session_factory,
+        RoutingDecisionProvider(force_approval),
+    ).send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-prohibited-approval-001",
+        content="2600 元可以吗？",
+        offer=BuyerOfferSubmission(
+            price=Decimal("2600.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+
+    assert result.outcome == "REJECTED"
+    assert "已经批准" not in result.agent_message.content
+    assert result.formal_offer_id is None
+    with service_session_factory() as db:
+        assert (
+            db.scalar(
+                select(ApprovalRequest).where(
+                    ApprovalRequest.session_id == session_id
+                )
+            )
+            is None
+        )
+        negotiation = db.get(NegotiationSession, session_id)
+        assert negotiation is not None
+        assert negotiation.status is NegotiationStatus.ACTIVE
 
 
 def test_request_id_is_idempotent_and_buyer_access_is_isolated(

@@ -1,3 +1,4 @@
+from app.services.approval_service import ApprovalSnapshot
 from app.services.errors import ServiceError
 from app.services.negotiation_service import (
     NegotiationState,
@@ -54,6 +55,20 @@ def offer_result(offer: OfferSnapshot) -> dict[str, object]:
     }
 
 
+def approval_result(approval: ApprovalSnapshot) -> dict[str, object]:
+    """只返回 Agent 确认落库所需的非敏感审批字段。"""
+
+    return {
+        "ok": True,
+        "approval": {
+            "id": approval.id,
+            "offer_id": approval.offer_id,
+            "status": approval.status.value,
+            "expires_at": approval.expires_at.isoformat(),
+        },
+    }
+
+
 def negotiation_state_result(state: NegotiationState) -> dict[str, object]:
     return {
         "ok": True,
@@ -64,6 +79,7 @@ def negotiation_state_result(state: NegotiationState) -> dict[str, object]:
             "current_offer_id": state.current_offer_id,
             "round_count": state.round_count,
             "version": state.version,
+            "policy_version": state.policy_version,
             "negotiation_style": state.negotiation_style.value,
             "max_rounds": state.max_rounds,
             "recent_offers": [serialize_offer(offer) for offer in state.recent_offers],

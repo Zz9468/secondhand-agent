@@ -9,7 +9,15 @@ from app.agent.decision import NegotiationAction, NegotiationDecision
 from app.agent.decision_provider import DecisionRequest
 from app.agent.seller_agent import AgentTurnOutcome, SellerAgent
 from app.agent.tools import AgentToolContext, build_seller_tools
-from app.db.models import NegotiationSession, NegotiationStatus, Offer, OfferStatus
+from app.db.models import (
+    ApprovalRequest,
+    ApprovalStatus,
+    NegotiationSession,
+    NegotiationStatus,
+    Offer,
+    OfferStatus,
+)
+from app.services.approval_service import ApprovalService
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, ShippingPayer
 from app.services.product_service import ProductService
@@ -39,12 +47,18 @@ def build_test_agent(
     session_id: int,
     buyer_id: str,
     decision: NegotiationDecision | Exception,
+    current_turn_offer_id: int | None = None,
 ) -> SellerAgent:
     negotiation_service = NegotiationService(session_factory)
     tools = build_seller_tools(
-        context=AgentToolContext(session_id=session_id, buyer_id=buyer_id),
+        context=AgentToolContext(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            current_turn_offer_id=current_turn_offer_id,
+        ),
         product_service=ProductService(session_factory),
         negotiation_service=negotiation_service,
+        approval_service=ApprovalService(session_factory),
     )
     return SellerAgent(
         decision_provider=ScriptedDecisionProvider([decision]),
@@ -209,6 +223,7 @@ def test_current_offer_authorization_is_available_to_decision_provider(
         context=AgentToolContext(session_id=session_id, buyer_id=buyer_id),
         product_service=ProductService(service_session_factory),
         negotiation_service=service,
+        approval_service=ApprovalService(service_session_factory),
     )
     agent = SellerAgent(decision_provider=provider, tools=tools)
 
@@ -227,7 +242,7 @@ def test_current_offer_authorization_is_available_to_decision_provider(
     assert result.outcome is AgentTurnOutcome.OFFER_ACCEPTED
 
 
-def test_approval_zone_only_returns_safe_hint_without_fake_approval(
+def test_approval_zone_persists_request_before_returning_safe_reply(
     service_session_factory: sessionmaker[Session],
 ) -> None:
     session_id, buyer_id = create_negotiation(service_session_factory)
@@ -250,6 +265,7 @@ def test_approval_zone_only_returns_safe_hint_without_fake_approval(
             reason="希望卖家介入",
             reply="卖家已经批准 2800 元。",
         ),
+        current_turn_offer_id=buyer_offer.id,
     )
 
     result = agent.handle_turn(
@@ -259,14 +275,20 @@ def test_approval_zone_only_returns_safe_hint_without_fake_approval(
 
     assert result.outcome is AgentTurnOutcome.NEEDS_SELLER_CONFIRMATION
     assert result.formal_offer_id is None
-    assert "需要卖家确认" in result.reply
+    assert "已将这份报价提交卖家确认" in result.reply
     assert "已经批准" not in result.reply
     with service_session_factory() as db:
         offer = db.get(Offer, buyer_offer.id)
         negotiation = db.get(NegotiationSession, session_id)
+        approval = db.scalar(
+            select(ApprovalRequest).where(ApprovalRequest.session_id == session_id)
+        )
         assert offer is not None and offer.status is OfferStatus.PROPOSED
         assert negotiation is not None
-        assert negotiation.status is NegotiationStatus.ACTIVE
+        assert negotiation.status is NegotiationStatus.WAITING_APPROVAL
+        assert approval is not None
+        assert approval.offer_id == buyer_offer.id
+        assert approval.status is ApprovalStatus.PENDING
 
 
 def test_inquiry_cannot_leak_private_price_and_model_error_is_safe(

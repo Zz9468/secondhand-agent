@@ -23,6 +23,7 @@ from app.services.chat_service import BuyerOfferSubmission, ChatService
 from app.services.errors import (
     IncompleteRequestError,
     MessageConflictError,
+    ModelDecisionError,
     NegotiationNotFoundError,
     ServiceError,
 )
@@ -157,6 +158,8 @@ def send_message(
 def _raise_http_error(error: ServiceError | PricingError) -> Never:
     if isinstance(error, NegotiationNotFoundError):
         code = status.HTTP_404_NOT_FOUND
+    elif isinstance(error, ModelDecisionError):
+        code = status.HTTP_503_SERVICE_UNAVAILABLE
     elif isinstance(error, (MessageConflictError, IncompleteRequestError)):
         code = status.HTTP_409_CONFLICT
     else:

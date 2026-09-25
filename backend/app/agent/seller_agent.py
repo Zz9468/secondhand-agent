@@ -59,9 +59,10 @@ class SellerAgent:
             "evaluate_offer",
             "submit_counter_offer",
             "accept_offer",
+            "request_approval",
         }
         if len(tools) != len(required_tools) or set(self._tools) != required_tools:
-            raise ValueError("SellerAgent requires exactly the five V1 negotiation tools")
+            raise ValueError("SellerAgent requires exactly the six V2 negotiation tools")
         self._reply_renderer = reply_renderer or FormalReplyRenderer()
 
     def handle_turn(
@@ -137,9 +138,8 @@ class SellerAgent:
         if decision.action is NegotiationAction.ACCEPT:
             return self._execute_accept(decision, current_turn_offer_id)
         if decision.action is NegotiationAction.REQUEST_APPROVAL:
-            return self._execute_approval_hint(
+            return self._execute_approval(
                 decision,
-                negotiation_result,
                 current_turn_offer_id,
             )
 
@@ -219,42 +219,30 @@ class SellerAgent:
             formal_offer_id=offer_id,
         )
 
-    def _execute_approval_hint(
+    def _execute_approval(
         self,
         decision: NegotiationDecision,
-        negotiation_result: dict[str, object],
         current_turn_offer_id: int | None,
     ) -> AgentTurnResult:
         if decision.offer_id != current_turn_offer_id:
             return self._safe_failure(decision)
-        offer = self._current_offer(negotiation_result, decision.offer_id)
-        if offer is None or offer.get("proposer") != "BUYER":
-            return self._safe_failure(decision)
-        evaluation = self._invoke(
-            "evaluate_offer",
-            {
-                "price": offer.get("price"),
-                "shipping_paid_by": offer.get("shipping_paid_by"),
-                "shipping_cost": offer.get("shipping_cost"),
-                "seller_borne_discount": offer.get("seller_borne_discount"),
-                "additional_terms": offer.get("additional_terms") or {},
-            },
+        tool_result = self._invoke(
+            "request_approval",
+            {"offer_id": decision.offer_id, "reason": decision.reason},
         )
-        authorization = evaluation.get("authorization")
-        if (
-            evaluation.get("ok") is True
-            and isinstance(authorization, dict)
-            and authorization.get("conditions_valid") is True
-            and authorization.get("can_request_approval") is True
-        ):
-            return AgentTurnResult(
-                reply="这个报价需要卖家确认，目前还不能直接答应，请稍等后续结果。",
-                outcome=AgentTurnOutcome.NEEDS_SELLER_CONFIRMATION,
-                decision=decision,
-            )
+        if not self._is_success(tool_result):
+            if self._error_code(tool_result) == "APPROVAL_NOT_AUTHORIZED":
+                return AgentTurnResult(
+                    reply="这个条件目前无法接受，你可以调整报价或交易条件。",
+                    outcome=AgentTurnOutcome.REJECTED,
+                    decision=decision,
+                )
+            return self._safe_failure(decision)
+        if not self._is_valid_approval(tool_result, offer_id=decision.offer_id):
+            return self._safe_failure(decision)
         return AgentTurnResult(
-            reply="这个条件目前无法直接接受，你可以调整报价或交易条件。",
-            outcome=AgentTurnOutcome.REJECTED,
+            reply="已将这份报价提交卖家确认，目前还不能视为接受或成交，请等待后续结果。",
+            outcome=AgentTurnOutcome.NEEDS_SELLER_CONFIRMATION,
             decision=decision,
         )
 
@@ -267,6 +255,29 @@ class SellerAgent:
     @staticmethod
     def _is_success(result: dict[str, object]) -> bool:
         return result.get("ok") is True
+
+    @staticmethod
+    def _error_code(result: dict[str, object]) -> str | None:
+        error = result.get("error")
+        if not isinstance(error, dict):
+            return None
+        code = error.get("code")
+        return code if isinstance(code, str) else None
+
+    @staticmethod
+    def _is_valid_approval(
+        tool_result: dict[str, object],
+        *,
+        offer_id: int | None,
+    ) -> bool:
+        approval = tool_result.get("approval")
+        return (
+            isinstance(approval, dict)
+            and type(approval.get("id")) is int
+            and approval["id"] > 0
+            and approval.get("offer_id") == offer_id
+            and approval.get("status") == "PENDING"
+        )
 
     def _safe_failure(self, decision: NegotiationDecision) -> AgentTurnResult:
         return AgentTurnResult(

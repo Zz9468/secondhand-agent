@@ -72,6 +72,7 @@ class NegotiationState:
     current_offer_id: int | None
     round_count: int
     version: int
+    policy_version: int
     negotiation_style: NegotiationStyle
     max_rounds: int
     recent_offers: tuple[OfferSnapshot, ...]
@@ -159,6 +160,7 @@ class NegotiationService:
                 current_offer_id=negotiation.current_offer_id,
                 round_count=negotiation.round_count,
                 version=negotiation.version,
+                policy_version=policy.version,
                 negotiation_style=policy.negotiation_style,
                 max_rounds=policy.max_rounds,
                 recent_offers=tuple(self._snapshot(offer) for offer in offers),

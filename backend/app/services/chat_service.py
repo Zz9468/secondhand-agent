@@ -8,12 +8,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.decision_provider import ConversationMessage, DecisionProvider
-from app.agent.seller_agent import SellerAgent
+from app.agent.seller_agent import AgentTurnOutcome, SellerAgent
 from app.agent.tools import AgentToolContext, build_seller_tools
-from app.db.models import Message, MessageRole, NegotiationSession
+from app.db.models import Message, MessageRole, NegotiationSession, NegotiationStatus
+from app.services.approval_service import ApprovalService
 from app.services.errors import (
     IncompleteRequestError,
     MessageConflictError,
+    ModelDecisionError,
     NegotiationNotFoundError,
 )
 from app.services.negotiation_service import NegotiationService
@@ -72,6 +74,7 @@ class ChatService:
         self._session_factory = session_factory
         self._decision_provider = decision_provider
         self._negotiation_service = NegotiationService(session_factory)
+        self._approval_service = ApprovalService(session_factory)
 
     def send_buyer_message(
         self,
@@ -85,7 +88,7 @@ class ChatService:
         reply_request_id = self._reply_request_id(request_id)
         request_fingerprint = self._request_fingerprint(content=content, offer=offer)
         with self._session_factory() as db, db.begin():
-            self._require_negotiation(
+            negotiation = self._require_negotiation(
                 db,
                 session_id=session_id,
                 buyer_id=buyer_id,
@@ -107,6 +110,13 @@ class ChatService:
             history = self._recent_history(db, session_id=session_id)
             buyer_offer_id: int | None = None
             if offer is not None:
+                if negotiation.status is NegotiationStatus.WAITING_APPROVAL:
+                    # 新正式报价会明确撤销旧审批；普通聊天不会改变审批状态。
+                    self._approval_service.cancel_pending_for_new_offer_in_transaction(
+                        db=db,
+                        session_id=session_id,
+                        buyer_id=buyer_id,
+                    )
                 buyer_offer = self._negotiation_service.record_buyer_offer_in_transaction(
                     db=db,
                     session_id=session_id,
@@ -146,6 +156,9 @@ class ChatService:
                 conversation_history=history,
                 current_turn_offer_id=buyer_offer_id,
             )
+            if result.outcome is AgentTurnOutcome.MODEL_ERROR:
+                # 模型失败时不提交本轮消息、报价或旧审批撤销，允许客户端安全重试。
+                raise ModelDecisionError("模型暂时无法完成本轮决策，请稍后重试")
             agent_message = Message(
                 session_id=session_id,
                 role=MessageRole.AGENT,
@@ -211,6 +224,7 @@ class ChatService:
             ),
             product_service=ProductService(active_session_factory),
             negotiation_service=NegotiationService(active_session_factory),
+            approval_service=ApprovalService(active_session_factory),
         )
         return SellerAgent(
             decision_provider=self._decision_provider,

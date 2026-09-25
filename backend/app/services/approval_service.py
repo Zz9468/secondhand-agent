@@ -227,6 +227,35 @@ class ApprovalService:
             db.flush()
             return self._snapshot(approval)
 
+    def cancel_pending_for_new_offer_in_transaction(
+        self,
+        *,
+        db: Session,
+        session_id: int,
+        buyer_id: str,
+    ) -> ApprovalSnapshot | None:
+        """在聊天事务内撤销旧审批，为当前买家的新正式报价让路。"""
+
+        negotiation = self._get_buyer_negotiation(
+            db,
+            session_id=session_id,
+            buyer_id=buyer_id,
+            for_update=True,
+        )
+        approval = self._get_pending(db, session_id=session_id, for_update=True)
+        if approval is None:
+            if negotiation.status is NegotiationStatus.WAITING_APPROVAL:
+                raise ApprovalConflictError("等待审批的会话缺少待处理审批记录")
+            return None
+
+        if self._is_due(approval.expires_at):
+            self._expire(db, negotiation=negotiation, approval=approval)
+        else:
+            approval.status = ApprovalStatus.CANCELLED
+            self._restore_active(negotiation)
+        db.flush()
+        return self._snapshot(approval)
+
     def expire_request(
         self,
         *,
