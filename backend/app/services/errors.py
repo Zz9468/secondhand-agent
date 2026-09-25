@@ -24,6 +24,22 @@ class PolicyVersionConflictError(ServiceError):
     code = "POLICY_VERSION_CONFLICT"
 
 
+class ApprovalNotFoundError(ServiceError):
+    code = "APPROVAL_NOT_FOUND"
+
+
+class ApprovalConflictError(ServiceError):
+    code = "APPROVAL_CONFLICT"
+
+
+class ApprovalNotAuthorizedError(ServiceError):
+    code = "APPROVAL_NOT_AUTHORIZED"
+
+
+class ApprovalNotExpiredError(ServiceError):
+    code = "APPROVAL_NOT_EXPIRED"
+
+
 class InvalidNegotiationStateError(ServiceError):
     code = "INVALID_NEGOTIATION_STATE"
 

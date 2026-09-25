@@ -373,6 +373,20 @@ class NegotiationService:
             db.flush()
             return self._snapshot(offer)
 
+    def authorize_stored_offer(
+        self,
+        *,
+        offer: Offer,
+        policy: SellerPolicy,
+    ) -> OfferAuthorization:
+        """使用统一规则重新评估数据库中的不可变报价快照。"""
+
+        return self._authorize(
+            terms=self._terms_from_offer(offer),
+            policy=policy,
+            additional_terms=offer.terms,
+        )
+
     @staticmethod
     def _get_negotiation(
         db: Session,

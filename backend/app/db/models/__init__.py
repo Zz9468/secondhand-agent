@@ -1,6 +1,9 @@
 """集中导出 ORM 模型，确保 Alembic 能完整加载元数据。"""
 
+from app.db.models.approval import ApprovalRequest
 from app.db.models.enums import (
+    ApprovalFollowupStatus,
+    ApprovalStatus,
     MessageRole,
     NegotiationStatus,
     NegotiationStyle,
@@ -17,6 +20,9 @@ from app.db.models.product import Product
 from app.db.models.seller import SellerAccount
 
 __all__ = [
+    "ApprovalFollowupStatus",
+    "ApprovalRequest",
+    "ApprovalStatus",
     "Message",
     "MessageRole",
     "NegotiationSession",

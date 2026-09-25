@@ -58,6 +58,20 @@ class OfferStatus(StrEnum):
     WITHDRAWN = "WITHDRAWN"
 
 
+class ApprovalStatus(StrEnum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    CANCELLED = "CANCELLED"
+    EXPIRED = "EXPIRED"
+
+
+class ApprovalFollowupStatus(StrEnum):
+    PENDING = "PENDING"
+    SENT = "SENT"
+    FAILED = "FAILED"
+
+
 class ShippingPayer(StrEnum):
     BUYER = "buyer"
     SELLER = "seller"

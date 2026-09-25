@@ -14,6 +14,7 @@ from app.db.models.enums import (
 )
 
 if TYPE_CHECKING:
+    from app.db.models.approval import ApprovalRequest
     from app.db.models.negotiation import NegotiationSession
 
 
@@ -70,4 +71,8 @@ class Offer(Base):
     session: Mapped["NegotiationSession"] = relationship(
         back_populates="offers",
         foreign_keys=[session_id],
+    )
+    approval_requests: Mapped[list["ApprovalRequest"]] = relationship(
+        back_populates="offer",
+        passive_deletes=True,
     )

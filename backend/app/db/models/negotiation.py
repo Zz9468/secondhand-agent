@@ -7,6 +7,7 @@ from app.db.base import Base, TimestampMixin
 from app.db.models.enums import NegotiationStatus, stored_enum
 
 if TYPE_CHECKING:
+    from app.db.models.approval import ApprovalRequest
     from app.db.models.message import Message
     from app.db.models.offer import Offer
     from app.db.models.product import Product
@@ -60,4 +61,9 @@ class NegotiationSession(TimestampMixin, Base):
     current_offer: Mapped["Offer | None"] = relationship(
         foreign_keys=[current_offer_id],
         post_update=True,
+    )
+    approval_requests: Mapped[list["ApprovalRequest"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="ApprovalRequest.id",
     )
