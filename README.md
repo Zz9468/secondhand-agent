@@ -108,6 +108,15 @@ V2 阶段五已完成卖家审批 API 与页面：
 - 拒绝或失效会恢复会话为可协商状态；审批同意只代表卖家授权当前报价，不会直接写入 `AGREED`；
 - 卖家管理页面新增报价审批列表、报价详情、卖家意见以及同意和拒绝操作。
 
+V2 阶段六已完成审批后续处理与买家轮询：
+
+- 新增独立审批 Worker，通过 MySQL 行锁领取 `PENDING` 或 `FAILED` 后续任务，多个 Worker 不会重复处理同一审批；
+- Worker 每次重新读取审批、会话、商品、报价和最新规则，状态变化时发送失效通知而不是继续承诺旧报价；
+- 审批通知会触发新的结构化模型调用，但最终文案只由数据库报价快照和正式回复安全层生成，不发送模型自由文本；
+- 审批通过通知、报价状态、会话恢复、Agent 消息和 `followup_status=SENT` 在同一事务内提交；
+- 模型调用失败时任务标记为 `FAILED`，后续轮询可以安全重试；消息使用 `followup_request_id` 防止重复发送；
+- 买家页面每两秒增量读取新消息和会话状态，无需刷新整页即可看到卖家审批结果。
+
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
 ## 开发约定
@@ -242,6 +251,21 @@ cd frontend
 npm run dev
 ```
 
+审批流程还需要打开第三个终端，激活同一个 Python 环境并启动独立 Worker：
+
+```powershell
+conda activate secondhand-agent
+cd backend
+python -m app.workers.approval_processor
+```
+
+Worker 与后端读取同一份 `.env`，需要有效的数据库和模型配置。它会持续领取审批后续任务；按 `Ctrl+C` 可以停止。若只想手动处理当前一批任务并退出，可执行：
+
+```powershell
+cd backend
+python -m app.workers.approval_processor --once
+```
+
 浏览器访问 `http://localhost:5173`。后端接口：
 
 - `GET http://localhost:8000/api/health`：仅检查 API 进程；
@@ -301,9 +325,9 @@ npm audit --omit=dev --registry=https://registry.npmjs.org
 ## 目录
 
 ```text
-backend/      FastAPI、业务 Service、Agent 工具、ORM、迁移、种子脚本和测试
+backend/      FastAPI、业务 Service、Agent 工具、审批 Worker、ORM、迁移、种子脚本和测试
 frontend/     Vue 3 最简页面
 compose.yaml 本地 MySQL
 ```
 
-V1 最小闭环以及 V2 阶段一至阶段五已经完成；审批后恢复通知和买家最终确认仍属于后续 V2 阶段。
+V1 最小闭环以及 V2 阶段一至阶段六已经完成；买家最终确认和双端整合仍属于后续 V2 阶段。

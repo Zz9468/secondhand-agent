@@ -88,9 +88,12 @@ export function getNegotiation(sessionId: number): Promise<NegotiationDetail> {
   return requestJson<NegotiationDetail>(`/api/negotiations/${sessionId}`)
 }
 
-export async function getMessages(sessionId: number): Promise<ChatMessage[]> {
+export async function getMessages(
+  sessionId: number,
+  afterId = 0,
+): Promise<ChatMessage[]> {
   const result = await requestJson<MessageListResponse>(
-    `/api/negotiations/${sessionId}/messages`,
+    `/api/negotiations/${sessionId}/messages?after_id=${afterId}`,
   )
   return result.messages
 }

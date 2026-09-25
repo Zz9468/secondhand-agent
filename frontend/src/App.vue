@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { getHealth, getReadiness } from './api/health'
 import { ensureVisitorIdentity } from './api/auth'
@@ -37,6 +37,10 @@ const serviceReady = ref(false)
 const modelReady = ref(false)
 const lastOutcome = ref('')
 const messageList = ref<HTMLElement | null>(null)
+const polling = ref(false)
+
+const MESSAGE_POLL_INTERVAL_MS = 2000
+let messagePollTimer: number | undefined
 
 const currentOffer = computed(() => {
   const state = negotiation.value?.negotiation
@@ -137,6 +141,41 @@ async function submitMessage(): Promise<void> {
   }
 }
 
+async function pollNegotiationUpdates(): Promise<void> {
+  const activeSessionId = sessionId.value
+  if (
+    activeView.value !== 'buyer'
+    || activeSessionId === null
+    || loading.value
+    || sending.value
+    || polling.value
+  ) return
+
+  polling.value = true
+  try {
+    const afterId = messages.value.reduce(
+      (latest, message) => Math.max(latest, message.id),
+      0,
+    )
+    const [updates, detail] = await Promise.all([
+      getMessages(activeSessionId, afterId),
+      getNegotiation(activeSessionId),
+    ])
+    // 切换商品期间返回的旧请求不能覆盖新会话页面。
+    if (sessionId.value !== activeSessionId) return
+    negotiation.value = detail
+    if (updates.length > 0) {
+      const knownIds = new Set(messages.value.map((message) => message.id))
+      messages.value.push(...updates.filter((message) => !knownIds.has(message.id)))
+      await scrollToLatest()
+    }
+  } catch {
+    // 轮询瞬时失败不覆盖正在编辑的内容，下一轮会从最后一条消息继续补取。
+  } finally {
+    polling.value = false
+  }
+}
+
 function buildOfferPayload(): BuyerOfferPayload | undefined {
   if (!submittingOffer.value) return undefined
   return {
@@ -177,7 +216,23 @@ async function scrollToLatest(): Promise<void> {
   messageList.value?.scrollTo({ top: messageList.value.scrollHeight, behavior: 'smooth' })
 }
 
-onMounted(loadPage)
+onMounted(() => {
+  void loadPage()
+  messagePollTimer = window.setInterval(
+    () => void pollNegotiationUpdates(),
+    MESSAGE_POLL_INTERVAL_MS,
+  )
+})
+
+onUnmounted(() => {
+  if (messagePollTimer !== undefined) {
+    window.clearInterval(messagePollTimer)
+  }
+})
+
+watch(activeView, (view) => {
+  if (view === 'buyer') void pollNegotiationUpdates()
+})
 
 watch(deliveryMethod, (value) => {
   if (value === 'pickup') {
