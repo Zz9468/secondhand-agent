@@ -164,7 +164,10 @@ def test_accept_reply_ignores_false_approval_claim_and_matches_database(
         ),
     )
 
-    result = agent.handle_turn("那就 2900 元吧。")
+    result = agent.handle_turn(
+        "那就 2900 元吧。",
+        current_turn_offer_id=buyer_offer.id,
+    )
 
     assert result.outcome is AgentTurnOutcome.OFFER_ACCEPTED
     assert result.formal_offer_id == buyer_offer.id
@@ -204,7 +207,10 @@ def test_approval_zone_only_returns_safe_hint_without_fake_approval(
         ),
     )
 
-    result = agent.handle_turn("2800 元我马上确定。")
+    result = agent.handle_turn(
+        "2800 元我马上确定。",
+        current_turn_offer_id=buyer_offer.id,
+    )
 
     assert result.outcome is AgentTurnOutcome.NEEDS_SELLER_CONFIRMATION
     assert result.formal_offer_id is None
@@ -252,3 +258,68 @@ def test_inquiry_cannot_leak_private_price_and_model_error_is_safe(
     assert failure_result.decision is None
     assert failure_result.formal_offer_id is None
     assert offer_count(service_session_factory, session_id=session_id) == 0
+
+
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "两千六百元可以卖。",
+        "2600 RMB can sell.",
+        "今天能寄出。",
+    ],
+)
+def test_inquiry_never_sends_model_generated_candidate_text(
+    service_session_factory: sessionmaker[Session],
+    candidate: str,
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    agent = build_test_agent(
+        service_session_factory,
+        session_id=session_id,
+        buyer_id=buyer_id,
+        decision=NegotiationDecision(
+            action=NegotiationAction.INQUIRY,
+            reason="验证自由文本隔离",
+            reply=candidate,
+        ),
+    )
+
+    result = agent.handle_turn("请介绍商品。")
+
+    assert result.outcome is AgentTurnOutcome.INFORMATIONAL
+    assert candidate not in result.reply
+    assert "3000.00 元" in result.reply
+    assert result.formal_offer_id is None
+
+
+def test_agent_cannot_accept_offer_not_submitted_in_current_turn(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    service = NegotiationService(service_session_factory)
+    buyer_offer = service.record_buyer_offer(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        terms=OfferTerms(
+            buyer_payment=Decimal("2900.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+    agent = build_test_agent(
+        service_session_factory,
+        session_id=session_id,
+        buyer_id=buyer_id,
+        decision=NegotiationDecision(
+            action=NegotiationAction.ACCEPT,
+            offer_id=buyer_offer.id,
+            reason="错误引用旧报价",
+            reply="接受旧报价。",
+        ),
+    )
+
+    result = agent.handle_turn("我只是问一下商品还在吗？")
+
+    assert result.outcome is AgentTurnOutcome.SAFE_FAILURE
+    with service_session_factory() as db:
+        offer = db.get(Offer, buyer_offer.id)
+        assert offer is not None and offer.status is OfferStatus.PROPOSED

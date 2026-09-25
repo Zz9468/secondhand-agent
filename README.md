@@ -1,6 +1,6 @@
 # SecondHand Agent
 
-面向个人闲置交易的自主协商卖家助手。当前正在实施 V1：一个演示卖家、一个商品和一个买家会话，先验证自主协商与硬约束。
+面向个人闲置交易的自主协商卖家助手。V1 已形成一个演示卖家、一个商品和一个买家会话的最小聊天闭环，用于验证自主协商与硬约束。
 
 ## 当前阶段
 
@@ -43,12 +43,26 @@ V1 阶段五已完成 Agent 与正式回复安全层：
 - 使用 Pydantic 定义结构化协商决策，并通过 LangChain `create_agent` 与 `ToolStrategy` 约束模型输出；
 - 提供千问 OpenAI 兼容接口适配层，模型地址、名称、超时和重试次数均通过环境变量配置；
 - Seller Agent 先读取可信商品与会话状态，再执行结构化决策，模型不能直接调用写库工具；
-- 普通咨询候选文案经过承诺词、私有价格和新价格过滤；
+- 普通咨询只从数据库公开商品字段生成确定性回复，不发送模型自由文本；
 - 正式还价与接受回复忽略模型候选文案，只从已校验并持久化的报价快照生成；
 - 非法价格、未知附加条件、虚假审批、格式错误和越权承诺均降级为非正式安全回复；
 - 集成测试使用可控的模拟决策提供者，不消耗真实模型额度，也可稳定复现安全边界。
 
-真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。阶段五已完成模型适配和 Agent 编排；聊天 API 与前端调用将在阶段六接通。
+V1 阶段六已完成最小聊天闭环与验收场景：
+
+- 提供查询协商状态、发送消息和读取消息记录的 FastAPI 接口；
+- 买家身份由请求头绑定并校验，不能跨买家读取或操作会话；
+- 聊天文字与正式报价字段分离，金额和运费由后端以 `Decimal` 校验；
+- 同一会话通过行锁串行处理；买家消息、结构化报价、Agent 工具动作和最终回复在同一外层事务中提交或回滚；
+- 幂等指纹覆盖聊天文字和完整结构化报价，重放时返回原始结果和正式报价编号；
+- 所有正式还价入口都会校验最大议价轮次，最后一轮只能回应本轮买家正式报价；
+- Seller Agent 每轮读取数据库中的商品、报价历史和最近聊天上下文；
+- Vue 页面可展示商品、协商进度、当前报价和历史消息，并提交普通咨询或正式报价；
+- 自动化测试覆盖商品咨询、多轮低价、包邮净收入、审批区提示、Prompt Injection、身份隔离、完整幂等、事务回滚和最大轮次；
+- 种子脚本支持显式重置演示会话，便于从干净状态重复演示。
+- MySQL 开发端口只绑定 `127.0.0.1`，不会监听局域网网卡。
+
+真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
 ## 开发约定
 
@@ -69,6 +83,8 @@ V1 阶段五已完成 Agent 与正式回复安全层：
 
 ```powershell
 Copy-Item .env.example .env
+# 打开 .env，将两个 CHANGE_ME 数据库口令替换为不同的随机值，
+# 并把 MYSQL_PASSWORD 的值同步写入 DATABASE_URL。
 docker compose up -d mysql
 docker compose ps
 ```
@@ -78,10 +94,19 @@ docker compose ps
 ```powershell
 conda activate secondhand-agent
 Set-Location backend
-python -m pip install -e ".[dev]"
+python -m pip install -r requirements.lock
+python -m pip install -e . --no-deps
 python -m alembic upgrade head
 python scripts/seed_data.py
 ```
+
+如需清空固定演示会话 `1001` 的消息和报价并重新演示，请显式执行：
+
+```powershell
+python scripts/seed_data.py --reset-session
+```
+
+该选项只重置固定演示会话；不带参数执行时仍是非破坏性的幂等初始化。
 
 启动后端：
 
@@ -101,8 +126,22 @@ npm run dev
 浏览器访问 `http://localhost:5173`。后端接口：
 
 - `GET http://localhost:8000/api/health`：仅检查 API 进程；
-- `GET http://localhost:8000/api/ready`：检查 API 与 MySQL 连接；
+- `GET http://localhost:8000/api/ready`：检查 MySQL 连接和模型配置状态；
+- `GET http://localhost:8000/api/negotiations/1001`：读取演示协商状态；
+- `GET http://localhost:8000/api/negotiations/1001/messages`：读取聊天记录；
+- `POST http://localhost:8000/api/negotiations/1001/messages`：发送消息并触发 Seller Agent；
 - `GET http://localhost:8000/docs`：OpenAPI 文档。
+
+协商接口要求请求头 `X-Buyer-ID: demo-buyer`。前端已经为演示会话绑定该身份；它只是 V1 的临时访客标识，不等同于正式登录认证。
+
+`/api/ready` 还会返回模型配置状态。未配置模型时页面仍可查看演示数据，但会显示“模型未配置”并禁止发送消息。
+
+配置真实千问地址和密钥后，可显式执行一次结构化输出冒烟测试；该命令会真实调用模型并可能产生少量费用：
+
+```powershell
+Set-Location backend
+python scripts/smoke_model.py
+```
 
 ## 验证
 
@@ -110,6 +149,7 @@ npm run dev
 Set-Location backend
 pytest
 ruff check app tests scripts migrations
+python -m pip_audit -r requirements.lock
 
 # MySQL 运行且已迁移时，额外执行集成测试
 $env:RUN_MYSQL_INTEGRATION = "1"
@@ -119,7 +159,10 @@ Remove-Item Env:RUN_MYSQL_INTEGRATION
 Set-Location ..\frontend
 npm run type-check
 npm run build
+npm audit --omit=dev --registry=https://registry.npmjs.org
 ```
+
+`backend/requirements.lock` 固定了通过当前 V1 验证的 Python 依赖版本。修改 `pyproject.toml` 后需要重新解析依赖、更新锁文件并重新执行漏洞审计。
 
 ## 目录
 
@@ -129,4 +172,4 @@ frontend/     Vue 3 最简页面
 compose.yaml 本地 MySQL
 ```
 
-聊天 API、消息持久化和最简 UI 协商闭环将在 V1 阶段六加入。
+V1 最小闭环已经完成；完整卖家审批、买家最终确认意向和正式身份认证属于 V2 范围。

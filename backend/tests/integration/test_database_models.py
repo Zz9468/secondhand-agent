@@ -108,3 +108,47 @@ def test_seed_data_is_idempotent(db_session: Session) -> None:
     assert first.session_id == DEMO_SESSION_ID
     assert db_session.get(Product, DEMO_PRODUCT_ID) is not None
     assert db_session.get(NegotiationSession, DEMO_SESSION_ID) is not None
+
+
+def test_seed_data_can_explicitly_reset_only_the_demo_session(
+    db_session: Session,
+) -> None:
+    seed_demo_data(db_session, reset_session=True)
+    negotiation = db_session.get(NegotiationSession, DEMO_SESSION_ID)
+    assert negotiation is not None
+    offer = Offer(
+        session_id=negotiation.id,
+        proposer=OfferProposer.BUYER,
+        price=Decimal("2800.00"),
+        shipping_paid_by=ShippingPayer.BUYER,
+        seller_borne_discount=Decimal("0.00"),
+        terms={},
+        status=OfferStatus.PROPOSED,
+    )
+    message = Message(
+        session_id=negotiation.id,
+        role=MessageRole.BUYER,
+        content="用于验证显式重置。",
+        request_id=f"reset-{uuid4().hex}",
+    )
+    db_session.add_all([offer, message])
+    db_session.flush()
+    negotiation.current_offer = offer
+    negotiation.round_count = 1
+    negotiation.status = NegotiationStatus.AGREED
+    previous_version = negotiation.version
+    db_session.flush()
+
+    seed_demo_data(db_session, reset_session=True)
+    db_session.flush()
+
+    assert negotiation.current_offer_id is None
+    assert negotiation.round_count == 0
+    assert negotiation.status is NegotiationStatus.ACTIVE
+    assert negotiation.version == previous_version + 1
+    assert list(
+        db_session.scalars(select(Message).where(Message.session_id == negotiation.id))
+    ) == []
+    assert list(
+        db_session.scalars(select(Offer).where(Offer.session_id == negotiation.id))
+    ) == []

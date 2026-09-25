@@ -150,42 +150,65 @@ class NegotiationService:
     ) -> OfferSnapshot:
         """记录买家报价；低价可以买家提出，但不会因此获得接受授权。"""
 
-        stored_terms = self._validated_additional_terms(additional_terms)
-        self._validate_expiration(expires_at)
         with self._session_factory() as db, db.begin():
-            negotiation = self._get_negotiation(
-                db,
+            return self.record_buyer_offer_in_transaction(
+                db=db,
                 session_id=session_id,
                 buyer_id=buyer_id,
-                for_update=True,
-            )
-            self._require_negotiable(db, negotiation, for_update=True)
-            policy = self._get_policy(db, negotiation.product_id, for_update=True)
-            # 买家可以提出任意价格，但成本必须已知且能够安全计算。
-            self._authorize(
                 terms=terms,
-                policy=policy,
-                additional_terms=stored_terms,
-            )
-            self._supersede_current_offer(
-                db,
-                negotiation=negotiation,
-                incoming_proposer=OfferProposer.BUYER,
-            )
-            offer = self._new_offer(
-                negotiation=negotiation,
-                proposer=OfferProposer.BUYER,
-                terms=terms,
-                additional_terms=stored_terms,
+                additional_terms=additional_terms,
                 expires_at=expires_at,
             )
-            db.add(offer)
-            negotiation.current_offer = offer
-            negotiation.round_count += 1
-            negotiation.version += 1
-            db.flush()
-            db.refresh(offer)
-            return self._snapshot(offer)
+
+    def record_buyer_offer_in_transaction(
+        self,
+        *,
+        db: Session,
+        session_id: int,
+        buyer_id: str,
+        terms: OfferTerms,
+        additional_terms: Mapping[str, object] | None = None,
+        expires_at: datetime | None = None,
+    ) -> OfferSnapshot:
+        """在调用方事务内记录买家报价，用于与买家消息原子写入。"""
+
+        stored_terms = self._validated_additional_terms(additional_terms)
+        self._validate_expiration(expires_at)
+        negotiation = self._get_negotiation(
+            db,
+            session_id=session_id,
+            buyer_id=buyer_id,
+            for_update=True,
+        )
+        self._require_negotiable(db, negotiation, for_update=True)
+        policy = self._get_policy(db, negotiation.product_id, for_update=True)
+        if negotiation.round_count >= policy.max_rounds:
+            raise InvalidNegotiationStateError("当前会话已达到最大议价轮次")
+        # 买家可以提出任意价格，但成本必须已知且能够安全计算。
+        self._authorize(
+            terms=terms,
+            policy=policy,
+            additional_terms=stored_terms,
+        )
+        self._supersede_current_offer(
+            db,
+            negotiation=negotiation,
+            incoming_proposer=OfferProposer.BUYER,
+        )
+        offer = self._new_offer(
+            negotiation=negotiation,
+            proposer=OfferProposer.BUYER,
+            terms=terms,
+            additional_terms=stored_terms,
+            expires_at=expires_at,
+        )
+        db.add(offer)
+        negotiation.current_offer = offer
+        negotiation.round_count += 1
+        negotiation.version += 1
+        db.flush()
+        db.refresh(offer)
+        return self._snapshot(offer)
 
     def submit_counter_offer(
         self,
@@ -195,6 +218,7 @@ class NegotiationService:
         terms: OfferTerms,
         additional_terms: Mapping[str, object] | None = None,
         expires_at: datetime | None = None,
+        responding_to_offer_id: int | None = None,
     ) -> OfferSnapshot:
         """仅持久化位于数据库最新自动授权区的 Agent 正式还价。"""
 
@@ -209,6 +233,14 @@ class NegotiationService:
             )
             self._require_negotiable(db, negotiation, for_update=True)
             policy = self._get_policy(db, negotiation.product_id, for_update=True)
+            current_offer = self._get_current_offer(db, negotiation)
+            if negotiation.round_count >= policy.max_rounds and (
+                responding_to_offer_id is None
+                or current_offer is None
+                or current_offer.id != responding_to_offer_id
+                or current_offer.proposer is not OfferProposer.BUYER
+            ):
+                raise InvalidNegotiationStateError("当前会话已达到最大议价轮次")
             authorization = self._authorize(
                 terms=terms,
                 policy=policy,
@@ -219,7 +251,6 @@ class NegotiationService:
                     "该还价不在 Agent 自动授权区，不能写入正式报价"
                 )
 
-            current_offer = self._get_current_offer(db, negotiation)
             if current_offer is not None and current_offer.status is OfferStatus.ACCEPTED:
                 raise OfferConflictError("当前买家报价已被接受，不能再主动还价")
 

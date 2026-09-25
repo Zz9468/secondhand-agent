@@ -5,9 +5,12 @@ from enum import StrEnum
 from langchain_core.tools import BaseTool
 
 from app.agent.decision import NegotiationAction, NegotiationDecision
-from app.agent.decision_provider import DecisionProvider, DecisionRequest
+from app.agent.decision_provider import (
+    ConversationMessage,
+    DecisionProvider,
+    DecisionRequest,
+)
 from app.agent.reply_policy import (
-    CandidateReplyGuard,
     FormalReplyRenderer,
     ReplySafetyError,
 )
@@ -46,7 +49,6 @@ class SellerAgent:
         *,
         decision_provider: DecisionProvider,
         tools: list[BaseTool],
-        reply_guard: CandidateReplyGuard | None = None,
         reply_renderer: FormalReplyRenderer | None = None,
     ) -> None:
         self._decision_provider = decision_provider
@@ -60,10 +62,15 @@ class SellerAgent:
         }
         if len(tools) != len(required_tools) or set(self._tools) != required_tools:
             raise ValueError("SellerAgent requires exactly the five V1 negotiation tools")
-        self._reply_guard = reply_guard or CandidateReplyGuard()
         self._reply_renderer = reply_renderer or FormalReplyRenderer()
 
-    def handle_turn(self, buyer_message: str) -> AgentTurnResult:
+    def handle_turn(
+        self,
+        buyer_message: str,
+        *,
+        conversation_history: tuple[ConversationMessage, ...] = (),
+        current_turn_offer_id: int | None = None,
+    ) -> AgentTurnResult:
         normalized_message = buyer_message.strip()
         if not normalized_message or len(normalized_message) > 4000:
             return AgentTurnResult(
@@ -87,6 +94,8 @@ class SellerAgent:
                     buyer_message=normalized_message,
                     product_context=product_result,
                     negotiation_context=negotiation_result,
+                    conversation_history=conversation_history,
+                    current_turn_offer_id=current_turn_offer_id,
                 )
             )
         except Exception:
@@ -101,6 +110,7 @@ class SellerAgent:
             decision=decision,
             product_result=product_result,
             negotiation_result=negotiation_result,
+            current_turn_offer_id=current_turn_offer_id,
         )
 
     def _execute_decision(
@@ -109,13 +119,18 @@ class SellerAgent:
         decision: NegotiationDecision,
         product_result: dict[str, object],
         negotiation_result: dict[str, object],
+        current_turn_offer_id: int | None,
     ) -> AgentTurnResult:
         if decision.action is NegotiationAction.COUNTER:
             return self._execute_counter(decision)
         if decision.action is NegotiationAction.ACCEPT:
-            return self._execute_accept(decision)
+            return self._execute_accept(decision, current_turn_offer_id)
         if decision.action is NegotiationAction.REQUEST_APPROVAL:
-            return self._execute_approval_hint(decision, negotiation_result)
+            return self._execute_approval_hint(
+                decision,
+                negotiation_result,
+                current_turn_offer_id,
+            )
 
         product = product_result.get("product")
         if not isinstance(product, dict):
@@ -125,10 +140,10 @@ class SellerAgent:
         except (KeyError, ValueError):
             return self._safe_failure(decision)
 
-        fallbacks = {
-            NegotiationAction.INQUIRY: (
-                "我可以根据商品页面中的公开信息回答；涉及价格或交易条件时，"
-                "需要先经过系统确认。"
+        replies = {
+            NegotiationAction.INQUIRY: self._render_product_reply(
+                product=product,
+                listed_price=listed_price,
             ),
             NegotiationAction.REJECT: "这个条件暂时无法接受，你可以调整后再提出。",
             NegotiationAction.CLARIFY: "请补充你希望确认的具体商品或交易条件。",
@@ -138,14 +153,9 @@ class SellerAgent:
             NegotiationAction.REJECT: AgentTurnOutcome.REJECTED,
             NegotiationAction.CLARIFY: AgentTurnOutcome.CLARIFICATION,
         }
-        fallback = fallbacks[decision.action]
-        reply = self._reply_guard.safe_informational_reply(
-            candidate=decision.reply,
-            listed_price=listed_price,
-            fallback=fallback,
-        )
         return AgentTurnResult(
-            reply=reply,
+            # 非正式动作不发送模型自由文本，彻底切断价格和履约承诺绕过路径。
+            reply=replies[decision.action],
             outcome=outcomes[decision.action],
             decision=decision,
         )
@@ -176,7 +186,13 @@ class SellerAgent:
             formal_offer_id=offer_id,
         )
 
-    def _execute_accept(self, decision: NegotiationDecision) -> AgentTurnResult:
+    def _execute_accept(
+        self,
+        decision: NegotiationDecision,
+        current_turn_offer_id: int | None,
+    ) -> AgentTurnResult:
+        if decision.offer_id != current_turn_offer_id:
+            return self._safe_failure(decision)
         tool_result = self._invoke("accept_offer", {"offer_id": decision.offer_id})
         if not self._is_success(tool_result):
             return self._safe_failure(decision)
@@ -196,7 +212,10 @@ class SellerAgent:
         self,
         decision: NegotiationDecision,
         negotiation_result: dict[str, object],
+        current_turn_offer_id: int | None,
     ) -> AgentTurnResult:
+        if decision.offer_id != current_turn_offer_id:
+            return self._safe_failure(decision)
         offer = self._current_offer(negotiation_result, decision.offer_id)
         if offer is None or offer.get("proposer") != "BUYER":
             return self._safe_failure(decision)
@@ -284,3 +303,19 @@ class SellerAgent:
             return Decimal(str(value))
         except InvalidOperation as exc:
             raise ValueError("invalid decimal") from exc
+
+    @staticmethod
+    def _render_product_reply(
+        *,
+        product: dict[str, object],
+        listed_price: Decimal,
+    ) -> str:
+        title = product.get("title")
+        description = product.get("description")
+        if not isinstance(title, str) or not isinstance(description, str):
+            return "我只能根据商品页面中已经确认的信息回答，请说明你想了解的内容。"
+        return (
+            f"{title}：{description}"
+            f"页面公开标价为 {format(listed_price, '.2f')} 元；"
+            "涉及还价、运费或履约条件时，请提交正式报价由系统校验。"
+        )

@@ -5,8 +5,9 @@ export interface HealthResponse {
 }
 
 export interface ReadinessResponse {
-  status: 'ready'
+  status: 'ready' | 'degraded'
   database: 'ok'
+  model: 'configured' | 'not_configured'
 }
 
 async function getJson<T>(path: string): Promise<T> {
@@ -28,4 +29,3 @@ export function getHealth(): Promise<HealthResponse> {
 export function getReadiness(): Promise<ReadinessResponse> {
   return getJson<ReadinessResponse>('/api/ready')
 }
-

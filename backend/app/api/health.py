@@ -23,7 +23,9 @@ def health(settings: Annotated[Settings, Depends(get_settings)]) -> HealthRespon
     response_model=ReadinessResponse,
     responses={status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "Database unavailable"}},
 )
-def readiness() -> ReadinessResponse:
+def readiness(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ReadinessResponse:
     try:
         check_database_connection()
     except Exception as exc:
@@ -32,5 +34,9 @@ def readiness() -> ReadinessResponse:
             detail="database unavailable",
         ) from exc
 
-    return ReadinessResponse(status="ready", database="ok")
-
+    model_status = "configured" if settings.model_is_configured else "not_configured"
+    return ReadinessResponse(
+        status="ready" if settings.model_is_configured else "degraded",
+        database="ok",
+        model=model_status,
+    )

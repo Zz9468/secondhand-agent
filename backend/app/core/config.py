@@ -21,10 +21,7 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
     cors_origins: list[str] = ["http://localhost:5173"]
 
-    database_url: str = (
-        "mysql+pymysql://secondhand:secondhand_dev_password@127.0.0.1:3306/"
-        "secondhand_agent?charset=utf8mb4"
-    )
+    database_url: str
 
     model_provider: str = "qwen"
     model_name: str = "qwen-plus"
@@ -33,6 +30,17 @@ class Settings(BaseSettings):
     model_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
     model_timeout_seconds: float = Field(default=30.0, gt=0.0)
     model_max_retries: int = Field(default=2, ge=0, le=10)
+
+    @property
+    def model_is_configured(self) -> bool:
+        """只报告必要配置是否存在，不访问或回显密钥。"""
+
+        if self.model_api_key is None or not self.model_base_url:
+            return False
+        return bool(
+            self.model_api_key.get_secret_value().strip()
+            and self.model_base_url.strip()
+        )
 
 
 @lru_cache

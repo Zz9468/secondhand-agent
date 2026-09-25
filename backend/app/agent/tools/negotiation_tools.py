@@ -87,6 +87,7 @@ def build_negotiation_tools(
                 buyer_id=context.buyer_id,
                 terms=payload.to_domain(),
                 additional_terms=payload.additional_terms,
+                responding_to_offer_id=context.current_turn_offer_id,
             )
         except (ServiceError, PricingError) as exc:
             return error_result(exc)

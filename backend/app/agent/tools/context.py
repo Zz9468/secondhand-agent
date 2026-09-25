@@ -7,3 +7,4 @@ class AgentToolContext:
 
     session_id: int
     buyer_id: str
+    current_turn_offer_id: int | None = None

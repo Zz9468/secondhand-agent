@@ -18,6 +18,7 @@ def create_negotiation(
     *,
     minimum_net_price: Decimal = Decimal("2700.00"),
     auto_accept_threshold: Decimal = Decimal("2850.00"),
+    max_rounds: int = 6,
 ) -> tuple[int, str]:
     """为集成测试创建相互隔离的商品、规则和会话。"""
 
@@ -34,7 +35,7 @@ def create_negotiation(
             minimum_net_price=minimum_net_price,
             auto_accept_threshold=auto_accept_threshold,
             negotiation_style=NegotiationStyle.BALANCED,
-            max_rounds=6,
+            max_rounds=max_rounds,
             version=1,
         )
         negotiation = NegotiationSession(

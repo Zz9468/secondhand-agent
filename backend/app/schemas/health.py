@@ -10,6 +10,6 @@ class HealthResponse(BaseModel):
 
 
 class ReadinessResponse(BaseModel):
-    status: Literal["ready"]
+    status: Literal["ready", "degraded"]
     database: Literal["ok"]
-
+    model: Literal["configured", "not_configured"]

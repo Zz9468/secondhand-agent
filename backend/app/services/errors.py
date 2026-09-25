@@ -34,3 +34,11 @@ class OfferConflictError(ServiceError):
 
 class OfferNotAuthorizedError(ServiceError):
     code = "OFFER_NOT_AUTHORIZED"
+
+
+class MessageConflictError(ServiceError):
+    code = "MESSAGE_CONFLICT"
+
+
+class IncompleteRequestError(ServiceError):
+    code = "INCOMPLETE_REQUEST"
