@@ -9,11 +9,13 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.models import (
+    ApprovalFollowupStatus,
     ApprovalRequest,
     ApprovalStatus,
     NegotiationSession,
     NegotiationStatus,
     Offer,
+    OfferStatus,
     Product,
     SellerAccount,
     SellerPolicy,
@@ -24,6 +26,7 @@ from app.services.errors import (
     ApprovalConflictError,
     ApprovalNotAuthorizedError,
     ApprovalNotExpiredError,
+    ApprovalNotFoundError,
     NegotiationNotFoundError,
 )
 from app.services.negotiation_service import NegotiationService, OfferSnapshot
@@ -286,6 +289,197 @@ def test_approval_rejects_wrong_zone_offer_state_and_policy_version(
             reason="不可校验条件不能审批",
             expires_at=datetime.now() + timedelta(hours=1),
         )
+
+
+def test_seller_lists_and_approves_owned_pending_request_idempotently(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id, offer = create_buyer_offer(service_session_factory)
+    service = ApprovalService(service_session_factory)
+    created = service.create_request(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        offer_id=offer.id,
+        expected_policy_version=1,
+        reason="等待卖家确认",
+        expires_at=datetime.now() + timedelta(hours=1),
+    )
+    with service_session_factory() as db:
+        negotiation = db.get(NegotiationSession, session_id)
+        assert negotiation is not None
+        product = db.get(Product, negotiation.product_id)
+        assert product is not None
+        seller_id = product.seller_id
+
+    listed = service.list_for_seller(seller_id=seller_id)
+    queried = service.get_for_seller(
+        seller_id=seller_id,
+        approval_id=created.id,
+    )
+    approved = service.approve_request(
+        seller_id=seller_id,
+        approval_id=created.id,
+        request_id="approve-request-001",
+        comment="同意该报价",
+    )
+    repeated = service.approve_request(
+        seller_id=seller_id,
+        approval_id=created.id,
+        request_id="approve-request-001",
+        comment="重复请求不得覆盖原意见",
+    )
+
+    assert [item.id for item in listed] == [created.id]
+    assert queried.offer.price == Decimal("2800.00")
+    assert approved.status is ApprovalStatus.APPROVED
+    assert approved.seller_comment == "同意该报价"
+    assert approved.reviewed_at is not None
+    assert approved.followup_status is ApprovalFollowupStatus.PENDING
+    assert approved.followup_request_id == "approve-request-001"
+    assert repeated == approved
+    with pytest.raises(ApprovalConflictError):
+        service.approve_request(
+            seller_id=seller_id,
+            approval_id=created.id,
+            request_id="approve-request-002",
+        )
+    with pytest.raises(ApprovalNotFoundError):
+        service.get_for_seller(
+            seller_id="another-seller",
+            approval_id=created.id,
+        )
+    with service_session_factory() as db:
+        negotiation = db.get(NegotiationSession, session_id)
+        stored_offer = db.get(Offer, offer.id)
+        assert negotiation is not None
+        assert negotiation.status is NegotiationStatus.WAITING_APPROVAL
+        assert stored_offer is not None
+        assert stored_offer.status is OfferStatus.PROPOSED
+
+
+def test_seller_rejection_restores_session_and_enqueues_followup(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id, offer = create_buyer_offer(service_session_factory)
+    service = ApprovalService(service_session_factory)
+    created = service.create_request(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        offer_id=offer.id,
+        expected_policy_version=1,
+        reason="等待卖家确认",
+        expires_at=datetime.now() + timedelta(hours=1),
+    )
+    with service_session_factory() as db:
+        negotiation = db.get(NegotiationSession, session_id)
+        assert negotiation is not None
+        product = db.get(Product, negotiation.product_id)
+        assert product is not None
+        seller_id = product.seller_id
+
+    rejected = service.reject_request(
+        seller_id=seller_id,
+        approval_id=created.id,
+        request_id="reject-request-001",
+        comment="价格暂不合适",
+    )
+    repeated = service.reject_request(
+        seller_id=seller_id,
+        approval_id=created.id,
+        request_id="reject-request-001",
+    )
+
+    assert rejected.status is ApprovalStatus.REJECTED
+    assert rejected.followup_status is ApprovalFollowupStatus.PENDING
+    assert repeated == rejected
+    with service_session_factory() as db:
+        negotiation = db.get(NegotiationSession, session_id)
+        stored_offer = db.get(Offer, offer.id)
+        assert negotiation is not None
+        assert negotiation.status is NegotiationStatus.ACTIVE
+        assert stored_offer is not None
+        assert stored_offer.status is OfferStatus.REJECTED
+
+
+def test_seller_review_invalidates_stale_policy_before_returning_conflict(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id, offer = create_buyer_offer(service_session_factory)
+    service = ApprovalService(service_session_factory)
+    created = service.create_request(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        offer_id=offer.id,
+        expected_policy_version=1,
+        reason="等待卖家确认",
+        expires_at=datetime.now() + timedelta(hours=1),
+    )
+    with service_session_factory() as db, db.begin():
+        negotiation = db.get(NegotiationSession, session_id)
+        assert negotiation is not None
+        product = db.get(Product, negotiation.product_id)
+        assert product is not None
+        seller_id = product.seller_id
+        policy = db.scalar(
+            select(SellerPolicy).where(
+                SellerPolicy.product_id == negotiation.product_id
+            )
+        )
+        assert policy is not None
+        policy.version += 1
+
+    with pytest.raises(ApprovalConflictError, match="规则版本"):
+        service.approve_request(
+            seller_id=seller_id,
+            approval_id=created.id,
+            request_id="approve-stale-policy-001",
+        )
+
+    with service_session_factory() as db:
+        approval = db.get(ApprovalRequest, created.id)
+        negotiation = db.get(NegotiationSession, session_id)
+        assert approval is not None
+        assert approval.status is ApprovalStatus.EXPIRED
+        assert approval.followup_status is None
+        assert negotiation is not None
+        assert negotiation.status is NegotiationStatus.ACTIVE
+
+
+def test_seller_list_expires_due_request_and_restores_session(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id, offer = create_buyer_offer(service_session_factory)
+    service = ApprovalService(service_session_factory)
+    created = service.create_request(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        offer_id=offer.id,
+        expected_policy_version=1,
+        reason="即将过期的审批",
+        expires_at=datetime.now() + timedelta(hours=1),
+    )
+    with service_session_factory() as db, db.begin():
+        approval = db.get(ApprovalRequest, created.id)
+        negotiation = db.get(NegotiationSession, session_id)
+        assert approval is not None
+        assert negotiation is not None
+        product = db.get(Product, negotiation.product_id)
+        assert product is not None
+        seller_id = product.seller_id
+        approval.expires_at = datetime.now() - timedelta(seconds=1)
+
+    pending = service.list_for_seller(
+        seller_id=seller_id,
+        approval_status=ApprovalStatus.PENDING,
+    )
+    detail = service.get_for_seller(
+        seller_id=seller_id,
+        approval_id=created.id,
+    )
+
+    assert pending == ()
+    assert detail.status is ApprovalStatus.EXPIRED
+    assert detail.session_status is NegotiationStatus.ACTIVE
 
 
 def test_concurrent_requests_create_only_one_pending_approval(

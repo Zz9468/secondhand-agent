@@ -1,8 +1,16 @@
 from datetime import datetime
+from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator
 
-from app.db.models import ApprovalFollowupStatus, ApprovalStatus
+from app.db.models import (
+    ApprovalFollowupStatus,
+    ApprovalStatus,
+    NegotiationStatus,
+    OfferProposer,
+    OfferStatus,
+    ShippingPayer,
+)
 
 
 class CreateApprovalRequest(BaseModel):
@@ -41,3 +49,51 @@ class ApprovalResponse(BaseModel):
 
 class ApprovalListResponse(BaseModel):
     approvals: list[ApprovalResponse]
+
+
+class SellerApprovalDecisionRequest(BaseModel):
+    """卖家审批操作使用独立幂等键，意见仅作为审批事实保存。"""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    request_id: str = Field(
+        min_length=1,
+        max_length=64,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+    )
+    comment: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("comment")
+    @classmethod
+    def normalize_comment(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        return normalized or None
+
+
+class SellerApprovalOfferResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    proposer: OfferProposer
+    price: Decimal
+    shipping_paid_by: ShippingPayer
+    shipping_cost: Decimal | None
+    seller_borne_discount: Decimal
+    additional_terms: dict[str, JsonValue]
+    status: OfferStatus
+    expires_at: datetime | None
+    created_at: datetime
+
+
+class SellerApprovalResponse(ApprovalResponse):
+    product_id: int
+    product_title: str
+    session_status: NegotiationStatus
+    current_offer_id: int | None
+    offer: SellerApprovalOfferResponse
+
+
+class SellerApprovalListResponse(BaseModel):
+    approvals: list[SellerApprovalResponse]

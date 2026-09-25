@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -28,8 +29,10 @@ from app.services.errors import (
     PricingPolicyNotFoundError,
     ProductUnavailableError,
 )
-from app.services.negotiation_service import NegotiationService
+from app.services.negotiation_service import NegotiationService, OfferSnapshot
 from app.services.pricing_service import PricingService
+
+_REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +50,30 @@ class ApprovalSnapshot:
     followup_request_id: str | None
     created_at: datetime
     updated_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class SellerApprovalSnapshot:
+    """卖家审批页面使用的审批、商品、会话和报价联合快照。"""
+
+    id: int
+    session_id: int
+    product_id: int
+    product_title: str
+    offer_id: int
+    policy_version: int
+    status: ApprovalStatus
+    reason: str
+    seller_comment: str | None
+    expires_at: datetime
+    reviewed_at: datetime | None
+    followup_status: ApprovalFollowupStatus | None
+    followup_request_id: str | None
+    created_at: datetime
+    updated_at: datetime
+    session_status: NegotiationStatus
+    current_offer_id: int | None
+    offer: OfferSnapshot
 
 
 class ApprovalService:
@@ -193,6 +220,111 @@ class ApprovalService:
             )
             return tuple(self._snapshot(approval) for approval in approvals)
 
+    def list_for_seller(
+        self,
+        *,
+        seller_id: str,
+        approval_status: ApprovalStatus | None = None,
+        limit: int = 200,
+    ) -> tuple[SellerApprovalSnapshot, ...]:
+        """列出当前卖家拥有商品的审批，并顺带清理已经到期的待审批项。"""
+
+        if not 1 <= limit <= 500:
+            raise ValueError("审批列表数量必须在 1 到 500 之间")
+        with self._session_factory() as db, db.begin():
+            self._expire_due_owned(db, seller_id=seller_id)
+            statement = (
+                select(ApprovalRequest, NegotiationSession, Product, Offer)
+                .join(
+                    NegotiationSession,
+                    NegotiationSession.id == ApprovalRequest.session_id,
+                )
+                .join(Product, Product.id == NegotiationSession.product_id)
+                .join(Offer, Offer.id == ApprovalRequest.offer_id)
+                .where(Product.seller_id == seller_id)
+                .order_by(ApprovalRequest.id.desc())
+                .limit(limit)
+            )
+            if approval_status is not None:
+                statement = statement.where(
+                    ApprovalRequest.status == approval_status
+                )
+            rows = db.execute(statement)
+            return tuple(
+                self._seller_snapshot(
+                    approval=approval,
+                    negotiation=negotiation,
+                    product=product,
+                    offer=offer,
+                )
+                for approval, negotiation, product, offer in rows
+            )
+
+    def get_for_seller(
+        self,
+        *,
+        seller_id: str,
+        approval_id: int,
+    ) -> SellerApprovalSnapshot:
+        """读取卖家拥有商品的单条审批；其他卖家的记录按不存在处理。"""
+
+        with self._session_factory() as db, db.begin():
+            negotiation, approval, product, offer = self._get_owned_context(
+                db,
+                seller_id=seller_id,
+                approval_id=approval_id,
+                for_update=True,
+            )
+            if (
+                approval.status is ApprovalStatus.PENDING
+                and self._is_due(approval.expires_at)
+            ):
+                self._expire(db, negotiation=negotiation, approval=approval)
+                db.flush()
+                db.refresh(approval)
+            return self._seller_snapshot(
+                approval=approval,
+                negotiation=negotiation,
+                product=product,
+                offer=offer,
+            )
+
+    def approve_request(
+        self,
+        *,
+        seller_id: str,
+        approval_id: int,
+        request_id: str,
+        comment: str | None = None,
+    ) -> SellerApprovalSnapshot:
+        """批准当前有效报价并创建待发送的后续通知任务。"""
+
+        return self._review_request(
+            seller_id=seller_id,
+            approval_id=approval_id,
+            request_id=request_id,
+            comment=comment,
+            target_status=ApprovalStatus.APPROVED,
+        )
+
+    def reject_request(
+        self,
+        *,
+        seller_id: str,
+        approval_id: int,
+        request_id: str,
+        comment: str | None = None,
+    ) -> SellerApprovalSnapshot:
+        """拒绝当前有效报价并恢复会话的可协商状态。"""
+
+        return self._review_request(
+            seller_id=seller_id,
+            approval_id=approval_id,
+            request_id=request_id,
+            comment=comment,
+            target_status=ApprovalStatus.REJECTED,
+        )
+
     def cancel_request(
         self,
         *,
@@ -333,6 +465,204 @@ class ApprovalService:
                 continue
         return tuple(expired)
 
+    def _review_request(
+        self,
+        *,
+        seller_id: str,
+        approval_id: int,
+        request_id: str,
+        comment: str | None,
+        target_status: ApprovalStatus,
+    ) -> SellerApprovalSnapshot:
+        stored_request_id = self._validated_request_id(request_id)
+        stored_comment = self._validated_comment(comment)
+        conflict_message: str | None = None
+        result: SellerApprovalSnapshot | None = None
+
+        with self._session_factory() as db, db.begin():
+            negotiation, approval, product, offer = self._get_owned_context(
+                db,
+                seller_id=seller_id,
+                approval_id=approval_id,
+                for_update=True,
+            )
+            if (
+                approval.status is target_status
+                and approval.followup_request_id == stored_request_id
+            ):
+                return self._seller_snapshot(
+                    approval=approval,
+                    negotiation=negotiation,
+                    product=product,
+                    offer=offer,
+                )
+            if approval.status is not ApprovalStatus.PENDING:
+                raise ApprovalConflictError("审批请求已经处理，不能重复变更结果")
+
+            policy = db.scalar(
+                select(SellerPolicy)
+                .where(SellerPolicy.product_id == product.id)
+                .with_for_update()
+            )
+            conflict_message = self._review_conflict(
+                negotiation=negotiation,
+                approval=approval,
+                product=product,
+                offer=offer,
+                policy=policy,
+            )
+            if conflict_message is not None:
+                # 已经过期或不再匹配真实业务状态的审批直接失效，避免继续占用会话。
+                approval.status = ApprovalStatus.EXPIRED
+                self._restore_active(negotiation)
+                db.flush()
+            else:
+                approval.status = target_status
+                approval.seller_comment = stored_comment
+                approval.reviewed_at = datetime.now()
+                approval.followup_status = ApprovalFollowupStatus.PENDING
+                approval.followup_request_id = stored_request_id
+                if target_status is ApprovalStatus.REJECTED:
+                    offer.status = OfferStatus.REJECTED
+                    self._restore_active(negotiation)
+                else:
+                    # 批准只记录卖家授权，等待阶段六通知买家，不直接形成成交。
+                    negotiation.version += 1
+                try:
+                    db.flush()
+                except IntegrityError as exc:
+                    raise ApprovalConflictError("审批幂等键已经被其他请求使用") from exc
+            db.refresh(approval)
+            result = self._seller_snapshot(
+                approval=approval,
+                negotiation=negotiation,
+                product=product,
+                offer=offer,
+            )
+
+        if conflict_message is not None:
+            raise ApprovalConflictError(conflict_message)
+        if result is None:  # pragma: no cover - 防御不可达分支
+            raise ApprovalConflictError("审批结果未能保存")
+        return result
+
+    def _expire_due_owned(self, db: Session, *, seller_id: str) -> None:
+        now = datetime.now()
+        due_items = tuple(
+            db.execute(
+                select(ApprovalRequest.id, ApprovalRequest.session_id)
+                .join(
+                    NegotiationSession,
+                    NegotiationSession.id == ApprovalRequest.session_id,
+                )
+                .join(Product, Product.id == NegotiationSession.product_id)
+                .where(
+                    Product.seller_id == seller_id,
+                    ApprovalRequest.status == ApprovalStatus.PENDING,
+                    ApprovalRequest.expires_at <= now,
+                )
+                .order_by(ApprovalRequest.id)
+            )
+        )
+        for approval_id, session_id in due_items:
+            negotiation = db.get(
+                NegotiationSession,
+                session_id,
+                with_for_update=True,
+            )
+            approval = db.get(ApprovalRequest, approval_id, with_for_update=True)
+            if (
+                negotiation is None
+                or approval is None
+                or approval.status is not ApprovalStatus.PENDING
+                or not self._is_due(approval.expires_at)
+            ):
+                continue
+            self._expire(db, negotiation=negotiation, approval=approval)
+        db.flush()
+
+    def _review_conflict(
+        self,
+        *,
+        negotiation: NegotiationSession,
+        approval: ApprovalRequest,
+        product: Product,
+        offer: Offer,
+        policy: SellerPolicy | None,
+    ) -> str | None:
+        if ApprovalService._is_due(approval.expires_at):
+            return "审批请求已经过期"
+        if negotiation.status is not NegotiationStatus.WAITING_APPROVAL:
+            return "协商会话已不再等待此审批"
+        if product.status is not ProductStatus.AVAILABLE:
+            return "商品当前不可协商，审批已经失效"
+        if negotiation.current_offer_id != offer.id:
+            return "买家已经提交更新的交易条件，审批已经失效"
+        if offer.proposer is not OfferProposer.BUYER:
+            return "审批关联的不是买家报价"
+        if offer.status is not OfferStatus.PROPOSED:
+            return "审批关联的报价已经处理"
+        if offer.expires_at is not None and ApprovalService._is_due(offer.expires_at):
+            return "审批关联的报价已经过期"
+        if policy is None or policy.version != approval.policy_version:
+            return "卖家规则版本已经变化，审批已经失效"
+        # 这里不能信任申请时的区间结果，卖家操作前必须按数据库事实再次计算。
+        current_authorization = self._negotiation_service.authorize_stored_offer(
+            offer=offer,
+            policy=policy,
+        )
+        if not current_authorization.can_request_approval:
+            return "当前报价已不在人工审批区"
+        return None
+
+    @staticmethod
+    def _get_owned_context(
+        db: Session,
+        *,
+        seller_id: str,
+        approval_id: int,
+        for_update: bool,
+    ) -> tuple[NegotiationSession, ApprovalRequest, Product, Offer]:
+        session_id = db.scalar(
+            select(ApprovalRequest.session_id)
+            .join(
+                NegotiationSession,
+                NegotiationSession.id == ApprovalRequest.session_id,
+            )
+            .join(Product, Product.id == NegotiationSession.product_id)
+            .where(
+                ApprovalRequest.id == approval_id,
+                Product.seller_id == seller_id,
+            )
+        )
+        if session_id is None:
+            raise ApprovalNotFoundError("审批请求不存在")
+        negotiation = db.get(
+            NegotiationSession,
+            session_id,
+            with_for_update=for_update,
+        )
+        approval = db.get(
+            ApprovalRequest,
+            approval_id,
+            with_for_update=for_update,
+        )
+        if negotiation is None or approval is None:
+            raise ApprovalNotFoundError("审批请求不存在")
+        product = db.get(
+            Product,
+            negotiation.product_id,
+            with_for_update=for_update,
+        )
+        offer = db.get(
+            Offer,
+            approval.offer_id,
+            with_for_update=for_update,
+        )
+        if product is None or offer is None or offer.session_id != negotiation.id:
+            raise ApprovalNotFoundError("审批关联的业务数据不存在")
+        return negotiation, approval, product, offer
+
     @staticmethod
     def _get_buyer_negotiation(
         db: Session,
@@ -447,6 +777,22 @@ class ApprovalService:
         return stored
 
     @staticmethod
+    def _validated_request_id(request_id: str) -> str:
+        stored = request_id.strip()
+        if not 1 <= len(stored) <= 64 or _REQUEST_ID_PATTERN.fullmatch(stored) is None:
+            raise ApprovalConflictError("审批幂等键格式不正确")
+        return stored
+
+    @staticmethod
+    def _validated_comment(comment: str | None) -> str | None:
+        if comment is None:
+            return None
+        stored = comment.strip()
+        if len(stored) > 2000:
+            raise ApprovalConflictError("卖家意见不能超过 2000 个字符")
+        return stored or None
+
+    @staticmethod
     def _as_database_datetime(value: datetime) -> datetime:
         if value.tzinfo is None:
             return value.replace(microsecond=0)
@@ -473,4 +819,44 @@ class ApprovalService:
             followup_request_id=approval.followup_request_id,
             created_at=approval.created_at,
             updated_at=approval.updated_at,
+        )
+
+    @staticmethod
+    def _seller_snapshot(
+        *,
+        approval: ApprovalRequest,
+        negotiation: NegotiationSession,
+        product: Product,
+        offer: Offer,
+    ) -> SellerApprovalSnapshot:
+        return SellerApprovalSnapshot(
+            id=approval.id,
+            session_id=approval.session_id,
+            product_id=product.id,
+            product_title=product.title,
+            offer_id=approval.offer_id,
+            policy_version=approval.policy_version,
+            status=approval.status,
+            reason=approval.reason,
+            seller_comment=approval.seller_comment,
+            expires_at=approval.expires_at,
+            reviewed_at=approval.reviewed_at,
+            followup_status=approval.followup_status,
+            followup_request_id=approval.followup_request_id,
+            created_at=approval.created_at,
+            updated_at=approval.updated_at,
+            session_status=negotiation.status,
+            current_offer_id=negotiation.current_offer_id,
+            offer=OfferSnapshot(
+                id=offer.id,
+                proposer=offer.proposer,
+                price=offer.price,
+                shipping_paid_by=offer.shipping_paid_by,
+                shipping_cost=offer.shipping_cost,
+                seller_borne_discount=offer.seller_borne_discount,
+                additional_terms=dict(offer.terms),
+                status=offer.status,
+                expires_at=offer.expires_at,
+                created_at=offer.created_at,
+            ),
         )

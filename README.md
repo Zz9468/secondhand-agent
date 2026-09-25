@@ -88,7 +88,7 @@ V2 阶段三已完成审批数据模型与事务状态机：
 - 只有审批区内且交易条件可校验的当前买家报价可以进入 `PENDING`；
 - 使用会话行锁及 MySQL 生成列唯一索引，保证同一会话最多存在一个待审批请求；
 - Approval Service 支持创建、查询、取消和过期处理，取消或过期后恢复会话为可协商状态；
-- 本阶段只建立审批领域能力，Agent 接入由阶段四完成，卖家同意或拒绝接口仍属于阶段五。
+- 本阶段只建立审批领域能力；Agent 接入已由阶段四完成，卖家同意或拒绝接口已由阶段五完成。
 
 V2 阶段四已完成 Agent 创建审批请求：
 
@@ -97,7 +97,16 @@ V2 阶段四已完成 Agent 创建审批请求：
 - 审批成功落库后才回复“已提交卖家确认”，并将会话切换为 `WAITING_APPROVAL`，不会声称已经接受或成交；
 - 等待审批期间仍可安全查询公开商品信息；提交新正式报价时会在同一事务中撤销旧审批，再处理新报价；
 - 模型伪造报价编号、强行审批禁止区报价或重复申请均不能新增有效审批，模型决策失败会回滚整轮聊天事务；
-- 卖家审批 API、卖家处理页面和审批结果通知仍在后续阶段实现。
+- 阶段四只负责创建审批；卖家处理已由阶段五补全，审批结果通知仍属于阶段六。
+
+V2 阶段五已完成卖家审批 API 与页面：
+
+- 登录卖家可以查看自己商品产生的审批列表与详情，其他卖家的审批按不存在处理；
+- 同意和拒绝操作在事务中重新校验审批状态、有效期、商品状态、当前报价、报价条件及策略版本；
+- 审批操作使用独立幂等键，重复提交同一请求只返回既有结果，不会重复变更状态或生成后续任务；
+- 同意或拒绝结果与 `followup_status=PENDING`、`followup_request_id` 同事务保存，为阶段六 Worker 留出可靠任务；
+- 拒绝或失效会恢复会话为可协商状态；审批同意只代表卖家授权当前报价，不会直接写入 `AGREED`；
+- 卖家管理页面新增报价审批列表、报价详情、卖家意见以及同意和拒绝操作。
 
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
@@ -247,6 +256,10 @@ npm run dev
 - `GET http://localhost:8000/api/seller/products`：登录卖家读取自己的商品和策略；
 - `PUT http://localhost:8000/api/seller/products/{product_id}`：编辑自己的商品或上下架；
 - `PUT http://localhost:8000/api/seller/products/{product_id}/policy`：按版本更新自己的私有策略；
+- `GET http://localhost:8000/api/seller/approvals`：登录卖家读取自己的审批列表，可用 `status` 过滤；
+- `GET http://localhost:8000/api/seller/approvals/{approval_id}`：读取审批、商品及报价详情；
+- `POST http://localhost:8000/api/seller/approvals/{approval_id}/approve`：幂等同意当前有效报价；
+- `POST http://localhost:8000/api/seller/approvals/{approval_id}/reject`：幂等拒绝当前有效报价；
 - `POST http://localhost:8000/api/negotiations`：为当前访客创建或复用商品协商会话；
 - `GET http://localhost:8000/api/negotiations/{session_id}`：读取当前访客的协商状态；
 - `GET http://localhost:8000/api/negotiations/{session_id}/messages`：读取聊天记录；
@@ -293,4 +306,4 @@ frontend/     Vue 3 最简页面
 compose.yaml 本地 MySQL
 ```
 
-V1 最小闭环以及 V2 阶段一至阶段四已经完成；卖家处理审批、审批后恢复通知和买家最终确认仍属于后续 V2 阶段。
+V1 最小闭环以及 V2 阶段一至阶段五已经完成；审批后恢复通知和买家最终确认仍属于后续 V2 阶段。

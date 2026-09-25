@@ -6,6 +6,7 @@ from app.api.health import router as health_router
 from app.api.negotiations import router as negotiations_router
 from app.api.products import public_router as products_router
 from app.api.products import seller_router as seller_products_router
+from app.api.seller_approvals import router as seller_approvals_router
 from app.core.config import get_settings
 
 
@@ -27,6 +28,7 @@ def create_app() -> FastAPI:
     application.include_router(auth_router, prefix=settings.api_prefix)
     application.include_router(products_router, prefix=settings.api_prefix)
     application.include_router(seller_products_router, prefix=settings.api_prefix)
+    application.include_router(seller_approvals_router, prefix=settings.api_prefix)
     application.include_router(negotiations_router, prefix=settings.api_prefix)
     return application
 
