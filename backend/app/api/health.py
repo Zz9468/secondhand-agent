@@ -35,8 +35,14 @@ def readiness(
         ) from exc
 
     model_status = "configured" if settings.model_is_configured else "not_configured"
+    auth_status = "configured" if settings.auth_is_configured else "not_configured"
     return ReadinessResponse(
-        status="ready" if settings.model_is_configured else "degraded",
+        status=(
+            "ready"
+            if settings.model_is_configured and settings.auth_is_configured
+            else "degraded"
+        ),
         database="ok",
         model=model_status,
+        authentication=auth_status,
     )

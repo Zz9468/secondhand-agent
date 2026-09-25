@@ -2,8 +2,11 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import { getHealth, getReadiness } from './api/health'
+import { ensureVisitorIdentity } from './api/auth'
+import { listPublicProducts, type PublicProduct } from './api/products'
 import {
   ApiError,
+  createNegotiation,
   getMessages,
   getNegotiation,
   sendMessage,
@@ -12,9 +15,12 @@ import {
   type NegotiationDetail,
   type ShippingPayer,
 } from './api/negotiations'
+import SellerManagement from './components/SellerManagement.vue'
 
-const sessionId = 1001
-const buyerId = 'demo-buyer'
+const activeView = ref<'buyer' | 'seller'>('buyer')
+const products = ref<PublicProduct[]>([])
+const selectedProductId = ref<number | null>(null)
+const sessionId = ref<number | null>(null)
 
 const negotiation = ref<NegotiationDetail | null>(null)
 const messages = ref<ChatMessage[]>([])
@@ -54,13 +60,21 @@ async function loadPage(): Promise<void> {
     const readiness = await getReadiness()
     serviceReady.value = true
     modelReady.value = readiness.model === 'configured'
-    const [detail, history] = await Promise.all([
-      getNegotiation(sessionId, buyerId),
-      getMessages(sessionId, buyerId),
-    ])
-    negotiation.value = detail
-    messages.value = history
-    await scrollToLatest()
+    if (readiness.authentication !== 'configured') {
+      throw new Error('认证服务尚未配置，请在本地 .env 设置 AUTH_SECRET。')
+    }
+    await ensureVisitorIdentity()
+    products.value = await listPublicProducts()
+    if (products.value.length === 0) {
+      throw new Error('目前没有已上架的商品，请先在卖家管理中创建并上架商品。')
+    }
+    if (!products.value.some((product) => product.id === selectedProductId.value)) {
+      selectedProductId.value = products.value[0]?.id ?? null
+    }
+    if (selectedProductId.value === null) {
+      throw new Error('没有可协商的商品。')
+    }
+    await loadProductSession(selectedProductId.value)
   } catch (error) {
     serviceReady.value = false
     modelReady.value = false
@@ -70,14 +84,40 @@ async function loadPage(): Promise<void> {
   }
 }
 
+async function loadProductSession(productId: number): Promise<void> {
+  const activeSession = await createNegotiation(productId)
+  sessionId.value = activeSession.session_id
+  const [detail, history] = await Promise.all([
+    getNegotiation(activeSession.session_id),
+    getMessages(activeSession.session_id),
+  ])
+  negotiation.value = detail
+  messages.value = history
+  lastOutcome.value = ''
+  await scrollToLatest()
+}
+
+async function switchProduct(): Promise<void> {
+  if (selectedProductId.value === null) return
+  loading.value = true
+  errorMessage.value = ''
+  try {
+    await loadProductSession(selectedProductId.value)
+  } catch (error) {
+    errorMessage.value = readableError(error)
+  } finally {
+    loading.value = false
+  }
+}
+
 async function submitMessage(): Promise<void> {
-  if (!canSend.value) return
+  if (!canSend.value || sessionId.value === null) return
   sending.value = true
   errorMessage.value = ''
 
   const offer = buildOfferPayload()
   try {
-    const response = await sendMessage(sessionId, buyerId, {
+    const response = await sendMessage(sessionId.value, {
       request_id: crypto.randomUUID().replaceAll('-', ''),
       content: messageText.value.trim(),
       ...(offer ? { offer } : {}),
@@ -88,7 +128,7 @@ async function submitMessage(): Promise<void> {
     submittingOffer.value = false
     offerPrice.value = ''
     shippingCost.value = ''
-    negotiation.value = await getNegotiation(sessionId, buyerId)
+    negotiation.value = await getNegotiation(sessionId.value)
     await scrollToLatest()
   } catch (error) {
     errorMessage.value = readableError(error)
@@ -157,13 +197,33 @@ watch(deliveryMethod, (value) => {
           <small>自主协商卖家助手</small>
         </span>
       </a>
-      <div class="service-status" :data-ready="serviceReady && modelReady">
-        <span aria-hidden="true"></span>
-        {{ serviceReady ? (modelReady ? '协商服务已就绪' : '模型未配置') : '服务未就绪' }}
+      <div class="topbar-actions">
+        <nav class="view-switcher" aria-label="功能导航">
+          <button
+            type="button"
+            :data-active="activeView === 'buyer'"
+            @click="activeView = 'buyer'"
+          >
+            买家协商
+          </button>
+          <button
+            type="button"
+            :data-active="activeView === 'seller'"
+            @click="activeView = 'seller'"
+          >
+            卖家管理
+          </button>
+        </nav>
+        <div class="service-status" :data-ready="serviceReady && modelReady">
+          <span aria-hidden="true"></span>
+          {{ serviceReady ? (modelReady ? '协商服务已就绪' : '模型未配置') : '服务未就绪' }}
+        </div>
       </div>
     </header>
 
-    <section v-if="loading" class="loading-card">正在读取演示会话…</section>
+    <SellerManagement v-if="activeView === 'seller'" />
+
+    <section v-else-if="loading" class="loading-card">正在读取商品与会话…</section>
 
     <section v-else-if="negotiation" class="workspace">
       <aside class="product-panel">
@@ -172,6 +232,14 @@ watch(deliveryMethod, (value) => {
           <small>PRO</small>
         </div>
         <p class="eyebrow">演示商品 · #{{ negotiation.product.id }}</p>
+        <label class="catalog-picker">
+          <span>选择商品</span>
+          <select v-model="selectedProductId" @change="switchProduct">
+            <option v-for="product in products" :key="product.id" :value="product.id">
+              #{{ product.id }} · {{ product.title }}
+            </option>
+          </select>
+        </label>
         <h1>{{ negotiation.product.title }}</h1>
         <p class="product-description">{{ negotiation.product.description }}</p>
         <div class="listed-price">

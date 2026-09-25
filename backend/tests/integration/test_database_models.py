@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.security import hash_password
 from app.db.models import (
     Message,
     MessageRole,
@@ -16,6 +17,7 @@ from app.db.models import (
     OfferStatus,
     Product,
     ProductStatus,
+    SellerAccount,
     SellerPolicy,
     ShippingPayer,
 )
@@ -30,8 +32,14 @@ pytestmark = pytest.mark.mysql_integration
 
 def test_business_models_support_crud_and_exact_money(db_session: Session) -> None:
     unique_suffix = uuid4().hex
+    seller = SellerAccount(
+        id=f"seller-{unique_suffix}",
+        username=f"seller-{unique_suffix}",
+        password_hash=hash_password("integration-test-password"),
+        is_active=True,
+    )
     product = Product(
-        seller_id=f"seller-{unique_suffix}",
+        seller=seller,
         title="集成测试商品",
         description="用于验证 ORM 的临时数据。",
         listed_price=Decimal("3000.10"),
@@ -67,7 +75,7 @@ def test_business_models_support_crud_and_exact_money(db_session: Session) -> No
         terms={"delivery": "快递"},
         status=OfferStatus.PROPOSED,
     )
-    db_session.add_all([product, negotiation, message, offer])
+    db_session.add_all([seller, product, negotiation, message, offer])
     db_session.flush()
 
     negotiation.current_offer = offer
@@ -99,8 +107,8 @@ def test_business_models_support_crud_and_exact_money(db_session: Session) -> No
 
 
 def test_seed_data_is_idempotent(db_session: Session) -> None:
-    first = seed_demo_data(db_session)
-    second = seed_demo_data(db_session)
+    first = seed_demo_data(db_session, seller_password="demo-test-password")
+    second = seed_demo_data(db_session, seller_password="demo-test-password")
     db_session.flush()
 
     assert first == second
@@ -113,7 +121,11 @@ def test_seed_data_is_idempotent(db_session: Session) -> None:
 def test_seed_data_can_explicitly_reset_only_the_demo_session(
     db_session: Session,
 ) -> None:
-    seed_demo_data(db_session, reset_session=True)
+    seed_demo_data(
+        db_session,
+        seller_password="demo-test-password",
+        reset_session=True,
+    )
     negotiation = db_session.get(NegotiationSession, DEMO_SESSION_ID)
     assert negotiation is not None
     offer = Offer(
@@ -139,7 +151,11 @@ def test_seed_data_can_explicitly_reset_only_the_demo_session(
     previous_version = negotiation.version
     db_session.flush()
 
-    seed_demo_data(db_session, reset_session=True)
+    seed_demo_data(
+        db_session,
+        seller_password="demo-test-password",
+        reset_session=True,
+    )
     db_session.flush()
 
     assert negotiation.current_offer_id is None

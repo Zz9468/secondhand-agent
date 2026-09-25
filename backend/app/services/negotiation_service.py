@@ -88,6 +88,53 @@ class NegotiationService:
         self._session_factory = session_factory
         self._pricing_service = pricing_service or PricingService()
 
+    def create_or_get_active_session(
+        self,
+        *,
+        product_id: int,
+        buyer_id: str,
+    ) -> tuple[int, bool]:
+        """为可信访客创建或复用当前商品的可协商会话。"""
+
+        with self._session_factory() as db, db.begin():
+            product = db.scalar(
+                select(Product)
+                .where(Product.id == product_id)
+                .with_for_update()
+            )
+            if product is None or product.status is not ProductStatus.AVAILABLE:
+                raise ProductUnavailableError("商品不存在或当前不可协商")
+            self._get_policy(db, product_id, for_update=True)
+
+            existing = db.scalar(
+                select(NegotiationSession)
+                .where(
+                    NegotiationSession.product_id == product_id,
+                    NegotiationSession.buyer_id == buyer_id,
+                    NegotiationSession.status.in_(
+                        (
+                            NegotiationStatus.ACTIVE,
+                            NegotiationStatus.WAITING_APPROVAL,
+                        )
+                    ),
+                )
+                .order_by(NegotiationSession.id.desc())
+                .limit(1)
+            )
+            if existing is not None:
+                return existing.id, False
+
+            negotiation = NegotiationSession(
+                product_id=product_id,
+                buyer_id=buyer_id,
+                status=NegotiationStatus.ACTIVE,
+                round_count=0,
+                version=1,
+            )
+            db.add(negotiation)
+            db.flush()
+            return negotiation.id, True
+
     def get_state(self, *, session_id: int, buyer_id: str) -> NegotiationState:
         with self._session_factory() as db:
             negotiation = self._get_negotiation(

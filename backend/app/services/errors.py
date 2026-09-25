@@ -12,8 +12,16 @@ class ProductUnavailableError(ServiceError):
     code = "PRODUCT_UNAVAILABLE"
 
 
+class ProductNotFoundError(ServiceError):
+    code = "PRODUCT_NOT_FOUND"
+
+
 class PricingPolicyNotFoundError(ServiceError):
     code = "PRICING_POLICY_NOT_FOUND"
+
+
+class PolicyVersionConflictError(ServiceError):
+    code = "POLICY_VERSION_CONFLICT"
 
 
 class InvalidNegotiationStateError(ServiceError):

@@ -51,7 +51,7 @@ V1 阶段五已完成 Agent 与正式回复安全层：
 V1 阶段六已完成最小聊天闭环与验收场景：
 
 - 提供查询协商状态、发送消息和读取消息记录的 FastAPI 接口；
-- 买家身份由请求头绑定并校验，不能跨买家读取或操作会话；
+- V1 买家身份最初由请求头绑定并校验；V2 阶段一已将这一临时方式替换为服务端签名访客身份；
 - 聊天文字与正式报价字段分离，金额和运费由后端以 `Decimal` 校验；
 - 同一会话通过行锁串行处理；买家消息、结构化报价、Agent 工具动作和最终回复在同一外层事务中提交或回滚；
 - 幂等指纹覆盖聊天文字和完整结构化报价，重放时返回原始结果和正式报价编号；
@@ -61,6 +61,24 @@ V1 阶段六已完成最小聊天闭环与验收场景：
 - 自动化测试覆盖商品咨询、多轮低价、包邮净收入、审批区提示、Prompt Injection、身份隔离、完整幂等、事务回滚和最大轮次；
 - 种子脚本支持显式重置演示会话，便于从干净状态重复演示。
 - MySQL 开发端口只绑定 `127.0.0.1`，不会监听局域网网卡。
+
+V2 阶段一已完成身份认证与权限基础：
+
+- 新增卖家账号表，密码使用带随机盐的 `scrypt` 哈希保存，商品所有权通过外键绑定卖家账号；
+- 提供卖家登录、当前身份和退出接口，登录态使用服务端签名的 HttpOnly Cookie；
+- 买家首次访问时由服务端签发独立访客 Cookie，API 不再信任客户端填写的 `X-Buyer-ID`；
+- 前端会为当前访客创建或复用演示商品的协商会话，不再固定绑定 `demo-buyer` 和会话 `1001`；
+- 认证签名密钥必须显式配置且至少 32 个字符，未配置时认证接口关闭并返回 `503`；
+- 权限测试覆盖伪造身份头、跨买家会话访问、卖家登录失败、退出失效和不同浏览器访客隔离。
+
+V2 阶段二已完成商品、策略与动态会话入口：
+
+- 买家可匿名读取已上架商品的公开信息，响应不包含卖家底价和自动接受阈值；
+- 卖家登录后可以创建、编辑、上架或下架自己的商品，并维护私有协商策略；
+- 商品写操作按登录卖家校验所有权，其他卖家访问时按资源不存在处理；
+- 策略更新使用期望版本校验并在同一事务中递增版本，避免旧页面静默覆盖新规则；
+- 买家页面从公开商品接口选择商品并创建当前访客会话，不再硬编码商品 `1001`；
+- 页面新增最小卖家管理入口，种子商品仍可用于演示和回归测试。
 
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
@@ -89,7 +107,13 @@ V1 阶段六已完成最小聊天闭环与验收场景：
 Copy-Item .env.example .env
 ```
 
-打开根目录下的 `.env`，将两个 `CHANGE_ME` 数据库口令替换为不同的随机值，并把 `MYSQL_PASSWORD` 的值同步写入 `DATABASE_URL`。真实模型配置可以暂时留空；未配置模型时仍可查看页面和演示数据，但不能发送协商消息。
+打开根目录下的 `.env`，替换所有 `CHANGE_ME` 占位值：两个数据库口令应不同，并把 `MYSQL_PASSWORD` 的值同步写入 `DATABASE_URL`；`AUTH_SECRET` 至少使用 32 个随机字符；`DEMO_SELLER_PASSWORD` 设置为本地演示卖家的强密码。真实模型配置可以暂时留空；未配置模型时仍可查看商品和历史数据，但不能发送协商消息。
+
+可以在已激活的 Python 环境中生成认证随机密钥，再将输出复制到 `.env` 的 `AUTH_SECRET`：
+
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
 
 启动 MySQL：
 
@@ -143,7 +167,19 @@ python scripts/seed_data.py --reset-session
 cd ..
 ```
 
-该选项只重置固定演示会话；不带参数执行时仍是非破坏性的幂等初始化。
+该选项只重置从 V1 保留的固定演示会话 `1001`；不带参数执行时仍是非破坏性的幂等初始化。V2 页面会为每个浏览器访客创建独立会话，如需从新访客开始演示，可使用新的无痕窗口或清除 `localhost` 的站点 Cookie。
+
+### 从 V1 升级
+
+已有 V1 `.env` 的开发者无需覆盖原文件，但必须补充 `AUTH_SECRET` 和 `DEMO_SELLER_PASSWORD`。随后升级数据库并重新执行种子脚本；迁移会先为已有商品建立禁用卖家账号，种子脚本再设置密码并启用演示卖家：
+
+```powershell
+conda activate secondhand-agent
+cd backend
+python -m alembic upgrade head
+python scripts/seed_data.py
+cd ..
+```
 
 ### 日常启动
 
@@ -181,15 +217,26 @@ npm run dev
 浏览器访问 `http://localhost:5173`。后端接口：
 
 - `GET http://localhost:8000/api/health`：仅检查 API 进程；
-- `GET http://localhost:8000/api/ready`：检查 MySQL 连接和模型配置状态；
-- `GET http://localhost:8000/api/negotiations/1001`：读取演示协商状态；
-- `GET http://localhost:8000/api/negotiations/1001/messages`：读取聊天记录；
-- `POST http://localhost:8000/api/negotiations/1001/messages`：发送消息并触发 Seller Agent；
+- `GET http://localhost:8000/api/ready`：检查 MySQL、认证和模型配置状态；
+- `POST http://localhost:8000/api/auth/visitor`：签发或续签当前浏览器的买家访客身份；
+- `POST http://localhost:8000/api/auth/seller/login`：演示卖家登录；用户名为 `demo-seller`，密码取自本地 `DEMO_SELLER_PASSWORD`；
+- `GET http://localhost:8000/api/auth/seller/me`：读取当前卖家身份；
+- `POST http://localhost:8000/api/auth/seller/logout`：退出卖家登录；
+- `GET http://localhost:8000/api/products`：列出已上架商品的公开信息；
+- `GET http://localhost:8000/api/products/{product_id}`：读取已上架商品的公开详情；
+- `POST http://localhost:8000/api/products`：登录卖家创建商品及初始私有策略；
+- `GET http://localhost:8000/api/seller/products`：登录卖家读取自己的商品和策略；
+- `PUT http://localhost:8000/api/seller/products/{product_id}`：编辑自己的商品或上下架；
+- `PUT http://localhost:8000/api/seller/products/{product_id}/policy`：按版本更新自己的私有策略；
+- `POST http://localhost:8000/api/negotiations`：为当前访客创建或复用商品协商会话；
+- `GET http://localhost:8000/api/negotiations/{session_id}`：读取当前访客的协商状态；
+- `GET http://localhost:8000/api/negotiations/{session_id}/messages`：读取聊天记录；
+- `POST http://localhost:8000/api/negotiations/{session_id}/messages`：发送消息并触发 Seller Agent；
 - `GET http://localhost:8000/docs`：OpenAPI 文档。
 
-协商接口要求请求头 `X-Buyer-ID: demo-buyer`。前端已经为演示会话绑定该身份；它只是 V1 的临时访客标识，不等同于正式登录认证。
+买家和卖家登录态均保存在 HttpOnly Cookie 中，前端请求会自动携带；不要再手工填写 `X-Buyer-ID`。不同浏览器配置文件或无痕窗口会获得不同的买家访客身份，不能读取彼此的协商会话。
 
-`/api/ready` 还会返回模型配置状态。未配置模型时页面仍可查看演示数据，但会显示“模型未配置”并禁止发送消息。
+`/api/ready` 会分别返回认证和模型配置状态。未配置 `AUTH_SECRET` 时不能创建访客身份；未配置模型时页面仍可查看演示数据，但会显示“模型未配置”并禁止发送消息。
 
 配置真实千问地址和密钥后，可显式执行一次结构化输出冒烟测试；该命令会真实调用模型并可能产生少量费用：
 
@@ -227,4 +274,4 @@ frontend/     Vue 3 最简页面
 compose.yaml 本地 MySQL
 ```
 
-V1 最小闭环已经完成；完整卖家审批、买家最终确认意向和正式身份认证属于 V2 范围。
+V1 最小闭环以及 V2 阶段一、阶段二已经完成；人工审批、审批后恢复和买家最终确认仍属于后续 V2 阶段。

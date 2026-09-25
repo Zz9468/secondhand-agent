@@ -3,12 +3,14 @@ from uuid import uuid4
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.security import hash_password
 from app.db.models import (
     NegotiationSession,
     NegotiationStatus,
     NegotiationStyle,
     Product,
     ProductStatus,
+    SellerAccount,
     SellerPolicy,
 )
 
@@ -24,8 +26,14 @@ def create_negotiation(
 
     suffix = uuid4().hex
     with session_factory() as db, db.begin():
+        seller = SellerAccount(
+            id=f"seller-{suffix}",
+            username=f"seller-{suffix}",
+            password_hash=hash_password("integration-test-password"),
+            is_active=True,
+        )
         product = Product(
-            seller_id=f"seller-{suffix}",
+            seller=seller,
             title="阶段四测试商品",
             description="验证业务服务与 Agent 工具的数据库约束。",
             listed_price=Decimal("3000.00"),
@@ -45,6 +53,6 @@ def create_negotiation(
             round_count=0,
             version=1,
         )
-        db.add(negotiation)
+        db.add_all([seller, negotiation])
         db.flush()
         return negotiation.id, negotiation.buyer_id

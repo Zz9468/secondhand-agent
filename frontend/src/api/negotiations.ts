@@ -1,3 +1,7 @@
+import { requestJson } from './client'
+
+export { ApiError } from './client'
+
 export type MessageRole = 'BUYER' | 'AGENT' | 'SYSTEM'
 export type ShippingPayer = 'buyer' | 'seller'
 
@@ -64,66 +68,38 @@ export interface SendMessageResponse {
   idempotent_replay: boolean
 }
 
+export interface CreateNegotiationResponse {
+  session_id: number
+  created: boolean
+}
+
 interface MessageListResponse {
   messages: ChatMessage[]
 }
 
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-  ) {
-    super(message)
-  }
-}
-
-async function requestJson<T>(path: string, buyerId: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'X-Buyer-ID': buyerId,
-      ...init?.headers,
-    },
+export function createNegotiation(productId: number): Promise<CreateNegotiationResponse> {
+  return requestJson<CreateNegotiationResponse>('/api/negotiations', {
+    method: 'POST',
+    body: JSON.stringify({ product_id: productId }),
   })
-
-  if (!response.ok) {
-    let detail = `请求失败（${response.status}）`
-    try {
-      const body = (await response.json()) as { detail?: string | Array<{ msg?: string }> }
-      if (typeof body.detail === 'string') {
-        detail = body.detail
-      } else if (Array.isArray(body.detail) && body.detail[0]?.msg) {
-        detail = body.detail[0].msg
-      }
-    } catch {
-      // 非 JSON 错误沿用状态码提示，避免掩盖原始请求失败。
-    }
-    throw new ApiError(detail, response.status)
-  }
-
-  return (await response.json()) as T
 }
 
-export function getNegotiation(sessionId: number, buyerId: string): Promise<NegotiationDetail> {
-  return requestJson<NegotiationDetail>(`/api/negotiations/${sessionId}`, buyerId)
+export function getNegotiation(sessionId: number): Promise<NegotiationDetail> {
+  return requestJson<NegotiationDetail>(`/api/negotiations/${sessionId}`)
 }
 
-export async function getMessages(sessionId: number, buyerId: string): Promise<ChatMessage[]> {
+export async function getMessages(sessionId: number): Promise<ChatMessage[]> {
   const result = await requestJson<MessageListResponse>(
     `/api/negotiations/${sessionId}/messages`,
-    buyerId,
   )
   return result.messages
 }
 
 export function sendMessage(
   sessionId: number,
-  buyerId: string,
   payload: SendMessagePayload,
 ): Promise<SendMessageResponse> {
-  return requestJson<SendMessageResponse>(`/api/negotiations/${sessionId}/messages`, buyerId, {
+  return requestJson<SendMessageResponse>(`/api/negotiations/${sessionId}/messages`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })

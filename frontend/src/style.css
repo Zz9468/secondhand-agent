@@ -15,6 +15,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .app-shell { width: min(92rem, calc(100% - 2rem)); margin: 0 auto; padding: 1rem 0 2rem; }
 .topbar { display: flex; align-items: center; justify-content: space-between; min-height: 4.5rem; }
+.topbar-actions { display: flex; align-items: center; gap: 1rem; }
+.view-switcher { display: flex; gap: 0.25rem; padding: 0.25rem; border-radius: 999px; background: rgba(255, 255, 255, 0.62); }
+.view-switcher button { border: 0; border-radius: 999px; padding: 0.48rem 0.85rem; color: #657066; background: transparent; font-size: 0.78rem; }
+.view-switcher button[data-active="true"] { color: white; background: #294d35; }
 .brand { display: flex; gap: 0.75rem; align-items: center; color: inherit; text-decoration: none; }
 .brand-mark, .agent-avatar { display: grid; place-items: center; color: #f7f8ef; background: #274b35; font-family: Georgia, serif; border-radius: 0.8rem; }
 .brand-mark { width: 2.45rem; height: 2.45rem; font-size: 1.4rem; }
@@ -33,6 +37,9 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .eyebrow { margin: 0 0 0.5rem; color: #63806a; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; }
 .product-panel h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 500; line-height: 1.12; }
 .product-description { margin: 1rem 0 1.5rem; color: #626d63; line-height: 1.75; }
+.catalog-picker { display: grid; gap: 0.35rem; margin: 0.75rem 0 1rem; }
+.catalog-picker span { color: #778078; font-size: 0.72rem; font-weight: 700; }
+.catalog-picker select { width: 100%; min-height: 2.5rem; border: 1px solid #d4dacf; border-radius: 0.65rem; padding: 0 0.65rem; color: #263028; background: white; }
 .listed-price { display: flex; align-items: flex-end; justify-content: space-between; padding: 1rem 0; border-block: 1px solid #dce1d6; }
 .listed-price span { color: #737d74; font-size: 0.82rem; }
 .listed-price strong { font-family: Georgia, serif; font-size: 2rem; font-weight: 500; }
@@ -85,17 +92,46 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .error-state button { margin-top: 1rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
+.seller-page { min-height: calc(100vh - 7.5rem); }
+.login-card { display: grid; gap: 1rem; width: min(28rem, 100%); margin: 8vh auto 0; padding: 2rem; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.5rem; background: rgba(251, 252, 247, 0.9); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.11); }
+.login-card h1, .product-editor h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-weight: 500; }
+.login-card > p:not(.eyebrow, .error-banner) { margin: 0; color: #6a736a; }
+.login-card label, .product-editor label { display: grid; gap: 0.4rem; color: #657066; font-size: 0.78rem; font-weight: 700; }
+.login-card input, .product-editor input, .product-editor select, .product-editor textarea { width: 100%; border: 1px solid #d4dacf; border-radius: 0.65rem; padding: 0.7rem 0.75rem; color: #263028; background: white; font-weight: 400; }
+.login-card button, .editor-actions button, .new-product-button { border: 0; border-radius: 999px; padding: 0.75rem 1.1rem; color: white; background: #294d35; font-weight: 750; }
+.seller-workspace { display: grid; grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr); min-height: calc(100vh - 7.5rem); overflow: hidden; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.75rem; background: rgba(251, 252, 247, 0.9); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.11); }
+.seller-sidebar { padding: 1.5rem; border-right: 1px solid #dfe3d8; background: rgba(244, 246, 238, 0.86); }
+.seller-profile { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+.new-product-button { width: 100%; margin-bottom: 1rem; }
+.product-list-item { display: grid; gap: 0.25rem; width: 100%; margin-bottom: 0.45rem; border: 1px solid transparent; border-radius: 0.75rem; padding: 0.75rem; color: #344338; background: transparent; text-align: left; }
+.product-list-item:hover, .product-list-item[data-active="true"] { border-color: #ccd6c9; background: #e8ede5; }
+.product-list-item small, .empty-note { color: #7b847c; font-size: 0.7rem; }
+.product-editor { padding: clamp(1.5rem, 4vw, 2.5rem); overflow-y: auto; }
+.editor-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.version-badge { border-radius: 999px; padding: 0.45rem 0.7rem; color: #536658; background: #e9ede3; font-size: 0.72rem; }
+.product-editor fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 0 0 1.25rem; border: 1px solid #dfe3d8; border-radius: 1rem; padding: 1.2rem; }
+.product-editor legend { padding: 0 0.45rem; color: #405447; font-weight: 750; }
+.wide-field { grid-column: 1 / -1; }
+.policy-fieldset { background: #f2f4ee; }
+.policy-fieldset .privacy-note { margin: 0; }
+.editor-actions { display: flex; justify-content: flex-end; }
+
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
   .product-panel { border-right: 0; border-bottom: 1px solid #dfe3d8; }
   .product-visual { min-height: 8rem; }
   .message-list { max-height: 34rem; min-height: 20rem; }
   .offer-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .seller-workspace { grid-template-columns: 1fr; }
+  .seller-sidebar { border-right: 0; border-bottom: 1px solid #dfe3d8; }
 }
 
 @media (max-width: 560px) {
   .app-shell { width: min(100% - 1rem, 92rem); padding-top: 0.5rem; }
   .brand small { display: none; }
+  .topbar-actions { gap: 0.4rem; }
+  .service-status { display: none; }
+  .view-switcher button { padding-inline: 0.65rem; }
   .workspace { border-radius: 1.1rem; }
   .product-panel, .chat-panel { padding: 1.1rem; }
   .product-visual { display: none; }
@@ -103,4 +139,6 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   .offer-fields { grid-template-columns: 1fr; }
   .offer-toggle { flex-wrap: wrap; }
   .offer-toggle small { flex-basis: 100%; margin-left: 1.4rem; }
+  .product-editor fieldset { grid-template-columns: 1fr; }
+  .wide-field { grid-column: auto; }
 }

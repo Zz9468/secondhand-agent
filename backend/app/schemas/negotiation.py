@@ -36,6 +36,19 @@ class BuyerOfferRequest(BaseModel):
         return self
 
 
+class CreateNegotiationRequest(BaseModel):
+    """阶段一用于替代固定买家会话的最小创建入口。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    product_id: int = Field(gt=0)
+
+
+class CreateNegotiationResponse(BaseModel):
+    session_id: int
+    created: bool
+
+
 class SendMessageRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 

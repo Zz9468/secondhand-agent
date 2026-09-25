@@ -8,10 +8,12 @@ export interface ReadinessResponse {
   status: 'ready' | 'degraded'
   database: 'ok'
   model: 'configured' | 'not_configured'
+  authentication: 'configured' | 'not_configured'
 }
 
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(path, {
+    credentials: 'include',
     headers: { Accept: 'application/json' },
   })
 

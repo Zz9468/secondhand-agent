@@ -23,6 +23,13 @@ class Settings(BaseSettings):
 
     database_url: str
 
+    # 身份令牌没有源码内默认密钥；未配置时认证接口会明确拒绝服务。
+    auth_secret: SecretStr | None = None
+    auth_cookie_secure: bool = False
+    seller_session_minutes: int = Field(default=480, ge=5, le=10080)
+    buyer_session_days: int = Field(default=30, ge=1, le=365)
+    demo_seller_password: SecretStr | None = None
+
     model_provider: str = "qwen"
     model_name: str = "qwen-plus"
     model_base_url: str | None = None
@@ -42,6 +49,15 @@ class Settings(BaseSettings):
             self.model_api_key.get_secret_value().strip()
             and self.model_base_url.strip()
         )
+
+    @property
+    def auth_is_configured(self) -> bool:
+        """认证签名密钥至少需要 32 个字符，避免弱密钥进入运行环境。"""
+
+        if self.auth_secret is None:
+            return False
+        value = self.auth_secret.get_secret_value().strip()
+        return len(value) >= 32 and "CHANGE_ME" not in value.upper()
 
 
 @lru_cache

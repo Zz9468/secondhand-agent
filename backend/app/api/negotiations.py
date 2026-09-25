@@ -1,15 +1,18 @@
 from typing import Annotated, Never
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.decision_provider import DecisionProvider
 from app.agent.tools.serialization import negotiation_state_result, product_result
 from app.api.dependencies import (
+    get_current_buyer_id,
     get_decision_provider,
     get_session_factory_dependency,
 )
 from app.schemas.negotiation import (
+    CreateNegotiationRequest,
+    CreateNegotiationResponse,
     MessageListResponse,
     MessageResponse,
     NegotiationDetailResponse,
@@ -35,13 +38,30 @@ SessionFactory = Annotated[
 ]
 BuyerId = Annotated[
     str,
-    Header(
-        alias="X-Buyer-ID",
-        min_length=1,
-        max_length=64,
-        pattern=r"^[A-Za-z0-9_-]+$",
-    ),
+    Depends(get_current_buyer_id),
 ]
+
+
+@router.post(
+    "",
+    response_model=CreateNegotiationResponse,
+    status_code=status.HTTP_200_OK,
+)
+def create_negotiation(
+    payload: CreateNegotiationRequest,
+    buyer_id: BuyerId,
+    session_factory: SessionFactory,
+) -> CreateNegotiationResponse:
+    try:
+        session_id, created = NegotiationService(
+            session_factory
+        ).create_or_get_active_session(
+            product_id=payload.product_id,
+            buyer_id=buyer_id,
+        )
+    except ServiceError as exc:
+        _raise_http_error(exc)
+    return CreateNegotiationResponse(session_id=session_id, created=created)
 
 
 @router.get("/{session_id}", response_model=NegotiationDetailResponse)

@@ -24,6 +24,7 @@ def test_ready_returns_database_status(monkeypatch) -> None:
     app.dependency_overrides[get_settings] = lambda: Settings(
         _env_file=None,
         database_url=TEST_DATABASE_URL,
+        auth_secret="a-secure-test-secret-with-32-characters",
         model_base_url="https://example.invalid/v1",
         model_api_key="test-key",
     )
@@ -38,6 +39,7 @@ def test_ready_returns_database_status(monkeypatch) -> None:
         "status": "ready",
         "database": "ok",
         "model": "configured",
+        "authentication": "configured",
     }
 
 
@@ -46,6 +48,7 @@ def test_ready_reports_missing_model_configuration(monkeypatch) -> None:
     app.dependency_overrides[get_settings] = lambda: Settings(
         _env_file=None,
         database_url=TEST_DATABASE_URL,
+        auth_secret="a-secure-test-secret-with-32-characters",
     )
 
     try:
@@ -58,6 +61,30 @@ def test_ready_reports_missing_model_configuration(monkeypatch) -> None:
         "status": "degraded",
         "database": "ok",
         "model": "not_configured",
+        "authentication": "configured",
+    }
+
+
+def test_ready_reports_missing_authentication_configuration(monkeypatch) -> None:
+    monkeypatch.setattr(health_module, "check_database_connection", lambda: None)
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        _env_file=None,
+        database_url=TEST_DATABASE_URL,
+        model_base_url="https://example.invalid/v1",
+        model_api_key="test-key",
+    )
+
+    try:
+        response = client.get("/api/ready")
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "degraded",
+        "database": "ok",
+        "model": "configured",
+        "authentication": "not_configured",
     }
 
 
