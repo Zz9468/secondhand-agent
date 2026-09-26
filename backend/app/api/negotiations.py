@@ -11,6 +11,10 @@ from app.api.dependencies import (
     get_session_factory_dependency,
 )
 from app.schemas.negotiation import (
+    CloseNegotiationRequest,
+    CloseNegotiationResponse,
+    ConfirmNegotiationRequest,
+    ConfirmNegotiationResponse,
     CreateNegotiationRequest,
     CreateNegotiationResponse,
     MessageListResponse,
@@ -24,9 +28,11 @@ from app.services.errors import (
     IncompleteRequestError,
     MessageConflictError,
     ModelDecisionError,
+    NegotiationLifecycleConflictError,
     NegotiationNotFoundError,
     ServiceError,
 )
+from app.services.intent_service import IntentService
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import PricingError
 from app.services.product_service import ProductService
@@ -89,6 +95,49 @@ def get_negotiation(
             "negotiation": negotiation_state_result(negotiation)["negotiation"],
         }
     )
+
+
+@router.post(
+    "/{session_id}/confirm",
+    response_model=ConfirmNegotiationResponse,
+)
+def confirm_negotiation(
+    session_id: int,
+    payload: ConfirmNegotiationRequest,
+    buyer_id: BuyerId,
+    session_factory: SessionFactory,
+) -> ConfirmNegotiationResponse:
+    try:
+        result = IntentService(session_factory).confirm_offer(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            offer_id=payload.offer_id,
+            request_id=payload.request_id,
+        )
+    except ServiceError as exc:
+        _raise_http_error(exc)
+    return ConfirmNegotiationResponse.model_validate(result)
+
+
+@router.post(
+    "/{session_id}/close",
+    response_model=CloseNegotiationResponse,
+)
+def close_negotiation(
+    session_id: int,
+    payload: CloseNegotiationRequest,
+    buyer_id: BuyerId,
+    session_factory: SessionFactory,
+) -> CloseNegotiationResponse:
+    try:
+        result = IntentService(session_factory).close_negotiation(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            request_id=payload.request_id,
+        )
+    except ServiceError as exc:
+        _raise_http_error(exc)
+    return CloseNegotiationResponse.model_validate(result)
 
 
 @router.get("/{session_id}/messages", response_model=MessageListResponse)
@@ -160,7 +209,14 @@ def _raise_http_error(error: ServiceError | PricingError) -> Never:
         code = status.HTTP_404_NOT_FOUND
     elif isinstance(error, ModelDecisionError):
         code = status.HTTP_503_SERVICE_UNAVAILABLE
-    elif isinstance(error, (MessageConflictError, IncompleteRequestError)):
+    elif isinstance(
+        error,
+        (
+            MessageConflictError,
+            IncompleteRequestError,
+            NegotiationLifecycleConflictError,
+        ),
+    ):
         code = status.HTTP_409_CONFLICT
     else:
         code = status.HTTP_400_BAD_REQUEST

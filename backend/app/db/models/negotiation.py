@@ -1,10 +1,11 @@
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Index, String
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
-from app.db.models.enums import NegotiationStatus, stored_enum
+from app.db.models.enums import ConfirmationSource, NegotiationStatus, stored_enum
 
 if TYPE_CHECKING:
     from app.db.models.approval import ApprovalRequest
@@ -43,6 +44,25 @@ class NegotiationSession(TimestampMixin, Base):
         ),
         nullable=True,
     )
+    confirmed_offer_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "offers.id",
+            name="fk_negotiation_sessions_confirmed_offer_id_offers",
+            ondelete="SET NULL",
+            use_alter=True,
+        ),
+        nullable=True,
+    )
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    confirmation_request_id: Mapped[str | None] = mapped_column(
+        String(56),
+        nullable=True,
+        unique=True,
+    )
+    confirmation_source: Mapped[ConfirmationSource | None] = mapped_column(
+        stored_enum(ConfirmationSource, name="confirmation_source"),
+        nullable=True,
+    )
     round_count: Mapped[int] = mapped_column(nullable=False, default=0)
     version: Mapped[int] = mapped_column(nullable=False, default=1)
 
@@ -60,6 +80,10 @@ class NegotiationSession(TimestampMixin, Base):
     )
     current_offer: Mapped["Offer | None"] = relationship(
         foreign_keys=[current_offer_id],
+        post_update=True,
+    )
+    confirmed_offer: Mapped["Offer | None"] = relationship(
+        foreign_keys=[confirmed_offer_id],
         post_update=True,
     )
     approval_requests: Mapped[list["ApprovalRequest"]] = relationship(

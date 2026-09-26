@@ -116,6 +116,10 @@ def seed_demo_data(
     if reset_session:
         # 先解除当前报价外键，再按固定演示会话精确清理，避免影响其他数据。
         negotiation.current_offer = None
+        negotiation.confirmed_offer = None
+        negotiation.confirmed_at = None
+        negotiation.confirmation_request_id = None
+        negotiation.confirmation_source = None
         negotiation.status = NegotiationStatus.ACTIVE
         negotiation.round_count = 0
         negotiation.version += 1

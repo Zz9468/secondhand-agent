@@ -77,6 +77,17 @@ def negotiation_state_result(state: NegotiationState) -> dict[str, object]:
             "product_id": state.product_id,
             "status": state.status.value,
             "current_offer_id": state.current_offer_id,
+            "confirmed_offer_id": state.confirmed_offer_id,
+            "confirmed_at": (
+                state.confirmed_at.isoformat()
+                if state.confirmed_at is not None
+                else None
+            ),
+            "confirmation_source": (
+                state.confirmation_source.value
+                if state.confirmation_source is not None
+                else None
+            ),
             "round_count": state.round_count,
             "version": state.version,
             "policy_version": state.policy_version,

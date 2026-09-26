@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.models import (
+    ConfirmationSource,
     NegotiationSession,
     NegotiationStatus,
     NegotiationStyle,
@@ -70,6 +71,9 @@ class NegotiationState:
     product_id: int
     status: NegotiationStatus
     current_offer_id: int | None
+    confirmed_offer_id: int | None
+    confirmed_at: datetime | None
+    confirmation_source: ConfirmationSource | None
     round_count: int
     version: int
     policy_version: int
@@ -158,6 +162,9 @@ class NegotiationService:
                 product_id=negotiation.product_id,
                 status=negotiation.status,
                 current_offer_id=negotiation.current_offer_id,
+                confirmed_offer_id=negotiation.confirmed_offer_id,
+                confirmed_at=negotiation.confirmed_at,
+                confirmation_source=negotiation.confirmation_source,
                 round_count=negotiation.round_count,
                 version=negotiation.version,
                 policy_version=policy.version,

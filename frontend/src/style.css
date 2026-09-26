@@ -51,11 +51,16 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .offer-card .eyebrow { color: #a9c6ae; }
 .offer-card strong { font-family: Georgia, serif; font-size: 1.8rem; font-weight: 500; }
 .offer-card span, .offer-card p { margin: 0; color: #cad8cc; font-size: 0.8rem; }
+.confirm-intent-button { margin-top: 0.75rem; border: 1px solid rgba(255,255,255,0.5); border-radius: 999px; padding: 0.65rem 0.85rem; color: #294d35; background: #eef4e9; font-weight: 800; }
+.intent-disclaimer { margin-top: 0.25rem; color: #b9cbbb; font-size: 0.68rem; line-height: 1.5; }
+.offer-card .intent-complete { margin-top: 0.65rem; color: #eef4e9; font-weight: 700; }
 .privacy-note { margin: 1.2rem 0 0; color: #7b847c; font-size: 0.75rem; line-height: 1.6; }
 
 .chat-panel { display: grid; grid-template-rows: auto minmax(15rem, 1fr) auto auto; min-width: 0; padding: clamp(1.25rem, 3vw, 2.2rem); }
 .chat-heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1.2rem; border-bottom: 1px solid #e0e4da; }
 .chat-heading h2 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: 1.55rem; font-weight: 500; }
+.chat-heading-actions { display: flex; gap: 0.55rem; }
+.close-button { color: #87433e; border-color: #dec7c2; }
 .ghost-button { border: 1px solid #cad2c7; border-radius: 999px; padding: 0.55rem 0.9rem; color: #455449; background: transparent; }
 .ghost-button:hover { background: #eef1e9; }
 .message-list { display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; max-height: calc(100vh - 29rem); padding: 1.4rem 0.25rem; overflow-y: auto; }
@@ -71,6 +76,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .error-banner, .outcome-banner { margin: 0 0 0.7rem; padding: 0.65rem 0.85rem; border-radius: 0.7rem; font-size: 0.78rem; }
 .error-banner { color: #8f332e; background: #f8e3df; }
 .outcome-banner { color: #526358; background: #edf0e8; }
+.terminal-banner { margin: 0 0 0.7rem; padding: 0.7rem 0.85rem; border-radius: 0.7rem; color: #3f5c47; background: #dfeadf; font-size: 0.78rem; font-weight: 700; }
 .composer { padding: 0.9rem; border: 1px solid #d9ded3; border-radius: 1.2rem; background: white; box-shadow: 0 0.8rem 2.5rem rgba(45, 60, 49, 0.08); }
 .message-input textarea { width: 100%; resize: vertical; border: 0; outline: 0; color: #263028; background: transparent; line-height: 1.55; }
 .message-input textarea::placeholder { color: #9aa29a; }

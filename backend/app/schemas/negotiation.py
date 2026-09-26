@@ -5,7 +5,7 @@ from typing import Literal, Self
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator, model_validator
 
 from app.agent.seller_agent import AgentTurnOutcome
-from app.db.models import MessageRole
+from app.db.models import ConfirmationSource, MessageRole
 from app.services.pricing_service import ShippingPayer
 
 
@@ -47,6 +47,29 @@ class CreateNegotiationRequest(BaseModel):
 class CreateNegotiationResponse(BaseModel):
     session_id: int
     created: bool
+
+
+class ConfirmNegotiationRequest(BaseModel):
+    """买家确认必须绑定当前报价和可重放的幂等键。"""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    offer_id: int = Field(gt=0)
+    request_id: str = Field(
+        min_length=8,
+        max_length=56,
+        pattern=r"^[A-Za-z0-9_-]+$",
+    )
+
+
+class CloseNegotiationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    request_id: str = Field(
+        min_length=8,
+        max_length=56,
+        pattern=r"^[A-Za-z0-9_-]+$",
+    )
 
 
 class SendMessageRequest(BaseModel):
@@ -108,6 +131,9 @@ class NegotiationStateResponse(BaseModel):
     product_id: int
     status: str
     current_offer_id: int | None
+    confirmed_offer_id: int | None
+    confirmed_at: str | None
+    confirmation_source: ConfirmationSource | None
     round_count: int
     version: int
     negotiation_style: str
@@ -125,4 +151,26 @@ class SendMessageResponse(BaseModel):
     agent_message: MessageResponse
     outcome: AgentTurnOutcome | Literal["IDEMPOTENT_REPLAY"]
     formal_offer_id: int | None
+    idempotent_replay: bool
+
+
+class ConfirmNegotiationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    session_id: int
+    status: Literal["AGREED"]
+    confirmed_offer_id: int
+    confirmed_at: datetime
+    confirmation_source: ConfirmationSource
+    system_message: MessageResponse
+    idempotent_replay: bool
+
+
+class CloseNegotiationResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    session_id: int
+    status: Literal["CLOSED"]
+    cancelled_approval_id: int | None
+    system_message: MessageResponse
     idempotent_replay: bool

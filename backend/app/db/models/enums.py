@@ -72,6 +72,14 @@ class ApprovalFollowupStatus(StrEnum):
     FAILED = "FAILED"
 
 
+class ConfirmationSource(StrEnum):
+    """买家最终确认时经过后端复核的授权来源。"""
+
+    AGENT_COUNTER = "AGENT_COUNTER"
+    AUTO_ACCEPTED_BUYER_OFFER = "AUTO_ACCEPTED_BUYER_OFFER"
+    SELLER_APPROVED_BUYER_OFFER = "SELLER_APPROVED_BUYER_OFFER"
+
+
 class ShippingPayer(StrEnum):
     BUYER = "buyer"
     SELLER = "seller"

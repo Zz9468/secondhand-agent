@@ -106,6 +106,11 @@ class ChatService:
                     reply_request_id=reply_request_id,
                     expected_fingerprint=request_fingerprint,
                 )
+            if negotiation.status in {
+                NegotiationStatus.AGREED,
+                NegotiationStatus.CLOSED,
+            }:
+                raise MessageConflictError("当前会话已经结束，不能继续发送消息")
 
             history = self._recent_history(db, session_id=session_id)
             buyer_offer_id: int | None = None

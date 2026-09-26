@@ -70,3 +70,7 @@ class IncompleteRequestError(ServiceError):
 
 class ModelDecisionError(ServiceError):
     code = "MODEL_DECISION_ERROR"
+
+
+class NegotiationLifecycleConflictError(ServiceError):
+    code = "NEGOTIATION_LIFECYCLE_CONFLICT"

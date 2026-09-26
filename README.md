@@ -117,6 +117,15 @@ V2 阶段六已完成审批后续处理与买家轮询：
 - 模型调用失败时任务标记为 `FAILED`，后续轮询可以安全重试；消息使用 `followup_request_id` 防止重复发送；
 - 买家页面每两秒增量读取新消息和会话状态，无需刷新整页即可看到卖家审批结果。
 
+V2 阶段七已完成买家最终确认与会话收口：
+
+- 买家确认请求必须绑定当前有效 `offer_id` 和幂等标识，后端重新校验买家身份、会话状态、报价归属、时效、当前性和授权来源；
+- 可确认的授权来源只有三类：Agent 合法生成的当前还价、Agent 已自动接受的当前买家报价，以及卖家审批通过且后续通知已发送的当前买家报价；
+- 确认成功会在同一事务中保存确认报价、时间、唯一请求标识和授权来源，写入系统消息并把会话变为 `AGREED`；
+- 重复确认只返回已有结果，并发确认只会写入一份交易意向；确认后的会话不能继续发送消息或议价；
+- 买家可主动关闭仍在进行的会话，关闭时会同步取消待审批请求，不遗留有效审批；
+- 前端只在当前报价满足基本可确认条件时展示“确认交易意向”，最终合法性始终由后端判定；`AGREED` 仅表示记录交易意向，不代表付款、锁定库存或实际成交。
+
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
 ## 开发约定
@@ -288,6 +297,8 @@ python -m app.workers.approval_processor --once
 - `GET http://localhost:8000/api/negotiations/{session_id}`：读取当前访客的协商状态；
 - `GET http://localhost:8000/api/negotiations/{session_id}/messages`：读取聊天记录；
 - `POST http://localhost:8000/api/negotiations/{session_id}/messages`：发送消息并触发 Seller Agent；
+- `POST http://localhost:8000/api/negotiations/{session_id}/confirm`：按当前有效报价明确确认交易意向；
+- `POST http://localhost:8000/api/negotiations/{session_id}/close`：结束当前协商并取消仍待处理的审批；
 - `GET http://localhost:8000/docs`：OpenAPI 文档。
 
 买家和卖家登录态均保存在 HttpOnly Cookie 中，前端请求会自动携带；不要再手工填写 `X-Buyer-ID`。不同浏览器配置文件或无痕窗口会获得不同的买家访客身份，不能读取彼此的协商会话。
@@ -330,4 +341,4 @@ frontend/     Vue 3 最简页面
 compose.yaml 本地 MySQL
 ```
 
-V1 最小闭环以及 V2 阶段一至阶段六已经完成；买家最终确认和双端整合仍属于后续 V2 阶段。
+V1 最小闭环以及 V2 阶段一至阶段七已经完成；双端整合与 V2 全量验收属于阶段八。

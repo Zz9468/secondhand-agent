@@ -39,6 +39,13 @@ export interface NegotiationDetail {
     product_id: number
     status: string
     current_offer_id: number | null
+    confirmed_offer_id: number | null
+    confirmed_at: string | null
+    confirmation_source:
+      | 'AGENT_COUNTER'
+      | 'AUTO_ACCEPTED_BUYER_OFFER'
+      | 'SELLER_APPROVED_BUYER_OFFER'
+      | null
     round_count: number
     version: number
     negotiation_style: string
@@ -71,6 +78,27 @@ export interface SendMessageResponse {
 export interface CreateNegotiationResponse {
   session_id: number
   created: boolean
+}
+
+export interface ConfirmNegotiationResponse {
+  session_id: number
+  status: 'AGREED'
+  confirmed_offer_id: number
+  confirmed_at: string
+  confirmation_source:
+    | 'AGENT_COUNTER'
+    | 'AUTO_ACCEPTED_BUYER_OFFER'
+    | 'SELLER_APPROVED_BUYER_OFFER'
+  system_message: ChatMessage
+  idempotent_replay: boolean
+}
+
+export interface CloseNegotiationResponse {
+  session_id: number
+  status: 'CLOSED'
+  cancelled_approval_id: number | null
+  system_message: ChatMessage
+  idempotent_replay: boolean
 }
 
 interface MessageListResponse {
@@ -106,4 +134,31 @@ export function sendMessage(
     method: 'POST',
     body: JSON.stringify(payload),
   })
+}
+
+export function confirmNegotiation(
+  sessionId: number,
+  offerId: number,
+  requestId: string,
+): Promise<ConfirmNegotiationResponse> {
+  return requestJson<ConfirmNegotiationResponse>(
+    `/api/negotiations/${sessionId}/confirm`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ offer_id: offerId, request_id: requestId }),
+    },
+  )
+}
+
+export function closeNegotiation(
+  sessionId: number,
+  requestId: string,
+): Promise<CloseNegotiationResponse> {
+  return requestJson<CloseNegotiationResponse>(
+    `/api/negotiations/${sessionId}/close`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ request_id: requestId }),
+    },
+  )
 }

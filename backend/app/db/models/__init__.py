@@ -4,6 +4,7 @@ from app.db.models.approval import ApprovalRequest
 from app.db.models.enums import (
     ApprovalFollowupStatus,
     ApprovalStatus,
+    ConfirmationSource,
     MessageRole,
     NegotiationStatus,
     NegotiationStyle,
@@ -23,6 +24,7 @@ __all__ = [
     "ApprovalFollowupStatus",
     "ApprovalRequest",
     "ApprovalStatus",
+    "ConfirmationSource",
     "Message",
     "MessageRole",
     "NegotiationSession",

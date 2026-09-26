@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from uuid import uuid4
 
@@ -7,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
 from app.db.models import (
+    ConfirmationSource,
     Message,
     MessageRole,
     NegotiationSession,
@@ -146,6 +148,10 @@ def test_seed_data_can_explicitly_reset_only_the_demo_session(
     db_session.add_all([offer, message])
     db_session.flush()
     negotiation.current_offer = offer
+    negotiation.confirmed_offer = offer
+    negotiation.confirmed_at = datetime.now()
+    negotiation.confirmation_request_id = f"confirm-reset-{uuid4().hex}"
+    negotiation.confirmation_source = ConfirmationSource.AUTO_ACCEPTED_BUYER_OFFER
     negotiation.round_count = 1
     negotiation.status = NegotiationStatus.AGREED
     previous_version = negotiation.version
@@ -159,6 +165,10 @@ def test_seed_data_can_explicitly_reset_only_the_demo_session(
     db_session.flush()
 
     assert negotiation.current_offer_id is None
+    assert negotiation.confirmed_offer_id is None
+    assert negotiation.confirmed_at is None
+    assert negotiation.confirmation_request_id is None
+    assert negotiation.confirmation_source is None
     assert negotiation.round_count == 0
     assert negotiation.status is NegotiationStatus.ACTIVE
     assert negotiation.version == previous_version + 1

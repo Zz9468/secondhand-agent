@@ -6,6 +6,8 @@ import { ensureVisitorIdentity } from './api/auth'
 import { listPublicProducts, type PublicProduct } from './api/products'
 import {
   ApiError,
+  closeNegotiation,
+  confirmNegotiation,
   createNegotiation,
   getMessages,
   getNegotiation,
@@ -38,6 +40,14 @@ const modelReady = ref(false)
 const lastOutcome = ref('')
 const messageList = ref<HTMLElement | null>(null)
 const polling = ref(false)
+const lifecycleBusy = ref(false)
+
+let pendingConfirmation: {
+  sessionId: number
+  offerId: number
+  requestId: string
+} | null = null
+let pendingClosure: { sessionId: number; requestId: string } | null = null
 
 const MESSAGE_POLL_INTERVAL_MS = 2000
 let messagePollTimer: number | undefined
@@ -48,8 +58,34 @@ const currentOffer = computed(() => {
   return state.recent_offers.find((offer) => offer.id === state.current_offer_id) ?? null
 })
 
+const sessionIsTerminal = computed(() => {
+  const status = negotiation.value?.negotiation.status
+  return status === 'AGREED' || status === 'CLOSED'
+})
+
+const canConfirmCurrentOffer = computed(() => {
+  const state = negotiation.value?.negotiation
+  const offer = currentOffer.value
+  if (!state || state.status !== 'ACTIVE' || !offer) return false
+  if (offer.expires_at && new Date(offer.expires_at).getTime() <= Date.now()) return false
+  return (
+    (offer.proposer === 'AGENT' && offer.status === 'PROPOSED')
+    || (offer.proposer === 'BUYER' && offer.status === 'ACCEPTED')
+  )
+})
+
+const canCloseNegotiation = computed(() => {
+  const status = negotiation.value?.negotiation.status
+  return status === 'ACTIVE' || status === 'WAITING_APPROVAL'
+})
+
 const canSend = computed(() => {
-  if (!modelReady.value || !messageText.value.trim() || sending.value) return false
+  if (
+    !modelReady.value
+    || !messageText.value.trim()
+    || sending.value
+    || sessionIsTerminal.value
+  ) return false
   if (!submittingOffer.value) return true
   if (!offerPrice.value || Number(offerPrice.value) < 0) return false
   if (deliveryMethod.value === 'pickup' || shippingPaidBy.value !== 'seller') return true
@@ -173,6 +209,94 @@ async function pollNegotiationUpdates(): Promise<void> {
     // 轮询瞬时失败不覆盖正在编辑的内容，下一轮会从最后一条消息继续补取。
   } finally {
     polling.value = false
+  }
+}
+
+async function confirmCurrentOffer(): Promise<void> {
+  const activeSessionId = sessionId.value
+  const offer = currentOffer.value
+  if (!canConfirmCurrentOffer.value || activeSessionId === null || !offer) return
+
+  lifecycleBusy.value = true
+  errorMessage.value = ''
+  if (
+    pendingConfirmation === null
+    || pendingConfirmation.sessionId !== activeSessionId
+    || pendingConfirmation.offerId !== offer.id
+  ) {
+    pendingConfirmation = {
+      sessionId: activeSessionId,
+      offerId: offer.id,
+      requestId: crypto.randomUUID().replaceAll('-', ''),
+    }
+  }
+  try {
+    const result = await confirmNegotiation(
+      activeSessionId,
+      offer.id,
+      pendingConfirmation.requestId,
+    )
+    appendMessage(result.system_message)
+    negotiation.value = await getNegotiation(activeSessionId)
+    lastOutcome.value = 'INTENT_AGREED'
+    pendingConfirmation = null
+    await scrollToLatest()
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 409) {
+      pendingConfirmation = null
+      try {
+        negotiation.value = await getNegotiation(activeSessionId)
+      } catch {
+        // 状态刷新失败时仍展示原始确认冲突，下一次轮询会继续同步状态。
+      }
+    }
+    errorMessage.value = readableError(error)
+  } finally {
+    lifecycleBusy.value = false
+  }
+}
+
+async function closeCurrentNegotiation(): Promise<void> {
+  const activeSessionId = sessionId.value
+  if (!canCloseNegotiation.value || activeSessionId === null) return
+  if (!window.confirm('确定结束本次协商吗？尚未完成的审批也会被取消。')) return
+
+  lifecycleBusy.value = true
+  errorMessage.value = ''
+  if (pendingClosure === null || pendingClosure.sessionId !== activeSessionId) {
+    pendingClosure = {
+      sessionId: activeSessionId,
+      requestId: crypto.randomUUID().replaceAll('-', ''),
+    }
+  }
+  try {
+    const result = await closeNegotiation(
+      activeSessionId,
+      pendingClosure.requestId,
+    )
+    appendMessage(result.system_message)
+    negotiation.value = await getNegotiation(activeSessionId)
+    lastOutcome.value = 'NEGOTIATION_CLOSED'
+    pendingClosure = null
+    await scrollToLatest()
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 409) {
+      pendingClosure = null
+      try {
+        negotiation.value = await getNegotiation(activeSessionId)
+      } catch {
+        // 状态刷新失败时仍展示原始关闭冲突，避免网络错误覆盖业务原因。
+      }
+    }
+    errorMessage.value = readableError(error)
+  } finally {
+    lifecycleBusy.value = false
+  }
+}
+
+function appendMessage(message: ChatMessage): void {
+  if (!messages.value.some((item) => item.id === message.id)) {
+    messages.value.push(message)
   }
 }
 
@@ -321,6 +445,21 @@ watch(deliveryMethod, (value) => {
             <span>{{ shippingLabel(currentOffer.shipping_paid_by) }}</span>
           </template>
           <p v-else>还没有正式报价</p>
+          <button
+            v-if="canConfirmCurrentOffer"
+            class="confirm-intent-button"
+            type="button"
+            :disabled="lifecycleBusy"
+            @click="confirmCurrentOffer"
+          >
+            {{ lifecycleBusy ? '确认中…' : '确认交易意向' }}
+          </button>
+          <small v-if="canConfirmCurrentOffer" class="intent-disclaimer">
+            确认后仅记录双方交易意向，不代表付款、锁定库存或实际成交。
+          </small>
+          <p v-else-if="negotiation.negotiation.status === 'AGREED'" class="intent-complete">
+            已确认报价 #{{ negotiation.negotiation.confirmed_offer_id }}，交易意向已记录。
+          </p>
         </section>
 
         <p class="privacy-note">卖家底价和自动接受阈值不会展示给买家。</p>
@@ -332,7 +471,18 @@ watch(deliveryMethod, (value) => {
             <p class="eyebrow">LIVE NEGOTIATION</p>
             <h2 id="chat-title">和 Seller Agent 协商</h2>
           </div>
-          <button class="ghost-button" type="button" @click="loadPage">刷新</button>
+          <div class="chat-heading-actions">
+            <button
+              v-if="canCloseNegotiation"
+              class="ghost-button close-button"
+              type="button"
+              :disabled="lifecycleBusy"
+              @click="closeCurrentNegotiation"
+            >
+              结束协商
+            </button>
+            <button class="ghost-button" type="button" @click="loadPage">刷新</button>
+          </div>
         </div>
 
         <div ref="messageList" class="message-list" aria-live="polite">
@@ -360,8 +510,13 @@ watch(deliveryMethod, (value) => {
 
         <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
         <p v-else-if="lastOutcome" class="outcome-banner">本轮结果：{{ lastOutcome }}</p>
+        <p v-if="sessionIsTerminal" class="terminal-banner">
+          {{ negotiation.negotiation.status === 'AGREED'
+            ? '双方交易意向已经记录，本会话不能继续议价。'
+            : '本次协商已经结束。' }}
+        </p>
 
-        <form class="composer" @submit.prevent="submitMessage">
+        <form v-if="!sessionIsTerminal" class="composer" @submit.prevent="submitMessage">
           <label class="message-input">
             <span class="sr-only">聊天消息</span>
             <textarea
@@ -369,6 +524,7 @@ watch(deliveryMethod, (value) => {
               maxlength="4000"
               rows="3"
               placeholder="询问成色，或描述你的报价…"
+              :disabled="sessionIsTerminal"
               @keydown.ctrl.enter="submitMessage"
             ></textarea>
           </label>
