@@ -1,38 +1,41 @@
 import { requestJson } from './client'
 
-export interface BuyerIdentity {
-  buyer_id: string
-  expires_at: string
-}
-
-export async function ensureVisitorIdentity(): Promise<BuyerIdentity> {
-  return requestJson<BuyerIdentity>('/api/auth/visitor', {
-    method: 'POST',
-  })
-}
-
-export interface SellerIdentity {
+export interface UserIdentity {
   id: string
   username: string
+  display_name: string
   expires_at: string | null
 }
 
-export function loginSeller(
-  username: string,
-  password: string,
-): Promise<SellerIdentity> {
-  return requestJson<SellerIdentity>('/api/auth/seller/login', {
+export interface LoginPayload {
+  username: string
+  password: string
+}
+
+export interface RegisterPayload extends LoginPayload {
+  display_name: string
+}
+
+export function registerUser(payload: RegisterPayload): Promise<UserIdentity> {
+  return requestJson<UserIdentity>('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify(payload),
   })
 }
 
-export function getSellerIdentity(): Promise<SellerIdentity> {
-  return requestJson<SellerIdentity>('/api/auth/seller/me')
+export function loginUser(payload: LoginPayload): Promise<UserIdentity> {
+  return requestJson<UserIdentity>('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
 
-export function logoutSeller(): Promise<{ logged_out: boolean }> {
-  return requestJson<{ logged_out: boolean }>('/api/auth/seller/logout', {
+export function getCurrentUser(): Promise<UserIdentity> {
+  return requestJson<UserIdentity>('/api/auth/me')
+}
+
+export function logoutUser(): Promise<{ logged_out: boolean }> {
+  return requestJson<{ logged_out: boolean }>('/api/auth/logout', {
     method: 'POST',
   })
 }

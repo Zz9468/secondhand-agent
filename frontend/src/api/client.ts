@@ -7,6 +7,12 @@ export class ApiError extends Error {
   }
 }
 
+let unauthorizedHandler: (() => void) | undefined
+
+export function setUnauthorizedHandler(handler: () => void): void {
+  unauthorizedHandler = handler
+}
+
 export async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -19,6 +25,7 @@ export async function requestJson<T>(path: string, init?: RequestInit): Promise<
   })
 
   if (!response.ok) {
+    if (response.status === 401) unauthorizedHandler?.()
     let detail = `请求失败（${response.status}）`
     try {
       const body = (await response.json()) as {

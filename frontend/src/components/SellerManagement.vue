@@ -2,12 +2,6 @@
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
 
 import {
-  getSellerIdentity,
-  loginSeller,
-  logoutSeller,
-  type SellerIdentity,
-} from '../api/auth'
-import {
   listSellerApprovals,
   reviewSellerApproval,
   type ApprovalStatus,
@@ -31,6 +25,7 @@ import {
   type SellerNegotiationOffer,
   type SellerNegotiationSummary,
 } from '../api/sellerNegotiations'
+import { useAuth } from '../state/auth'
 
 interface ProductForm {
   title: string
@@ -45,7 +40,7 @@ interface ProductForm {
 
 type SellerSection = 'products' | 'approvals' | 'negotiations'
 
-const identity = ref<SellerIdentity | null>(null)
+const auth = useAuth()
 const products = ref<SellerProduct[]>([])
 const selectedProduct = ref<SellerProduct | null>(null)
 const approvals = ref<SellerApproval[]>([])
@@ -59,8 +54,6 @@ const pendingReviewRequest = ref<{
   action: 'approve' | 'reject'
   requestId: string
 } | null>(null)
-const username = ref('demo-seller')
-const password = ref('')
 const loading = ref(true)
 const saving = ref(false)
 const reviewing = ref(false)
@@ -85,44 +78,16 @@ function blankForm(): ProductForm {
   }
 }
 
-async function restoreSession(): Promise<void> {
+async function loadWorkspace(): Promise<void> {
   loading.value = true
-  try {
-    identity.value = await getSellerIdentity()
-    await Promise.all([loadProducts(), loadApprovals(), loadNegotiations()])
-  } catch (error) {
-    if (!(error instanceof ApiError && error.status === 401)) {
-      errorMessage.value = readableError(error)
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
-async function submitLogin(): Promise<void> {
   errorMessage.value = ''
-  loading.value = true
   try {
-    identity.value = await loginSeller(username.value, password.value)
-    password.value = ''
     await Promise.all([loadProducts(), loadApprovals(), loadNegotiations()])
   } catch (error) {
     errorMessage.value = readableError(error)
   } finally {
     loading.value = false
   }
-}
-
-async function signOut(): Promise<void> {
-  await logoutSeller()
-  identity.value = null
-  products.value = []
-  approvals.value = []
-  selectedApproval.value = null
-  negotiations.value = []
-  selectedNegotiation.value = null
-  activeSection.value = 'products'
-  startNewProduct()
 }
 
 async function loadProducts(preferredId?: number): Promise<void> {
@@ -394,7 +359,12 @@ function readableError(error: unknown): string {
 }
 
 async function pollSellerUpdates(): Promise<void> {
-  if (identity.value === null || polling.value || saving.value || reviewing.value) return
+  if (
+    auth.currentUser.value === null
+    || polling.value
+    || saving.value
+    || reviewing.value
+  ) return
   polling.value = true
   try {
     await Promise.all([
@@ -410,7 +380,7 @@ async function pollSellerUpdates(): Promise<void> {
 }
 
 onMounted(() => {
-  void restoreSession()
+  void loadWorkspace()
   sellerPollTimer = window.setInterval(
     () => void pollSellerUpdates(),
     SELLER_POLL_INTERVAL_MS,
@@ -428,36 +398,16 @@ onUnmounted(() => {
   <section class="seller-page">
     <div v-if="loading" class="loading-card">正在读取卖家信息…</div>
 
-    <form v-else-if="!identity" class="login-card" @submit.prevent="submitLogin">
-      <p class="eyebrow">SELLER CONSOLE</p>
-      <h1>卖家登录</h1>
-      <p>登录后可管理商品、私有协商策略和待处理报价审批。</p>
-      <label>
-        <span>用户名</span>
-        <input v-model="username" autocomplete="username" required />
-      </label>
-      <label>
-        <span>密码</span>
-        <input
-          v-model="password"
-          autocomplete="current-password"
-          minlength="12"
-          type="password"
-          required
-        />
-      </label>
-      <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
-      <button type="submit">登录</button>
-    </form>
-
     <div v-else class="seller-workspace">
       <aside class="seller-sidebar">
         <div class="seller-profile">
           <div>
             <p class="eyebrow">SELLER</p>
-            <strong>{{ identity.username }}</strong>
+            <strong>{{ auth.currentUser.value?.display_name }}</strong>
+            <small v-if="auth.currentUser.value">
+              @{{ auth.currentUser.value.username }}
+            </small>
           </div>
-          <button class="ghost-button" type="button" @click="signOut">退出</button>
         </div>
         <div class="seller-section-tabs">
           <button
