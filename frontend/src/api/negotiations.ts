@@ -4,6 +4,7 @@ export { ApiError } from './client'
 
 export type MessageRole = 'BUYER' | 'AGENT' | 'SYSTEM'
 export type ShippingPayer = 'buyer' | 'seller'
+export type NegotiationStatus = 'ACTIVE' | 'WAITING_APPROVAL' | 'AGREED' | 'CLOSED'
 
 export interface ChatMessage {
   id: number
@@ -80,6 +81,23 @@ export interface CreateNegotiationResponse {
   created: boolean
 }
 
+export interface BuyerNegotiationSummary {
+  id: number
+  product_id: number
+  product_title: string
+  product_status: 'DRAFT' | 'AVAILABLE' | 'UNAVAILABLE'
+  seller: {
+    id: string
+    display_name: string
+  }
+  status: NegotiationStatus
+  current_offer_id: number | null
+  confirmed_offer_id: number | null
+  round_count: number
+  created_at: string
+  updated_at: string
+}
+
 export interface ConfirmNegotiationResponse {
   session_id: number
   status: 'AGREED'
@@ -105,11 +123,20 @@ interface MessageListResponse {
   messages: ChatMessage[]
 }
 
+interface BuyerNegotiationListResponse {
+  negotiations: BuyerNegotiationSummary[]
+}
+
 export function createNegotiation(productId: number): Promise<CreateNegotiationResponse> {
   return requestJson<CreateNegotiationResponse>('/api/negotiations', {
     method: 'POST',
     body: JSON.stringify({ product_id: productId }),
   })
+}
+
+export async function listBuyerNegotiations(): Promise<BuyerNegotiationSummary[]> {
+  const result = await requestJson<BuyerNegotiationListResponse>('/api/buyer/negotiations')
+  return result.negotiations
 }
 
 export function getNegotiation(sessionId: number): Promise<NegotiationDetail> {

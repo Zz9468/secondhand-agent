@@ -33,6 +33,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/buyer/negotiations',
+      name: 'buyer-negotiations',
+      component: () => import('../views/BuyerNegotiationsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/sellers/:sellerId',
       name: 'seller-public',
       component: () => import('../views/SellerPublicView.vue'),
@@ -42,6 +48,12 @@ const router = createRouter({
       path: '/products/:productId',
       name: 'product-detail',
       component: () => import('../views/ProductDetailView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/negotiations/:sessionId',
+      name: 'negotiation',
+      component: () => import('../views/NegotiationView.vue'),
       meta: { requiresAuth: true },
     },
     {

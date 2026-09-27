@@ -123,6 +123,8 @@ class NegotiationService:
             )
             if product is None or product.status is not ProductStatus.AVAILABLE:
                 raise ProductUnavailableError("商品不存在或当前不可协商")
+            if product.seller_id == buyer_id:
+                raise NegotiationLifecycleConflictError("不能与自己发布的商品协商")
             self._get_policy(db, product_id, for_update=True)
 
             existing = db.scalar(

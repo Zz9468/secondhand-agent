@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.buyer_negotiations import router as buyer_negotiations_router
 from app.api.health import router as health_router
 from app.api.negotiations import router as negotiations_router
 from app.api.products import public_router as products_router
@@ -33,6 +34,7 @@ def create_app() -> FastAPI:
     application.include_router(seller_products_router, prefix=settings.api_prefix)
     application.include_router(seller_approvals_router, prefix=settings.api_prefix)
     application.include_router(seller_negotiations_router, prefix=settings.api_prefix)
+    application.include_router(buyer_negotiations_router, prefix=settings.api_prefix)
     application.include_router(negotiations_router, prefix=settings.api_prefix)
     return application
 

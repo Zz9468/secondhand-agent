@@ -1,15 +1,24 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+import { createNegotiation } from '../api/negotiations'
 import { getPublicProduct, type PublicProduct } from '../api/products'
+import { useAuth } from '../state/auth'
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuth()
 const product = ref<PublicProduct | null>(null)
 const loading = ref(true)
+const startingNegotiation = ref(false)
 const errorMessage = ref('')
+const actionError = ref('')
 
 const productId = computed(() => Number(route.params.productId))
+const isOwnProduct = computed(
+  () => product.value?.seller.id === auth.currentUser.value?.id,
+)
 
 function formatPrice(value: string): string {
   return new Intl.NumberFormat('zh-CN', {
@@ -33,6 +42,23 @@ async function loadProduct(): Promise<void> {
     errorMessage.value = error instanceof Error ? error.message : '商品详情加载失败，请稍后重试。'
   } finally {
     loading.value = false
+  }
+}
+
+async function startNegotiation(): Promise<void> {
+  if (!product.value || isOwnProduct.value || startingNegotiation.value) return
+  startingNegotiation.value = true
+  actionError.value = ''
+  try {
+    const result = await createNegotiation(product.value.id)
+    await router.push({
+      name: 'negotiation',
+      params: { sessionId: result.session_id },
+    })
+  } catch (error) {
+    actionError.value = error instanceof Error ? error.message : '发起协商失败，请稍后重试。'
+  } finally {
+    startingNegotiation.value = false
   }
 }
 
@@ -75,8 +101,19 @@ watch(productId, () => void loadProduct(), { immediate: true })
           </span>
           <b aria-hidden="true">查看卖家主页 →</b>
         </RouterLink>
+        <button
+          v-if="!isOwnProduct"
+          class="start-negotiation-button"
+          type="button"
+          :disabled="startingNegotiation"
+          @click="startNegotiation"
+        >
+          {{ startingNegotiation ? '正在进入协商…' : '与卖家协商' }}
+        </button>
+        <p v-else class="own-product-note">这是你发布的商品，不能与自己发起协商。</p>
+        <p v-if="actionError" class="error-banner" role="alert">{{ actionError }}</p>
         <p class="browse-only-note">
-          当前页面只读取公开商品信息，不会创建协商会话，也不会展示卖家的私有定价规则。
+          浏览和刷新本页不会创建会话；只有点击“与卖家协商”才会创建或恢复进行中的会话。
         </p>
       </div>
     </article>

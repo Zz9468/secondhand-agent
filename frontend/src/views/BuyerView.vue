@@ -38,9 +38,12 @@ onMounted(() => void loadCatalog())
         <h1>慢慢看，遇见值得再次拥有的好物。</h1>
         <p>浏览商品和卖家不会创建协商会话。进入详情后，你仍可以安心比较公开信息。</p>
       </div>
-      <button class="ghost-button" type="button" :disabled="loading" @click="loadCatalog">
-        {{ loading ? '载入中…' : '刷新大厅' }}
-      </button>
+      <div class="catalog-hero-actions">
+        <RouterLink class="secondary-link" to="/buyer/negotiations">我的协商</RouterLink>
+        <button class="ghost-button" type="button" :disabled="loading" @click="loadCatalog">
+          {{ loading ? '载入中…' : '刷新大厅' }}
+        </button>
+      </div>
     </header>
 
     <section v-if="loading" class="loading-card">正在读取已上架商品…</section>

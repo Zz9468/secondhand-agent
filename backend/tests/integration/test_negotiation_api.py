@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.dependencies import (
@@ -7,7 +8,7 @@ from app.api.dependencies import (
     get_session_factory_dependency,
 )
 from app.core.config import Settings, get_settings
-from app.db.models import NegotiationSession
+from app.db.models import NegotiationSession, Product
 from app.main import create_app
 from tests.fakes import RoutingDecisionProvider, demo_negotiation_decision
 from tests.integration.auth_helpers import authenticate_user
@@ -78,6 +79,77 @@ def test_authenticated_users_create_isolated_product_sessions(
         ).status_code
         == 404
     )
+
+
+def test_buyer_history_is_private_and_owned_product_cannot_be_negotiated(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    with service_session_factory() as db:
+        negotiation = db.get(NegotiationSession, session_id)
+        assert negotiation is not None
+        product = db.get(Product, negotiation.product_id)
+        assert product is not None
+        product_id = product.id
+        seller_id = product.seller_id
+        seller_display_name = product.seller.display_name
+
+    application = create_app()
+    application.dependency_overrides[get_session_factory_dependency] = (
+        lambda: service_session_factory
+    )
+    application.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
+    buyer = TestClient(application)
+    seller = TestClient(application)
+    outsider = TestClient(application)
+    anonymous = TestClient(application)
+    authenticate_user(buyer, user_id=buyer_id, settings=TEST_SETTINGS)
+    authenticate_user(seller, user_id=seller_id, settings=TEST_SETTINGS)
+    outsider_id = create_user_account(service_session_factory)
+    authenticate_user(outsider, user_id=outsider_id, settings=TEST_SETTINGS)
+
+    buyer_history = buyer.get("/api/buyer/negotiations")
+    outsider_history = outsider.get("/api/buyer/negotiations")
+    unauthenticated_history = anonymous.get("/api/buyer/negotiations")
+    self_negotiation = seller.post(
+        "/api/negotiations",
+        json={"product_id": product_id},
+    )
+
+    assert buyer_history.status_code == 200
+    assert buyer_history.json()["negotiations"] == [
+        {
+            "id": session_id,
+            "product_id": product_id,
+            "product_title": "阶段四测试商品",
+            "product_status": "AVAILABLE",
+            "seller": {
+                "id": seller_id,
+                "display_name": seller_display_name,
+            },
+            "status": "ACTIVE",
+            "current_offer_id": None,
+            "confirmed_offer_id": None,
+            "round_count": 0,
+            "created_at": buyer_history.json()["negotiations"][0]["created_at"],
+            "updated_at": buyer_history.json()["negotiations"][0]["updated_at"],
+        }
+    ]
+    assert "buyer_id" not in buyer_history.text
+    assert outsider_history.json() == {"negotiations": []}
+    assert unauthenticated_history.status_code == 401
+    assert self_negotiation.status_code == 409
+    assert "自己发布的商品" in self_negotiation.json()["detail"]
+    with service_session_factory() as db:
+        self_session_count = db.scalar(
+            select(func.count())
+            .select_from(NegotiationSession)
+            .where(
+                NegotiationSession.product_id == product_id,
+                NegotiationSession.buyer_id == seller_id,
+            )
+        )
+        assert self_session_count == 0
 
 
 def test_negotiation_api_completes_chat_round_and_enforces_identity(

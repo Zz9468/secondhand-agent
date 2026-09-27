@@ -1,15 +1,23 @@
+from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
+from threading import Barrier
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.security import hash_password
 from app.db.models import (
     NegotiationSession,
+    NegotiationStatus,
+    NegotiationStyle,
     Offer,
     OfferProposer,
     OfferStatus,
+    Product,
+    ProductStatus,
     SellerPolicy,
     UserAccount,
 )
@@ -89,6 +97,138 @@ def test_disabled_historical_account_cannot_create_new_session(
             product_id=product_id,
             buyer_id=historical_buyer_id,
         )
+
+
+def test_user_cannot_create_negotiation_for_owned_product(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    existing_session_id, _ = create_negotiation(service_session_factory)
+    with service_session_factory() as db:
+        existing_session = db.get(NegotiationSession, existing_session_id)
+        assert existing_session is not None
+        product = db.get(Product, existing_session.product_id)
+        assert product is not None
+
+    with pytest.raises(NegotiationLifecycleConflictError, match="自己发布的商品"):
+        NegotiationService(service_session_factory).create_or_get_active_session(
+            product_id=product.id,
+            buyer_id=product.seller_id,
+        )
+
+
+@pytest.mark.parametrize(
+    "terminal_status",
+    [NegotiationStatus.AGREED, NegotiationStatus.CLOSED],
+)
+def test_terminal_session_is_not_restored_as_active(
+    service_session_factory: sessionmaker[Session],
+    terminal_status: NegotiationStatus,
+) -> None:
+    old_session_id, buyer_id = create_negotiation(service_session_factory)
+    with service_session_factory() as db, db.begin():
+        old_session = db.get(NegotiationSession, old_session_id)
+        assert old_session is not None
+        old_session.status = terminal_status
+        product_id = old_session.product_id
+
+    new_session_id, created = NegotiationService(
+        service_session_factory
+    ).create_or_get_active_session(
+        product_id=product_id,
+        buyer_id=buyer_id,
+    )
+
+    assert created is True
+    assert new_session_id != old_session_id
+    with service_session_factory() as db:
+        new_session = db.get(NegotiationSession, new_session_id)
+        assert new_session is not None
+        assert new_session.status is NegotiationStatus.ACTIVE
+
+
+def test_concurrent_session_creation_reuses_one_active_session(
+    mysql_engine: Engine,
+) -> None:
+    committed_factory = sessionmaker(bind=mysql_engine, expire_on_commit=False)
+    suffix = uuid4().hex
+    seller_id = f"concurrent-seller-{suffix}"
+    buyer_id = f"concurrent-buyer-{suffix}"
+    with committed_factory() as db, db.begin():
+        seller = UserAccount(
+            id=seller_id,
+            username=seller_id,
+            display_name="并发测试卖家",
+            password_hash=hash_password("concurrent-seller-password"),
+            is_active=True,
+        )
+        buyer = UserAccount(
+            id=buyer_id,
+            username=buyer_id,
+            display_name="并发测试买家",
+            password_hash=hash_password("concurrent-buyer-password"),
+            is_active=True,
+        )
+        product = Product(
+            seller=seller,
+            title="并发创建测试商品",
+            description="验证重复点击只产生一个活动会话。",
+            listed_price=Decimal("3000.00"),
+            status=ProductStatus.AVAILABLE,
+        )
+        product.policy = SellerPolicy(
+            minimum_net_price=Decimal("2700.00"),
+            auto_accept_threshold=Decimal("2850.00"),
+            negotiation_style=NegotiationStyle.BALANCED,
+            max_rounds=6,
+            version=1,
+        )
+        db.add_all([seller, buyer, product])
+        db.flush()
+        product_id = product.id
+
+    barrier = Barrier(2)
+
+    def create_session() -> tuple[int, bool]:
+        barrier.wait()
+        return NegotiationService(committed_factory).create_or_get_active_session(
+            product_id=product_id,
+            buyer_id=buyer_id,
+        )
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            results = tuple(executor.map(lambda _: create_session(), range(2)))
+
+        assert len({session_id for session_id, _ in results}) == 1
+        assert sorted(created for _, created in results) == [False, True]
+        with committed_factory() as db:
+            active_count = db.scalar(
+                select(func.count())
+                .select_from(NegotiationSession)
+                .where(
+                    NegotiationSession.product_id == product_id,
+                    NegotiationSession.buyer_id == buyer_id,
+                    NegotiationSession.status.in_(
+                        (
+                            NegotiationStatus.ACTIVE,
+                            NegotiationStatus.WAITING_APPROVAL,
+                        )
+                    ),
+                )
+            )
+            assert active_count == 1
+    finally:
+        with committed_factory() as db, db.begin():
+            db.execute(
+                delete(NegotiationSession).where(
+                    NegotiationSession.product_id == product_id
+                )
+            )
+            db.execute(delete(SellerPolicy).where(SellerPolicy.product_id == product_id))
+            db.execute(delete(Product).where(Product.id == product_id))
+            db.execute(
+                delete(UserAccount).where(UserAccount.id.in_((seller_id, buyer_id)))
+            )
 
 
 def test_evaluate_offer_returns_three_authorization_zones(

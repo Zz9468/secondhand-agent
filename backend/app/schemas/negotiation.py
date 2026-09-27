@@ -13,6 +13,7 @@ from app.db.models import (
     NegotiationStatus,
     ProductStatus,
 )
+from app.schemas.seller import PublicSellerSummaryResponse
 from app.services.pricing_service import ShippingPayer
 
 
@@ -153,6 +154,26 @@ class NegotiationStateResponse(BaseModel):
 class NegotiationDetailResponse(BaseModel):
     product: ProductResponse
     negotiation: NegotiationStateResponse
+
+
+class BuyerNegotiationSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    product_id: int
+    product_title: str
+    product_status: ProductStatus
+    seller: PublicSellerSummaryResponse
+    status: NegotiationStatus
+    current_offer_id: int | None
+    confirmed_offer_id: int | None
+    round_count: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class BuyerNegotiationListResponse(BaseModel):
+    negotiations: list[BuyerNegotiationSummaryResponse]
 
 
 class SendMessageResponse(BaseModel):
