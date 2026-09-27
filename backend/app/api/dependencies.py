@@ -9,15 +9,13 @@ from app.agent.decision_provider import DecisionProvider, LangChainDecisionProvi
 from app.agent.model_factory import ModelConfigurationError, QwenChatModelFactory
 from app.core.config import Settings, get_settings
 from app.core.security import (
-    BUYER_SESSION_COOKIE,
-    SELLER_SESSION_COOKIE,
-    IdentityKind,
+    USER_SESSION_COOKIE,
     IdentityTokenError,
     create_identity_token,
     decode_identity_token,
 )
 from app.db.session import get_session_factory
-from app.services.auth_service import AuthService, SellerPrincipal
+from app.services.auth_service import AuthService, UserPrincipal
 
 
 def get_session_factory_dependency() -> sessionmaker[Session]:
@@ -48,44 +46,35 @@ def get_decision_provider() -> DecisionProvider:
         ) from exc
 
 
-def get_current_buyer_id(
-    settings: SettingsDependency,
-    token: Annotated[str | None, Cookie(alias=BUYER_SESSION_COOKIE)] = None,
-) -> str:
-    return _required_identity_subject(token, kind="buyer", settings=settings)
-
-
-def get_current_seller(
+def get_current_user(
     settings: SettingsDependency,
     session_factory: SessionFactoryDependency,
-    token: Annotated[str | None, Cookie(alias=SELLER_SESSION_COOKIE)] = None,
-) -> SellerPrincipal:
-    seller_id = _required_identity_subject(token, kind="seller", settings=settings)
-    seller = AuthService(session_factory).get_active_seller(seller_id)
-    if seller is None:
+    token: Annotated[str | None, Cookie(alias=USER_SESSION_COOKIE)] = None,
+) -> UserPrincipal:
+    user_id = _required_user_subject(token, settings=settings)
+    user = AuthService(session_factory).get_active_user(user_id)
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="seller session is no longer valid",
+            detail="user session is no longer valid",
         )
-    return seller
+    return user
 
 
-def create_session_token(
+CurrentUser = Annotated[UserPrincipal, Depends(get_current_user)]
+
+
+def create_user_session_token(
     *,
     subject: str,
-    kind: IdentityKind,
     settings: Settings,
 ) -> tuple[str, timedelta]:
     secret = _auth_secret(settings)
-    lifetime = (
-        timedelta(minutes=settings.seller_session_minutes)
-        if kind == "seller"
-        else timedelta(days=settings.buyer_session_days)
-    )
+    lifetime = timedelta(minutes=settings.user_session_minutes)
     return (
         create_identity_token(
             subject=subject,
-            kind=kind,
+            kind="user",
             secret=secret,
             lifetime=lifetime,
         ),
@@ -93,45 +82,32 @@ def create_session_token(
     )
 
 
-def optional_identity_subject(
-    token: str | None,
-    *,
-    kind: IdentityKind,
-    settings: Settings,
-) -> str | None:
-    if not token:
-        return None
-    try:
-        return decode_identity_token(
-            token,
-            expected_kind=kind,
-            secret=_auth_secret(settings),
-        ).subject
-    except IdentityTokenError:
-        return None
+def ensure_auth_configured(settings: Settings) -> None:
+    """在写入账号或校验凭据前确认签名服务可用。"""
+
+    _auth_secret(settings)
 
 
-def _required_identity_subject(
+def _required_user_subject(
     token: str | None,
     *,
-    kind: IdentityKind,
     settings: Settings,
 ) -> str:
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"{kind} session is required",
+            detail="user session is required",
         )
     try:
         return decode_identity_token(
             token,
-            expected_kind=kind,
+            expected_kind="user",
             secret=_auth_secret(settings),
         ).subject
     except IdentityTokenError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"{kind} session is invalid or expired",
+            detail="user session is invalid or expired",
         ) from exc
 
 

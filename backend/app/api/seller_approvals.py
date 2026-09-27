@@ -1,8 +1,8 @@
 from typing import Annotated, Never
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
-from app.api.dependencies import SessionFactoryDependency, get_current_seller
+from app.api.dependencies import CurrentUser, SessionFactoryDependency
 from app.db.models import ApprovalStatus
 from app.schemas.approval import (
     SellerApprovalDecisionRequest,
@@ -10,7 +10,6 @@ from app.schemas.approval import (
     SellerApprovalResponse,
 )
 from app.services.approval_service import ApprovalService
-from app.services.auth_service import SellerPrincipal
 from app.services.errors import (
     ApprovalConflictError,
     ApprovalNotAuthorizedError,
@@ -19,18 +18,17 @@ from app.services.errors import (
 )
 
 router = APIRouter(prefix="/seller/approvals", tags=["seller-approvals"])
-CurrentSeller = Annotated[SellerPrincipal, Depends(get_current_seller)]
 
 
 @router.get("", response_model=SellerApprovalListResponse)
 def list_seller_approvals(
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
     approval_status: Annotated[ApprovalStatus | None, Query(alias="status")] = None,
     limit: Annotated[int, Query(ge=1, le=500)] = 200,
 ) -> SellerApprovalListResponse:
     approvals = ApprovalService(session_factory).list_for_seller(
-        seller_id=seller.id,
+        seller_id=user.id,
         approval_status=approval_status,
         limit=limit,
     )
@@ -44,12 +42,12 @@ def list_seller_approvals(
 @router.get("/{approval_id}", response_model=SellerApprovalResponse)
 def get_seller_approval(
     approval_id: int,
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerApprovalResponse:
     try:
         approval = ApprovalService(session_factory).get_for_seller(
-            seller_id=seller.id,
+            seller_id=user.id,
             approval_id=approval_id,
         )
     except ServiceError as exc:
@@ -61,12 +59,12 @@ def get_seller_approval(
 def approve_seller_approval(
     approval_id: int,
     payload: SellerApprovalDecisionRequest,
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerApprovalResponse:
     try:
         approval = ApprovalService(session_factory).approve_request(
-            seller_id=seller.id,
+            seller_id=user.id,
             approval_id=approval_id,
             request_id=payload.request_id,
             comment=payload.comment,
@@ -80,12 +78,12 @@ def approve_seller_approval(
 def reject_seller_approval(
     approval_id: int,
     payload: SellerApprovalDecisionRequest,
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerApprovalResponse:
     try:
         approval = ApprovalService(session_factory).reject_request(
-            seller_id=seller.id,
+            seller_id=user.id,
             approval_id=approval_id,
             request_id=payload.request_id,
             comment=payload.comment,

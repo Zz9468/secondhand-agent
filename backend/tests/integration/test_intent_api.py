@@ -1,4 +1,3 @@
-from datetime import timedelta
 from decimal import Decimal
 
 import pytest
@@ -7,12 +6,12 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
-from app.core.security import BUYER_SESSION_COOKIE, create_identity_token
 from app.db.models import Message, MessageRole
 from app.main import create_app
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, ShippingPayer
-from tests.integration.factories import create_negotiation
+from tests.integration.auth_helpers import authenticate_user
+from tests.integration.factories import create_negotiation, create_user_account
 
 pytestmark = pytest.mark.mysql_integration
 
@@ -21,17 +20,6 @@ TEST_SETTINGS = Settings(
     database_url="mysql+pymysql://test:test@127.0.0.1/test",
     auth_secret="a-secure-test-secret-with-32-characters",
 )
-
-
-def _authenticate_buyer(client: TestClient, buyer_id: str) -> None:
-    assert TEST_SETTINGS.auth_secret is not None
-    token = create_identity_token(
-        subject=buyer_id,
-        kind="buyer",
-        secret=TEST_SETTINGS.auth_secret.get_secret_value(),
-        lifetime=timedelta(minutes=30),
-    )
-    client.cookies.set(BUYER_SESSION_COOKIE, token)
 
 
 def _client(
@@ -44,7 +32,7 @@ def _client(
     )
     application.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
     client = TestClient(application)
-    _authenticate_buyer(client, buyer_id)
+    authenticate_user(client, user_id=buyer_id, settings=TEST_SETTINGS)
     return client
 
 
@@ -97,7 +85,8 @@ def test_confirm_api_records_intent_replays_and_enforces_buyer_identity(
     )
     state = client.get(f"/api/negotiations/{session_id}")
     history = client.get(f"/api/negotiations/{session_id}/messages")
-    attacker = _client(service_session_factory, "another-buyer")
+    attacker_id = create_user_account(service_session_factory)
+    attacker = _client(service_session_factory, attacker_id)
     unauthorized = attacker.post(
         f"/api/negotiations/{session_id}/confirm",
         json=payload,

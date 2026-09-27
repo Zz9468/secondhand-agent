@@ -4,6 +4,10 @@ class ServiceError(RuntimeError):
     code = "SERVICE_ERROR"
 
 
+class UsernameAlreadyExistsError(ServiceError):
+    code = "USERNAME_ALREADY_EXISTS"
+
+
 class NegotiationNotFoundError(ServiceError):
     code = "NEGOTIATION_NOT_FOUND"
 

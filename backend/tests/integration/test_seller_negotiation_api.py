@@ -8,12 +8,13 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
-from app.core.security import SELLER_SESSION_COOKIE, create_identity_token, hash_password
+from app.core.security import hash_password
 from app.db.models import Message, MessageRole, NegotiationSession, Product, UserAccount
 from app.main import create_app
 from app.services.approval_service import ApprovalService
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, ShippingPayer
+from tests.integration.auth_helpers import authenticate_user
 from tests.integration.factories import create_negotiation
 
 pytestmark = pytest.mark.mysql_integration
@@ -35,16 +36,7 @@ def _test_client(session_factory: sessionmaker[Session]) -> TestClient:
 
 
 def _authenticate_seller(client: TestClient, seller_id: str) -> None:
-    assert TEST_SETTINGS.auth_secret is not None
-    client.cookies.set(
-        SELLER_SESSION_COOKIE,
-        create_identity_token(
-            subject=seller_id,
-            kind="seller",
-            secret=TEST_SETTINGS.auth_secret.get_secret_value(),
-            lifetime=timedelta(minutes=30),
-        ),
-    )
+    authenticate_user(client, user_id=seller_id, settings=TEST_SETTINGS)
 
 
 def _create_waiting_negotiation(

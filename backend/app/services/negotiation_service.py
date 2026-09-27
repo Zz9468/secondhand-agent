@@ -18,12 +18,13 @@ from app.db.models import (
     Product,
     ProductStatus,
     SellerPolicy,
+    UserAccount,
 )
 from app.db.models import ShippingPayer as StoredShippingPayer
-from app.services.auth_service import ensure_historical_buyer_account
 from app.services.errors import (
     InvalidNegotiationStateError,
     InvalidOfferTermsError,
+    NegotiationLifecycleConflictError,
     NegotiationNotFoundError,
     OfferConflictError,
     OfferNotAuthorizedError,
@@ -100,9 +101,21 @@ class NegotiationService:
         product_id: int,
         buyer_id: str,
     ) -> tuple[int, bool]:
-        """为可信访客创建或复用当前商品的可协商会话。"""
+        """为已登录且启用的统一账号创建或复用当前商品的会话。"""
 
         with self._session_factory() as db, db.begin():
+            buyer = db.scalar(
+                select(UserAccount)
+                .where(
+                    UserAccount.id == buyer_id,
+                    UserAccount.is_active.is_(True),
+                )
+                .with_for_update()
+            )
+            if buyer is None:
+                raise NegotiationLifecycleConflictError(
+                    "当前账号不存在或已停用，不能创建协商会话"
+                )
             product = db.scalar(
                 select(Product)
                 .where(Product.id == product_id)
@@ -130,8 +143,6 @@ class NegotiationService:
             if existing is not None:
                 return existing.id, False
 
-            # 阶段一仍保留 V2 访客入口；先建立不可登录映射，避免悬空 buyer_id。
-            ensure_historical_buyer_account(db, buyer_id=buyer_id)
             negotiation = NegotiationSession(
                 product_id=product_id,
                 buyer_id=buyer_id,

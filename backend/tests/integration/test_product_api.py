@@ -1,4 +1,3 @@
-from datetime import timedelta
 from uuid import uuid4
 
 import pytest
@@ -7,14 +6,12 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
-from app.core.security import (
-    SELLER_SESSION_COOKIE,
-    create_identity_token,
-    hash_password,
-)
+from app.core.security import hash_password
 from app.db.models import UserAccount
 from app.main import create_app
 from app.services.negotiation_service import NegotiationService
+from tests.integration.auth_helpers import authenticate_user
+from tests.integration.factories import create_user_account
 
 pytestmark = pytest.mark.mysql_integration
 
@@ -54,14 +51,7 @@ def _create_seller(
 
 
 def _authenticate_seller(client: TestClient, seller_id: str) -> None:
-    assert TEST_SETTINGS.auth_secret is not None
-    token = create_identity_token(
-        subject=seller_id,
-        kind="seller",
-        secret=TEST_SETTINGS.auth_secret.get_secret_value(),
-        lifetime=timedelta(minutes=30),
-    )
-    client.cookies.set(SELLER_SESSION_COOKIE, token)
+    authenticate_user(client, user_id=seller_id, settings=TEST_SETTINGS)
 
 
 def _product_payload(*, status: str = "DRAFT") -> dict[str, object]:
@@ -200,8 +190,11 @@ def test_seller_manages_only_owned_products_and_policy_versions(
     assert forbidden_update.status_code == 404
 
     buyer = _test_client(service_session_factory)
-    visitor = buyer.post("/api/auth/visitor")
-    assert visitor.status_code == 200
+    buyer_id = create_user_account(
+        service_session_factory,
+        display_name="商品接口测试买家",
+    )
+    authenticate_user(buyer, user_id=buyer_id, settings=TEST_SETTINGS)
     negotiation = buyer.post(
         "/api/negotiations",
         json={"product_id": product_id},
@@ -209,7 +202,7 @@ def test_seller_manages_only_owned_products_and_policy_versions(
     assert negotiation.status_code == 200
     state = NegotiationService(service_session_factory).get_state(
         session_id=negotiation.json()["session_id"],
-        buyer_id=visitor.json()["buyer_id"],
+        buyer_id=buyer_id,
     )
     assert state.negotiation_style.value == "FIRM"
     assert state.max_rounds == 4

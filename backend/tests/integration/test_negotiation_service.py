@@ -5,7 +5,6 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.security import hash_password
 from app.db.models import (
     NegotiationSession,
     Offer,
@@ -14,7 +13,7 @@ from app.db.models import (
     SellerPolicy,
     UserAccount,
 )
-from app.services.auth_service import HISTORICAL_ACCOUNT_PASSWORD_HASH
+from app.services.auth_service import ensure_historical_buyer_account
 from app.services.errors import (
     NegotiationLifecycleConflictError,
     NegotiationNotFoundError,
@@ -24,7 +23,7 @@ from app.services.errors import (
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, PriceZone, ShippingPayer
 from app.services.product_service import ProductService
-from tests.integration.factories import create_negotiation
+from tests.integration.factories import create_negotiation, create_user_account
 
 pytestmark = pytest.mark.mysql_integration
 
@@ -39,7 +38,7 @@ def buyer_terms(price: str, *, shipping_cost: str | None = None) -> OfferTerms:
     )
 
 
-def test_create_session_builds_one_disabled_account_for_each_v2_visitor(
+def test_create_session_reuses_active_unified_user_account(
     service_session_factory: sessionmaker[Session],
 ) -> None:
     existing_session_id, _ = create_negotiation(service_session_factory)
@@ -48,54 +47,47 @@ def test_create_session_builds_one_disabled_account_for_each_v2_visitor(
         assert existing_session is not None
         product_id = existing_session.product_id
 
-    visitor_id = f"buyer-{uuid4().hex}"
+    buyer_id = create_user_account(service_session_factory)
     service = NegotiationService(service_session_factory)
     session_id, created = service.create_or_get_active_session(
         product_id=product_id,
-        buyer_id=visitor_id,
+        buyer_id=buyer_id,
     )
     repeated_id, repeated_created = service.create_or_get_active_session(
         product_id=product_id,
-        buyer_id=visitor_id,
+        buyer_id=buyer_id,
     )
 
     assert created is True
     assert repeated_created is False
     assert repeated_id == session_id
     with service_session_factory() as db:
-        account = db.get(UserAccount, visitor_id)
+        account = db.get(UserAccount, buyer_id)
         negotiation = db.get(NegotiationSession, session_id)
         assert account is not None
-        assert account.is_active is False
-        assert account.password_hash == HISTORICAL_ACCOUNT_PASSWORD_HASH
-        assert account.username.startswith("history-")
+        assert account.is_active is True
         assert negotiation is not None
         assert negotiation.buyer_id == account.id
 
 
-def test_v2_visitor_id_cannot_be_merged_with_an_active_user_account(
+def test_disabled_historical_account_cannot_create_new_session(
     service_session_factory: sessionmaker[Session],
 ) -> None:
     existing_session_id, _ = create_negotiation(service_session_factory)
-    collision_id = f"buyer-{uuid4().hex}"
+    historical_buyer_id = f"buyer-{uuid4().hex}"
     with service_session_factory() as db, db.begin():
         existing_session = db.get(NegotiationSession, existing_session_id)
         assert existing_session is not None
         product_id = existing_session.product_id
-        db.add(
-            UserAccount(
-                id=collision_id,
-                username=f"user-{uuid4().hex}",
-                display_name="身份冲突测试账号",
-                password_hash=hash_password("integration-test-password"),
-                is_active=True,
-            )
+        ensure_historical_buyer_account(
+            db,
+            buyer_id=historical_buyer_id,
         )
 
     with pytest.raises(NegotiationLifecycleConflictError):
         NegotiationService(service_session_factory).create_or_get_active_session(
             product_id=product_id,
-            buyer_id=collision_id,
+            buyer_id=historical_buyer_id,
         )
 
 

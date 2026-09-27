@@ -1,13 +1,18 @@
 import hashlib
 from dataclasses import dataclass
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.dialects.mysql import insert as mysql_insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.security import hash_password, verify_password
 from app.db.models import UserAccount
-from app.services.errors import NegotiationLifecycleConflictError
+from app.services.errors import (
+    NegotiationLifecycleConflictError,
+    UsernameAlreadyExistsError,
+)
 
 # 不存在的账号仍执行一次相同算法，减少通过响应时间探测用户名的差异。
 _DUMMY_PASSWORD_HASH = hash_password("not-a-real-user-password")
@@ -15,23 +20,48 @@ HISTORICAL_ACCOUNT_PASSWORD_HASH = "!HISTORICAL_VISITOR_NO_LOGIN!"
 
 
 @dataclass(frozen=True, slots=True)
-class SellerPrincipal:
+class UserPrincipal:
     id: str
     username: str
+    display_name: str
 
 
 class AuthService:
-    """从统一账号表验证 V2 卖家登录，不向 API 层暴露密码哈希。"""
+    """注册并验证统一账号，不向 API 层暴露密码哈希。"""
 
     def __init__(self, session_factory: sessionmaker[Session]) -> None:
         self._session_factory = session_factory
 
-    def authenticate_seller(
+    def register_user(
+        self,
+        *,
+        username: str,
+        display_name: str,
+        password: str,
+    ) -> UserPrincipal:
+        normalized_username = username.strip().lower()
+        try:
+            with self._session_factory() as db, db.begin():
+                account = UserAccount(
+                    id=f"user-{uuid4().hex}",
+                    username=normalized_username,
+                    display_name=display_name,
+                    password_hash=hash_password(password),
+                    is_active=True,
+                )
+                db.add(account)
+                db.flush()
+                return self._principal(account)
+        except IntegrityError as exc:
+            # 数据库唯一约束是并发注册时的最终判定，不能把底层错误回显给客户端。
+            raise UsernameAlreadyExistsError("用户名已被使用") from exc
+
+    def authenticate_user(
         self,
         *,
         username: str,
         password: str,
-    ) -> SellerPrincipal | None:
+    ) -> UserPrincipal | None:
         normalized_username = username.strip().lower()
         with self._session_factory() as db:
             account = db.scalar(
@@ -47,11 +77,11 @@ class AuthService:
                 return None
             return self._principal(account)
 
-    def get_active_seller(self, seller_id: str) -> SellerPrincipal | None:
+    def get_active_user(self, user_id: str) -> UserPrincipal | None:
         with self._session_factory() as db:
             account = db.scalar(
                 select(UserAccount).where(
-                    UserAccount.id == seller_id,
+                    UserAccount.id == user_id,
                     UserAccount.is_active.is_(True),
                 )
             )
@@ -60,8 +90,12 @@ class AuthService:
             return self._principal(account)
 
     @staticmethod
-    def _principal(account: UserAccount) -> SellerPrincipal:
-        return SellerPrincipal(id=account.id, username=account.username)
+    def _principal(account: UserAccount) -> UserPrincipal:
+        return UserPrincipal(
+            id=account.id,
+            username=account.username,
+            display_name=account.display_name,
+        )
 
 
 def ensure_historical_buyer_account(db: Session, *, buyer_id: str) -> UserAccount:

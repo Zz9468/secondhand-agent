@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -14,6 +14,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
+        populate_by_name=True,
     )
 
     app_name: str = "SecondHand Agent API"
@@ -26,8 +27,16 @@ class Settings(BaseSettings):
     # 身份令牌没有源码内默认密钥；未配置时认证接口会明确拒绝服务。
     auth_secret: SecretStr | None = None
     auth_cookie_secure: bool = False
-    seller_session_minutes: int = Field(default=480, ge=5, le=10080)
-    buyer_session_days: int = Field(default=30, ge=1, le=365)
+    # 兼容读取阶段二之前的卖家会话时长配置，统一 Cookie 不再使用买家天数配置。
+    user_session_minutes: int = Field(
+        default=480,
+        ge=5,
+        le=10080,
+        validation_alias=AliasChoices(
+            "USER_SESSION_MINUTES",
+            "SELLER_SESSION_MINUTES",
+        ),
+    )
     demo_seller_password: SecretStr | None = None
 
     model_provider: str = "qwen"

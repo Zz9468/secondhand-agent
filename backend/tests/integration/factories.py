@@ -13,7 +13,28 @@ from app.db.models import (
     SellerPolicy,
     UserAccount,
 )
-from app.services.auth_service import ensure_historical_buyer_account
+
+
+def create_user_account(
+    session_factory: sessionmaker[Session],
+    *,
+    display_name: str = "集成测试账号",
+) -> str:
+    """创建可登录的统一账号并返回账号 ID。"""
+
+    suffix = uuid4().hex
+    user_id = f"user-{suffix}"
+    with session_factory() as db, db.begin():
+        db.add(
+            UserAccount(
+                id=user_id,
+                username=f"user-{suffix}",
+                display_name=display_name,
+                password_hash=hash_password("integration-test-password"),
+                is_active=True,
+            )
+        )
+    return user_id
 
 
 def create_negotiation(
@@ -34,7 +55,13 @@ def create_negotiation(
             password_hash=hash_password("integration-test-password"),
             is_active=True,
         )
-        buyer = ensure_historical_buyer_account(db, buyer_id=f"buyer-{suffix}")
+        buyer = UserAccount(
+            id=f"buyer-{suffix}",
+            username=f"buyer-{suffix}",
+            display_name="集成测试买家",
+            password_hash=hash_password("integration-test-password"),
+            is_active=True,
+        )
         product = Product(
             seller=seller,
             title="阶段四测试商品",

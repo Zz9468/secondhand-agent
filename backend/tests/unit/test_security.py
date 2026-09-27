@@ -34,8 +34,8 @@ def test_password_hash_rejects_unsafe_lengths() -> None:
 def test_identity_token_binds_type_signature_and_expiration() -> None:
     now = datetime(2026, 9, 25, 10, 0, tzinfo=UTC)
     token = create_identity_token(
-        subject="buyer-123",
-        kind="buyer",
+        subject="user-123",
+        kind="user",
         secret=TEST_SECRET,
         lifetime=timedelta(minutes=30),
         now=now,
@@ -43,30 +43,30 @@ def test_identity_token_binds_type_signature_and_expiration() -> None:
 
     claims = decode_identity_token(
         token,
-        expected_kind="buyer",
+        expected_kind="user",
         secret=TEST_SECRET,
         now=now + timedelta(minutes=1),
     )
-    assert claims.subject == "buyer-123"
+    assert claims.subject == "user-123"
 
     with pytest.raises(IdentityTokenError):
         decode_identity_token(
             token,
-            expected_kind="seller",
+            expected_kind="buyer",
             secret=TEST_SECRET,
             now=now,
         )
     with pytest.raises(IdentityTokenError):
         decode_identity_token(
             f"{token[:-1]}x",
-            expected_kind="buyer",
+            expected_kind="user",
             secret=TEST_SECRET,
             now=now,
         )
     with pytest.raises(IdentityTokenError):
         decode_identity_token(
             token,
-            expected_kind="buyer",
+            expected_kind="user",
             secret=TEST_SECRET,
             now=now + timedelta(minutes=31),
         )

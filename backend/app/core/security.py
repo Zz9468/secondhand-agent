@@ -13,7 +13,9 @@ PASSWORD_R = 8
 PASSWORD_P = 1
 PASSWORD_DKLEN = 32
 
-IdentityKind = Literal["seller", "buyer"]
+# seller/buyer 仅用于识别并拒绝 V2 遗留令牌，V2.1 只签发 user 令牌。
+IdentityKind = Literal["user", "seller", "buyer"]
+USER_SESSION_COOKIE = "secondhand_user_session"
 SELLER_SESSION_COOKIE = "secondhand_seller_session"
 BUYER_SESSION_COOKIE = "secondhand_buyer_session"
 

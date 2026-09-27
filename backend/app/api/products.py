@@ -1,8 +1,8 @@
 from typing import Annotated, Never
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
-from app.api.dependencies import SessionFactoryDependency, get_current_seller
+from app.api.dependencies import CurrentUser, SessionFactoryDependency
 from app.schemas.product import (
     PolicyUpdateRequest,
     ProductCreateRequest,
@@ -12,7 +12,6 @@ from app.schemas.product import (
     SellerProductListResponse,
     SellerProductResponse,
 )
-from app.services.auth_service import SellerPrincipal
 from app.services.errors import (
     PolicyVersionConflictError,
     PricingPolicyNotFoundError,
@@ -28,7 +27,6 @@ from app.services.product_service import (
 
 public_router = APIRouter(tags=["products"])
 seller_router = APIRouter(prefix="/seller/products", tags=["seller-products"])
-CurrentSeller = Annotated[SellerPrincipal, Depends(get_current_seller)]
 
 
 @public_router.get("/products", response_model=PublicProductListResponse)
@@ -62,12 +60,12 @@ def get_public_product(
 )
 def create_product(
     payload: ProductCreateRequest,
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerProductResponse:
     policy = payload.policy
     product = ProductService(session_factory).create_for_seller(
-        seller_id=seller.id,
+        seller_id=user.id,
         data=ProductCreateData(
             title=payload.title,
             description=payload.description,
@@ -84,10 +82,10 @@ def create_product(
 
 @seller_router.get("", response_model=SellerProductListResponse)
 def list_seller_products(
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerProductListResponse:
-    products = ProductService(session_factory).list_owned(seller_id=seller.id)
+    products = ProductService(session_factory).list_owned(seller_id=user.id)
     return SellerProductListResponse(
         products=[SellerProductResponse.model_validate(product) for product in products]
     )
@@ -96,13 +94,13 @@ def list_seller_products(
 @seller_router.get("/{product_id}", response_model=SellerProductResponse)
 def get_seller_product(
     product_id: int,
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerProductResponse:
     try:
         product = ProductService(session_factory).get_owned_detail(
             product_id=product_id,
-            seller_id=seller.id,
+            seller_id=user.id,
         )
     except ServiceError as exc:
         _raise_http_error(exc)
@@ -113,13 +111,13 @@ def get_seller_product(
 def update_seller_product(
     product_id: int,
     payload: ProductUpdateRequest,
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerProductResponse:
     try:
         product = ProductService(session_factory).update_owned_product(
             product_id=product_id,
-            seller_id=seller.id,
+            seller_id=user.id,
             data=ProductUpdateData(
                 title=payload.title,
                 description=payload.description,
@@ -136,13 +134,13 @@ def update_seller_product(
 def update_seller_policy(
     product_id: int,
     payload: PolicyUpdateRequest,
-    seller: CurrentSeller,
+    user: CurrentUser,
     session_factory: SessionFactoryDependency,
 ) -> SellerProductResponse:
     try:
         product = ProductService(session_factory).update_owned_policy(
             product_id=product_id,
-            seller_id=seller.id,
+            seller_id=user.id,
             data=PolicyUpdateData(
                 minimum_net_price=payload.minimum_net_price,
                 auto_accept_threshold=payload.auto_accept_threshold,

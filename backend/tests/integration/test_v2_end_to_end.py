@@ -1,4 +1,3 @@
-from datetime import timedelta
 from decimal import Decimal
 
 import pytest
@@ -13,18 +12,13 @@ from app.agent.approval_followup import (
 from app.agent.seller_agent import AgentTurnOutcome
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
-from app.core.security import (
-    BUYER_SESSION_COOKIE,
-    SELLER_SESSION_COOKIE,
-    IdentityKind,
-    create_identity_token,
-)
 from app.db.models import ApprovalRequest, NegotiationSession, Product
 from app.main import create_app
 from app.services.chat_service import BuyerOfferSubmission, ChatService
 from app.services.pricing_service import ShippingPayer
 from app.workers.approval_processor import ApprovalProcessor
 from tests.fakes import RoutingDecisionProvider, demo_negotiation_decision
+from tests.integration.auth_helpers import authenticate_user
 from tests.integration.factories import create_negotiation
 
 pytestmark = pytest.mark.mysql_integration
@@ -52,18 +46,6 @@ def _client(session_factory: sessionmaker[Session]) -> TestClient:
     )
     application.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
     return TestClient(application)
-
-
-def _authenticate(client: TestClient, *, subject: str, kind: IdentityKind) -> None:
-    assert TEST_SETTINGS.auth_secret is not None
-    token = create_identity_token(
-        subject=subject,
-        kind=kind,
-        secret=TEST_SETTINGS.auth_secret.get_secret_value(),
-        lifetime=timedelta(minutes=30),
-    )
-    cookie = BUYER_SESSION_COOKIE if kind == "buyer" else SELLER_SESSION_COOKIE
-    client.cookies.set(cookie, token)
 
 
 def test_complete_v2_approval_and_intent_flow(
@@ -102,8 +84,8 @@ def test_complete_v2_approval_and_intent_flow(
 
     seller = _client(service_session_factory)
     buyer = _client(service_session_factory)
-    _authenticate(seller, subject=seller_id, kind="seller")
-    _authenticate(buyer, subject=buyer_id, kind="buyer")
+    authenticate_user(seller, user_id=seller_id, settings=TEST_SETTINGS)
+    authenticate_user(buyer, user_id=buyer_id, settings=TEST_SETTINGS)
 
     pending = seller.get(f"/api/seller/negotiations/{session_id}")
     approved = seller.post(

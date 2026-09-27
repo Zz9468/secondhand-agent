@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session, sessionmaker
@@ -9,11 +7,11 @@ from app.api.dependencies import (
     get_session_factory_dependency,
 )
 from app.core.config import Settings, get_settings
-from app.core.security import BUYER_SESSION_COOKIE, create_identity_token
 from app.db.models import NegotiationSession
 from app.main import create_app
 from tests.fakes import RoutingDecisionProvider, demo_negotiation_decision
-from tests.integration.factories import create_negotiation
+from tests.integration.auth_helpers import authenticate_user
+from tests.integration.factories import create_negotiation, create_user_account
 
 pytestmark = pytest.mark.mysql_integration
 
@@ -24,18 +22,7 @@ TEST_SETTINGS = Settings(
 )
 
 
-def _authenticate_buyer(client: TestClient, buyer_id: str) -> None:
-    assert TEST_SETTINGS.auth_secret is not None
-    token = create_identity_token(
-        subject=buyer_id,
-        kind="buyer",
-        secret=TEST_SETTINGS.auth_secret.get_secret_value(),
-        lifetime=timedelta(minutes=30),
-    )
-    client.cookies.set(BUYER_SESSION_COOKIE, token)
-
-
-def test_signed_visitors_create_isolated_product_sessions(
+def test_authenticated_users_create_isolated_product_sessions(
     service_session_factory: sessionmaker[Session],
 ) -> None:
     existing_session_id, _ = create_negotiation(service_session_factory)
@@ -51,8 +38,18 @@ def test_signed_visitors_create_isolated_product_sessions(
     application.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
     first_browser = TestClient(application)
     second_browser = TestClient(application)
-    assert first_browser.post("/api/auth/visitor").status_code == 200
-    assert second_browser.post("/api/auth/visitor").status_code == 200
+    first_user_id = create_user_account(service_session_factory)
+    second_user_id = create_user_account(service_session_factory)
+    authenticate_user(
+        first_browser,
+        user_id=first_user_id,
+        settings=TEST_SETTINGS,
+    )
+    authenticate_user(
+        second_browser,
+        user_id=second_user_id,
+        settings=TEST_SETTINGS,
+    )
 
     first = first_browser.post(
         "/api/negotiations",
@@ -95,7 +92,7 @@ def test_negotiation_api_completes_chat_round_and_enforces_identity(
     application.dependency_overrides[get_decision_provider] = lambda: provider
     application.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
     client = TestClient(application)
-    _authenticate_buyer(client, buyer_id)
+    authenticate_user(client, user_id=buyer_id, settings=TEST_SETTINGS)
 
     state_response = client.get(f"/api/negotiations/{session_id}")
     send_response = client.post(
@@ -118,7 +115,8 @@ def test_negotiation_api_completes_chat_round_and_enforces_identity(
         f"/api/negotiations/{session_id}",
         headers={"X-Buyer-ID": buyer_id},
     )
-    _authenticate_buyer(attacker, "another-buyer")
+    attacker_id = create_user_account(service_session_factory)
+    authenticate_user(attacker, user_id=attacker_id, settings=TEST_SETTINGS)
     unauthorized_response = attacker.get(f"/api/negotiations/{session_id}")
 
     assert state_response.status_code == 200
@@ -148,7 +146,7 @@ def test_negotiation_api_validates_offer_and_replays_duplicate_request(
     application.dependency_overrides[get_decision_provider] = lambda: provider
     application.dependency_overrides[get_settings] = lambda: TEST_SETTINGS
     client = TestClient(application)
-    _authenticate_buyer(client, buyer_id)
+    authenticate_user(client, user_id=buyer_id, settings=TEST_SETTINGS)
     payload = {
         "request_id": "api-request-idempotent-001",
         "content": "商品还在吗？",

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.agent.decision_provider import DecisionProvider
 from app.agent.tools.serialization import negotiation_state_result, product_result
 from app.api.dependencies import (
-    get_current_buyer_id,
+    CurrentUser,
     get_decision_provider,
     get_session_factory_dependency,
 )
@@ -43,12 +43,6 @@ SessionFactory = Annotated[
     sessionmaker[Session],
     Depends(get_session_factory_dependency),
 ]
-BuyerId = Annotated[
-    str,
-    Depends(get_current_buyer_id),
-]
-
-
 @router.post(
     "",
     response_model=CreateNegotiationResponse,
@@ -56,7 +50,7 @@ BuyerId = Annotated[
 )
 def create_negotiation(
     payload: CreateNegotiationRequest,
-    buyer_id: BuyerId,
+    user: CurrentUser,
     session_factory: SessionFactory,
 ) -> CreateNegotiationResponse:
     try:
@@ -64,7 +58,7 @@ def create_negotiation(
             session_factory
         ).create_or_get_active_session(
             product_id=payload.product_id,
-            buyer_id=buyer_id,
+            buyer_id=user.id,
         )
     except ServiceError as exc:
         _raise_http_error(exc)
@@ -74,17 +68,17 @@ def create_negotiation(
 @router.get("/{session_id}", response_model=NegotiationDetailResponse)
 def get_negotiation(
     session_id: int,
-    buyer_id: BuyerId,
+    user: CurrentUser,
     session_factory: SessionFactory,
 ) -> NegotiationDetailResponse:
     try:
         product = ProductService(session_factory).get_for_negotiation(
             session_id=session_id,
-            buyer_id=buyer_id,
+            buyer_id=user.id,
         )
         negotiation = NegotiationService(session_factory).get_state(
             session_id=session_id,
-            buyer_id=buyer_id,
+            buyer_id=user.id,
         )
     except ServiceError as exc:
         _raise_http_error(exc)
@@ -104,13 +98,13 @@ def get_negotiation(
 def confirm_negotiation(
     session_id: int,
     payload: ConfirmNegotiationRequest,
-    buyer_id: BuyerId,
+    user: CurrentUser,
     session_factory: SessionFactory,
 ) -> ConfirmNegotiationResponse:
     try:
         result = IntentService(session_factory).confirm_offer(
             session_id=session_id,
-            buyer_id=buyer_id,
+            buyer_id=user.id,
             offer_id=payload.offer_id,
             request_id=payload.request_id,
         )
@@ -126,13 +120,13 @@ def confirm_negotiation(
 def close_negotiation(
     session_id: int,
     payload: CloseNegotiationRequest,
-    buyer_id: BuyerId,
+    user: CurrentUser,
     session_factory: SessionFactory,
 ) -> CloseNegotiationResponse:
     try:
         result = IntentService(session_factory).close_negotiation(
             session_id=session_id,
-            buyer_id=buyer_id,
+            buyer_id=user.id,
             request_id=payload.request_id,
         )
     except ServiceError as exc:
@@ -143,7 +137,7 @@ def close_negotiation(
 @router.get("/{session_id}/messages", response_model=MessageListResponse)
 def get_messages(
     session_id: int,
-    buyer_id: BuyerId,
+    user: CurrentUser,
     session_factory: SessionFactory,
     after_id: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 100,
@@ -153,7 +147,7 @@ def get_messages(
             session_factory,
         ).list_messages(
             session_id=session_id,
-            buyer_id=buyer_id,
+            buyer_id=user.id,
             after_id=after_id,
             limit=limit,
         )
@@ -172,7 +166,7 @@ def get_messages(
 def send_message(
     session_id: int,
     payload: SendMessageRequest,
-    buyer_id: BuyerId,
+    user: CurrentUser,
     session_factory: SessionFactory,
     decision_provider: Annotated[DecisionProvider, Depends(get_decision_provider)],
 ) -> SendMessageResponse:
@@ -187,7 +181,7 @@ def send_message(
     try:
         result = ChatService(session_factory, decision_provider).send_buyer_message(
             session_id=session_id,
-            buyer_id=buyer_id,
+            buyer_id=user.id,
             request_id=payload.request_id,
             content=payload.content,
             offer=offer,
