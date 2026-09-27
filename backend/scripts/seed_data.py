@@ -139,7 +139,7 @@ def main() -> None:
     parser.add_argument(
         "--reset-session",
         action="store_true",
-        help="清空演示会话的消息和报价，并恢复为可协商状态",
+        help="清空演示会话的消息和报价，并恢复为可重复执行 V2 双端验收的状态",
     )
     args = parser.parse_args()
     settings = get_settings()
@@ -158,6 +158,7 @@ def main() -> None:
     print(
         "演示数据已就绪："
         f"seller_id={DEMO_SELLER_ID}, "
+        f"seller_username={DEMO_SELLER_USERNAME}, "
         f"product_id={result.product_id}, "
         f"policy_id={result.policy_id}, "
         f"session_id={result.session_id}, "

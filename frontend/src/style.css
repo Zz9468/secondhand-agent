@@ -100,7 +100,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .seller-page { min-height: calc(100vh - 7.5rem); }
 .login-card { display: grid; gap: 1rem; width: min(28rem, 100%); margin: 8vh auto 0; padding: 2rem; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.5rem; background: rgba(251, 252, 247, 0.9); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.11); }
-.login-card h1, .product-editor h1, .approval-editor h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-weight: 500; }
+.login-card h1, .product-editor h1, .approval-editor h1, .negotiation-editor h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-weight: 500; }
 .login-card > p:not(.eyebrow, .error-banner) { margin: 0; color: #6a736a; }
 .login-card label, .product-editor label { display: grid; gap: 0.4rem; color: #657066; font-size: 0.78rem; font-weight: 700; }
 .login-card input, .product-editor input, .product-editor select, .product-editor textarea { width: 100%; border: 1px solid #d4dacf; border-radius: 0.65rem; padding: 0.7rem 0.75rem; color: #263028; background: white; font-weight: 400; }
@@ -108,15 +108,15 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .seller-workspace { display: grid; grid-template-columns: minmax(15rem, 20rem) minmax(0, 1fr); min-height: calc(100vh - 7.5rem); overflow: hidden; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.75rem; background: rgba(251, 252, 247, 0.9); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.11); }
 .seller-sidebar { padding: 1.5rem; border-right: 1px solid #dfe3d8; background: rgba(244, 246, 238, 0.86); }
 .seller-profile { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-.seller-section-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; margin-bottom: 1rem; padding: 0.25rem; border-radius: 0.8rem; background: #e7ebe3; }
+.seller-section-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; margin-bottom: 1rem; padding: 0.25rem; border-radius: 0.8rem; background: #e7ebe3; }
 .seller-section-tabs button { border: 0; border-radius: 0.65rem; padding: 0.6rem; color: #657066; background: transparent; font-size: 0.75rem; font-weight: 750; }
 .seller-section-tabs button[data-active="true"] { color: white; background: #294d35; }
 .seller-section-tabs span { display: inline-grid; min-width: 1.25rem; margin-left: 0.25rem; border-radius: 999px; padding: 0.1rem 0.3rem; color: #294d35; background: #d9e5d6; font-size: 0.65rem; }
 .seller-section-tabs button[data-active="true"] span { color: #294d35; background: white; }
 .new-product-button { width: 100%; margin-bottom: 1rem; }
-.product-list-item, .approval-list-item { display: grid; gap: 0.25rem; width: 100%; margin-bottom: 0.45rem; border: 1px solid transparent; border-radius: 0.75rem; padding: 0.75rem; color: #344338; background: transparent; text-align: left; }
-.product-list-item:hover, .product-list-item[data-active="true"], .approval-list-item:hover, .approval-list-item[data-active="true"] { border-color: #ccd6c9; background: #e8ede5; }
-.product-list-item small, .approval-list-item small, .empty-note { color: #7b847c; font-size: 0.7rem; }
+.product-list-item, .approval-list-item, .negotiation-list-item { display: grid; gap: 0.25rem; width: 100%; margin-bottom: 0.45rem; border: 1px solid transparent; border-radius: 0.75rem; padding: 0.75rem; color: #344338; background: transparent; text-align: left; }
+.product-list-item:hover, .product-list-item[data-active="true"], .approval-list-item:hover, .approval-list-item[data-active="true"], .negotiation-list-item:hover, .negotiation-list-item[data-active="true"] { border-color: #ccd6c9; background: #e8ede5; }
+.product-list-item small, .approval-list-item small, .negotiation-list-item small, .empty-note { color: #7b847c; font-size: 0.7rem; }
 .product-editor { padding: clamp(1.5rem, 4vw, 2.5rem); overflow-y: auto; }
 .editor-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
 .version-badge { border-radius: 999px; padding: 0.45rem 0.7rem; color: #536658; background: #e9ede3; font-size: 0.72rem; }
@@ -148,6 +148,34 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .approval-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; }
 .approval-actions button { border: 0; border-radius: 999px; padding: 0.75rem 1.1rem; color: white; background: #294d35; font-weight: 750; }
 .approval-actions .reject-button { color: #8a423d; background: #f2dddd; }
+.inline-link-button { margin: -0.65rem 0 1rem; border: 0; padding: 0; color: #356447; background: transparent; font-size: 0.78rem; font-weight: 750; }
+
+.negotiation-editor { padding: clamp(1.5rem, 4vw, 2.5rem); overflow-y: auto; }
+.negotiation-status { border-radius: 999px; padding: 0.45rem 0.75rem; color: #536658; background: #e9ede3; font-size: 0.72rem; font-weight: 750; }
+.negotiation-status[data-status="WAITING_APPROVAL"] { color: #7a5a18; background: #f5e8bd; }
+.negotiation-status[data-status="AGREED"] { color: #245f3b; background: #dcecdf; }
+.negotiation-status[data-status="CLOSED"] { color: #707770; background: #e3e5e1; }
+.negotiation-offer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.negotiation-offer-card { display: grid; gap: 0.35rem; min-height: 8.5rem; border-radius: 1rem; padding: 1.2rem; color: #eef4e9; background: #294d35; }
+.negotiation-offer-card.confirmed-card { color: #35463a; background: #e3ebdf; }
+.negotiation-offer-card strong { font-family: Georgia, serif; font-size: 2rem; font-weight: 500; }
+.negotiation-offer-card span { font-size: 0.76rem; line-height: 1.5; }
+.negotiation-approval-summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; border: 1px solid #dfe3d8; border-radius: 0.9rem; padding: 1rem; }
+.negotiation-approval-summary .eyebrow { margin-bottom: 0.25rem; }
+.negotiation-approval-summary .inline-link-button { margin: 0; }
+.negotiation-detail-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(16rem, 0.75fr); gap: 1rem; }
+.negotiation-detail-grid > section { min-width: 0; border: 1px solid #dfe3d8; border-radius: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.55); }
+.detail-section-heading { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.85rem; }
+.detail-section-heading h2 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: 1.15rem; font-weight: 500; }
+.detail-section-heading span { color: #7b847c; font-size: 0.7rem; }
+.seller-message-timeline, .offer-timeline { display: grid; gap: 0.6rem; max-height: 28rem; overflow-y: auto; }
+.seller-message-timeline article, .offer-timeline article { border-radius: 0.75rem; padding: 0.75rem; background: #edf0e8; }
+.seller-message-timeline article[data-role="BUYER"] { background: #e1ebe0; }
+.seller-message-timeline article[data-role="SYSTEM"] { background: #f1eadb; }
+.seller-message-timeline article > div, .offer-timeline article > div { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.72rem; }
+.seller-message-timeline time, .offer-timeline span, .offer-timeline small { color: #788179; }
+.seller-message-timeline p { margin: 0.45rem 0 0; line-height: 1.55; white-space: pre-wrap; }
+.offer-timeline small { display: block; margin-top: 0.4rem; line-height: 1.5; }
 
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
@@ -158,6 +186,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   .seller-workspace { grid-template-columns: 1fr; }
   .seller-sidebar { border-right: 0; border-bottom: 1px solid #dfe3d8; }
   .approval-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .negotiation-detail-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
@@ -176,4 +205,6 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   .product-editor fieldset { grid-template-columns: 1fr; }
   .wide-field { grid-column: auto; }
   .approval-meta-grid { grid-template-columns: 1fr; }
+  .seller-section-tabs { grid-template-columns: 1fr; }
+  .negotiation-offer-grid { grid-template-columns: 1fr; }
 }

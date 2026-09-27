@@ -126,6 +126,15 @@ V2 阶段七已完成买家最终确认与会话收口：
 - 买家可主动关闭仍在进行的会话，关闭时会同步取消待审批请求，不遗留有效审批；
 - 前端只在当前报价满足基本可确认条件时展示“确认交易意向”，最终合法性始终由后端判定；`AGREED` 仅表示记录交易意向，不代表付款、锁定库存或实际成交。
 
+V2 阶段八已完成双端整合与全量验收能力：
+
+- 卖家新增协商会话列表与详情接口，只能读取自己商品下的会话，响应不包含买家访客标识；
+- 卖家页面整合商品、审批和协商会话三类入口，可查看消息、报价、最新审批、通知状态和最终确认结果；
+- 买家与卖家页面分别按生命周期轮询，切换页面或卸载组件时不会遗留额外轮询任务；
+- 卖家可在审批和对应协商详情之间跳转，审批文案明确区分“卖家授权”和“买家确认交易意向”；
+- 新增完整 V2 端到端集成测试，以及身份、权限、状态机、并发、幂等、迁移和 Worker 故障回归；
+- 人工验收步骤见 [`docs/V2_验收清单.md`](docs/V2_验收清单.md)。
+
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
 ## 开发约定
@@ -293,6 +302,8 @@ python -m app.workers.approval_processor --once
 - `GET http://localhost:8000/api/seller/approvals/{approval_id}`：读取审批、商品及报价详情；
 - `POST http://localhost:8000/api/seller/approvals/{approval_id}/approve`：幂等同意当前有效报价；
 - `POST http://localhost:8000/api/seller/approvals/{approval_id}/reject`：幂等拒绝当前有效报价；
+- `GET http://localhost:8000/api/seller/negotiations`：登录卖家读取自己商品下的协商列表，可用 `status` 过滤；
+- `GET http://localhost:8000/api/seller/negotiations/{session_id}`：读取卖家有权访问的消息、报价与审批时间线；
 - `POST http://localhost:8000/api/negotiations`：为当前访客创建或复用商品协商会话；
 - `GET http://localhost:8000/api/negotiations/{session_id}`：读取当前访客的协商状态；
 - `GET http://localhost:8000/api/negotiations/{session_id}/messages`：读取聊天记录；
@@ -313,6 +324,8 @@ python scripts/smoke_model.py
 ```
 
 ## 验证
+
+完整的双浏览器 V2 人工验收流程与异常场景见 [`docs/V2_验收清单.md`](docs/V2_验收清单.md)。
 
 ```powershell
 cd backend
@@ -341,4 +354,4 @@ frontend/     Vue 3 最简页面
 compose.yaml 本地 MySQL
 ```
 
-V1 最小闭环以及 V2 阶段一至阶段七已经完成；双端整合与 V2 全量验收属于阶段八。
+V1 最小闭环以及 V2 八个阶段均已完成。系统终点是记录交易意向，不包含支付、库存锁定或订单履约。

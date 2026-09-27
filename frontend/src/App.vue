@@ -185,6 +185,7 @@ async function pollNegotiationUpdates(): Promise<void> {
     || loading.value
     || sending.value
     || polling.value
+    || sessionIsTerminal.value
   ) return
 
   polling.value = true
@@ -335,6 +336,34 @@ function shippingLabel(payer: ShippingPayer): string {
   return payer === 'seller' ? '卖家包邮' : '买家承担运费'
 }
 
+function negotiationStatusLabel(status: string): string {
+  return {
+    ACTIVE: '协商中',
+    WAITING_APPROVAL: '等待卖家审批',
+    AGREED: '已确认交易意向',
+    CLOSED: '已结束',
+  }[status] ?? status
+}
+
+function outcomeLabel(outcome: string): string {
+  return {
+    INFORMATIONAL: '已回复商品咨询',
+    COUNTER_OFFERED: 'Agent 已还价',
+    OFFER_ACCEPTED: '报价已接受',
+    NEEDS_SELLER_CONFIRMATION: '等待卖家确认',
+    REJECTED: '报价未接受',
+    CLARIFICATION: '需要补充条件',
+    SAFE_FAILURE: '本轮未生成正式决策',
+    MODEL_ERROR: '模型服务处理失败',
+    APPROVAL_APPROVED: '卖家审批已通过',
+    APPROVAL_REJECTED: '卖家审批未通过',
+    COUNTER_OFFERED_AFTER_APPROVAL: '卖家审批后已还价',
+    INTENT_AGREED: '交易意向已确认',
+    NEGOTIATION_CLOSED: '协商已结束',
+    IDEMPOTENT_REPLAY: '已返回原请求结果',
+  }[outcome] ?? outcome
+}
+
 async function scrollToLatest(): Promise<void> {
   await nextTick()
   messageList.value?.scrollTo({ top: messageList.value.scrollHeight, behavior: 'smooth' })
@@ -433,7 +462,7 @@ watch(deliveryMethod, (value) => {
           </div>
           <div>
             <dt>当前状态</dt>
-            <dd>{{ negotiation.negotiation.status }}</dd>
+            <dd>{{ negotiationStatusLabel(negotiation.negotiation.status) }}</dd>
           </div>
         </dl>
 
@@ -509,7 +538,7 @@ watch(deliveryMethod, (value) => {
         </div>
 
         <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
-        <p v-else-if="lastOutcome" class="outcome-banner">本轮结果：{{ lastOutcome }}</p>
+        <p v-else-if="lastOutcome" class="outcome-banner">本轮结果：{{ outcomeLabel(lastOutcome) }}</p>
         <p v-if="sessionIsTerminal" class="terminal-banner">
           {{ negotiation.negotiation.status === 'AGREED'
             ? '双方交易意向已经记录，本会话不能继续议价。'

@@ -5,7 +5,14 @@ from typing import Literal, Self
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator, model_validator
 
 from app.agent.seller_agent import AgentTurnOutcome
-from app.db.models import ConfirmationSource, MessageRole
+from app.db.models import (
+    ApprovalFollowupStatus,
+    ApprovalStatus,
+    ConfirmationSource,
+    MessageRole,
+    NegotiationStatus,
+    ProductStatus,
+)
 from app.services.pricing_service import ShippingPayer
 
 
@@ -106,16 +113,18 @@ class MessageListResponse(BaseModel):
 
 
 class OfferResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     proposer: Literal["BUYER", "AGENT"]
-    price: str
+    price: Decimal
     shipping_paid_by: ShippingPayer
-    shipping_cost: str | None
-    seller_borne_discount: str
+    shipping_cost: Decimal | None
+    seller_borne_discount: Decimal
     additional_terms: dict[str, JsonValue]
     status: Literal["PROPOSED", "ACCEPTED", "REJECTED", "WITHDRAWN"]
-    expires_at: str | None
-    created_at: str
+    expires_at: datetime | None
+    created_at: datetime
 
 
 class ProductResponse(BaseModel):
@@ -174,3 +183,64 @@ class CloseNegotiationResponse(BaseModel):
     cancelled_approval_id: int | None
     system_message: MessageResponse
     idempotent_replay: bool
+
+
+class SellerNegotiationApprovalResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    offer_id: int
+    policy_version: int
+    status: ApprovalStatus
+    reason: str
+    seller_comment: str | None
+    expires_at: datetime
+    reviewed_at: datetime | None
+    followup_status: ApprovalFollowupStatus | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class SellerNegotiationMessageResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    role: MessageRole
+    content: str
+    formal_offer_id: int | None
+    agent_outcome: str | None
+    created_at: datetime
+
+
+class SellerNegotiationSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    product_id: int
+    product_title: str
+    product_status: ProductStatus
+    status: NegotiationStatus
+    current_offer_id: int | None
+    confirmed_offer_id: int | None
+    confirmed_at: datetime | None
+    confirmation_source: ConfirmationSource | None
+    round_count: int
+    version: int
+    current_offer: OfferResponse | None
+    confirmed_offer: OfferResponse | None
+    latest_approval: SellerNegotiationApprovalResponse | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class SellerNegotiationListResponse(BaseModel):
+    negotiations: list[SellerNegotiationSummaryResponse]
+
+
+class SellerNegotiationDetailResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    negotiation: SellerNegotiationSummaryResponse
+    messages: list[SellerNegotiationMessageResponse]
+    offers: list[OfferResponse]
+    approvals: list[SellerNegotiationApprovalResponse]

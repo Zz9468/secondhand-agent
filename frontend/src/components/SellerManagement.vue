@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref } from 'vue'
 
 import {
   getSellerIdentity,
@@ -23,6 +23,14 @@ import {
   type ProductStatus,
   type SellerProduct,
 } from '../api/products'
+import {
+  getSellerNegotiation,
+  listSellerNegotiations,
+  type NegotiationStatus,
+  type SellerNegotiationDetail,
+  type SellerNegotiationOffer,
+  type SellerNegotiationSummary,
+} from '../api/sellerNegotiations'
 
 interface ProductForm {
   title: string
@@ -35,13 +43,15 @@ interface ProductForm {
   maxRounds: number
 }
 
-type SellerSection = 'products' | 'approvals'
+type SellerSection = 'products' | 'approvals' | 'negotiations'
 
 const identity = ref<SellerIdentity | null>(null)
 const products = ref<SellerProduct[]>([])
 const selectedProduct = ref<SellerProduct | null>(null)
 const approvals = ref<SellerApproval[]>([])
 const selectedApproval = ref<SellerApproval | null>(null)
+const negotiations = ref<SellerNegotiationSummary[]>([])
+const selectedNegotiation = ref<SellerNegotiationDetail | null>(null)
 const activeSection = ref<SellerSection>('products')
 const approvalComment = ref('')
 const pendingReviewRequest = ref<{
@@ -54,9 +64,13 @@ const password = ref('')
 const loading = ref(true)
 const saving = ref(false)
 const reviewing = ref(false)
+const polling = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const form = reactive<ProductForm>(blankForm())
+
+const SELLER_POLL_INTERVAL_MS = 3000
+let sellerPollTimer: number | undefined
 
 function blankForm(): ProductForm {
   return {
@@ -75,7 +89,7 @@ async function restoreSession(): Promise<void> {
   loading.value = true
   try {
     identity.value = await getSellerIdentity()
-    await Promise.all([loadProducts(), loadApprovals()])
+    await Promise.all([loadProducts(), loadApprovals(), loadNegotiations()])
   } catch (error) {
     if (!(error instanceof ApiError && error.status === 401)) {
       errorMessage.value = readableError(error)
@@ -91,7 +105,7 @@ async function submitLogin(): Promise<void> {
   try {
     identity.value = await loginSeller(username.value, password.value)
     password.value = ''
-    await Promise.all([loadProducts(), loadApprovals()])
+    await Promise.all([loadProducts(), loadApprovals(), loadNegotiations()])
   } catch (error) {
     errorMessage.value = readableError(error)
   } finally {
@@ -105,6 +119,8 @@ async function signOut(): Promise<void> {
   products.value = []
   approvals.value = []
   selectedApproval.value = null
+  negotiations.value = []
+  selectedNegotiation.value = null
   activeSection.value = 'products'
   startNewProduct()
 }
@@ -145,7 +161,10 @@ function selectProduct(product: SellerProduct): void {
   successMessage.value = ''
 }
 
-async function loadApprovals(preferredId?: number): Promise<void> {
+async function loadApprovals(
+  preferredId?: number,
+  preserveComment = false,
+): Promise<void> {
   approvals.value = await listSellerApprovals()
   const targetId = preferredId ?? selectedApproval.value?.id
   const nextApproval =
@@ -154,7 +173,7 @@ async function loadApprovals(preferredId?: number): Promise<void> {
     approvals.value[0] ??
     null
   selectedApproval.value = nextApproval
-  if (activeSection.value === 'approvals') {
+  if (activeSection.value === 'approvals' && !preserveComment) {
     approvalComment.value = nextApproval?.seller_comment ?? ''
   }
 }
@@ -168,6 +187,45 @@ async function showApprovals(): Promise<void> {
   } catch (error) {
     errorMessage.value = readableError(error)
   }
+}
+
+async function loadNegotiations(preferredId?: number): Promise<void> {
+  negotiations.value = await listSellerNegotiations()
+  const targetId = preferredId ?? selectedNegotiation.value?.negotiation.id
+  const nextNegotiation =
+    negotiations.value.find((item) => item.id === targetId) ??
+    negotiations.value[0] ??
+    null
+  if (nextNegotiation === null) {
+    selectedNegotiation.value = null
+    return
+  }
+  if (
+    activeSection.value === 'negotiations'
+    || selectedNegotiation.value?.negotiation.id === nextNegotiation.id
+  ) {
+    selectedNegotiation.value = await getSellerNegotiation(nextNegotiation.id)
+  }
+}
+
+async function showNegotiations(preferredId?: number): Promise<void> {
+  activeSection.value = 'negotiations'
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    await loadNegotiations(preferredId)
+  } catch (error) {
+    errorMessage.value = readableError(error)
+  }
+}
+
+async function selectNegotiation(negotiation: SellerNegotiationSummary): Promise<void> {
+  await showNegotiations(negotiation.id)
+}
+
+async function openApproval(approvalId: number): Promise<void> {
+  activeSection.value = 'approvals'
+  await loadApprovals(approvalId)
 }
 
 function selectApproval(approval: SellerApproval): void {
@@ -205,6 +263,7 @@ async function reviewApproval(action: 'approve' | 'reject'): Promise<void> {
       approvalComment.value.trim() || null,
     )
     await loadApprovals(saved.id)
+    await loadNegotiations(approval.session_id)
     pendingReviewRequest.value = null
     successMessage.value = action === 'approve' ? '审批已同意。' : '审批已拒绝。'
   } catch (error) {
@@ -230,6 +289,24 @@ function approvalStatusLabel(status: ApprovalStatus): string {
   }[status]
 }
 
+function followupStatusLabel(status: SellerApproval['followup_status']): string {
+  if (status === null) return '无需通知'
+  return {
+    PENDING: '等待通知买家',
+    SENT: '已通知买家',
+    FAILED: '通知失败，等待重试',
+  }[status]
+}
+
+function negotiationStatusLabel(status: NegotiationStatus): string {
+  return {
+    ACTIVE: '协商中',
+    WAITING_APPROVAL: '等待卖家审批',
+    AGREED: '意向已达成',
+    CLOSED: '已结束',
+  }[status]
+}
+
 function formatDate(value: string | null): string {
   if (!value) return '—'
   return new Intl.DateTimeFormat('zh-CN', {
@@ -248,6 +325,24 @@ function deliveryLabel(approval: SellerApproval): string {
   if (method === 'pickup') return '当面自提'
   if (method === 'shipping') return '快递配送'
   return '未指定配送方式'
+}
+
+function offerShippingLabel(offer: SellerNegotiationOffer): string {
+  if (offer.shipping_paid_by === 'buyer') return '买家承担运费'
+  return `卖家承担运费 ${offer.shipping_cost ?? '金额未知'} 元`
+}
+
+function offerStatusLabel(status: SellerNegotiationOffer['status']): string {
+  return {
+    PROPOSED: '已提出',
+    ACCEPTED: '已接受',
+    REJECTED: '已拒绝',
+    WITHDRAWN: '已撤回',
+  }[status]
+}
+
+function messageRoleLabel(role: SellerNegotiationDetail['messages'][number]['role']): string {
+  return { BUYER: '买家', AGENT: 'Seller Agent', SYSTEM: '系统' }[role]
 }
 
 async function saveProduct(): Promise<void> {
@@ -298,7 +393,35 @@ function readableError(error: unknown): string {
   return '请求失败，请检查后端与数据库状态。'
 }
 
-onMounted(restoreSession)
+async function pollSellerUpdates(): Promise<void> {
+  if (identity.value === null || polling.value || saving.value || reviewing.value) return
+  polling.value = true
+  try {
+    await Promise.all([
+      // 后台刷新不能覆盖卖家正在输入但尚未提交的审批意见。
+      loadApprovals(selectedApproval.value?.id, true),
+      loadNegotiations(selectedNegotiation.value?.negotiation.id),
+    ])
+  } catch {
+    // 后台轮询失败时保留当前页面，下一个周期会继续同步。
+  } finally {
+    polling.value = false
+  }
+}
+
+onMounted(() => {
+  void restoreSession()
+  sellerPollTimer = window.setInterval(
+    () => void pollSellerUpdates(),
+    SELLER_POLL_INTERVAL_MS,
+  )
+})
+
+onUnmounted(() => {
+  if (sellerPollTimer !== undefined) {
+    window.clearInterval(sellerPollTimer)
+  }
+})
 </script>
 
 <template>
@@ -352,6 +475,14 @@ onMounted(restoreSession)
             报价审批
             <span>{{ approvals.filter((item) => item.status === 'PENDING').length }}</span>
           </button>
+          <button
+            :data-active="activeSection === 'negotiations'"
+            type="button"
+            @click="showNegotiations()"
+          >
+            协商会话
+            <span>{{ negotiations.length }}</span>
+          </button>
         </div>
 
         <template v-if="activeSection === 'products'">
@@ -372,7 +503,7 @@ onMounted(restoreSession)
           </button>
         </template>
 
-        <template v-else>
+        <template v-else-if="activeSection === 'approvals'">
           <button class="new-product-button" type="button" @click="showApprovals">
             刷新审批列表
           </button>
@@ -387,6 +518,27 @@ onMounted(restoreSession)
           >
             <span>{{ approval.product_title }}</span>
             <small>¥{{ approval.offer.price }} · {{ approvalStatusLabel(approval.status) }}</small>
+          </button>
+        </template>
+
+        <template v-else>
+          <button class="new-product-button" type="button" @click="showNegotiations()">
+            刷新会话列表
+          </button>
+          <p v-if="negotiations.length === 0" class="empty-note">当前没有协商会话。</p>
+          <button
+            v-for="item in negotiations"
+            :key="item.id"
+            class="negotiation-list-item"
+            :data-active="selectedNegotiation?.negotiation.id === item.id"
+            type="button"
+            @click="selectNegotiation(item)"
+          >
+            <span>{{ item.product_title }}</span>
+            <small>
+              #{{ item.id }} · {{ negotiationStatusLabel(item.status) }}
+              <template v-if="item.current_offer"> · ¥{{ item.current_offer.price }}</template>
+            </small>
           </button>
         </template>
       </aside>
@@ -478,7 +630,7 @@ onMounted(restoreSession)
         </div>
       </form>
 
-      <section v-else class="approval-editor">
+      <section v-else-if="activeSection === 'approvals'" class="approval-editor">
         <div v-if="!selectedApproval" class="approval-empty">
           <p class="eyebrow">APPROVALS</p>
           <h1>暂无报价审批</h1>
@@ -495,6 +647,14 @@ onMounted(restoreSession)
               {{ approvalStatusLabel(selectedApproval.status) }}
             </span>
           </div>
+
+          <button
+            class="inline-link-button"
+            type="button"
+            @click="showNegotiations(selectedApproval.session_id)"
+          >
+            查看完整协商会话 #{{ selectedApproval.session_id }}
+          </button>
 
           <div class="approval-meta-grid">
             <div>
@@ -545,7 +705,10 @@ onMounted(restoreSession)
           </div>
 
           <p class="approval-warning">
-            同意只表示卖家授权当前这份报价，不代表交易已经成交；买家最终确认将在后续阶段完成。
+            同意只表示卖家授权当前报价，不代表交易已经成交；系统通知买家后，仍需买家明确确认才会记录交易意向。
+          </p>
+          <p v-if="selectedApproval.status !== 'PENDING'" class="approval-warning">
+            后续状态：{{ followupStatusLabel(selectedApproval.followup_status) }}
           </p>
           <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
           <p v-else-if="successMessage" class="outcome-banner">{{ successMessage }}</p>
@@ -566,6 +729,147 @@ onMounted(restoreSession)
               {{ reviewing ? '处理中…' : '同意报价' }}
             </button>
           </div>
+        </template>
+      </section>
+
+      <section v-else class="negotiation-editor">
+        <div v-if="!selectedNegotiation" class="approval-empty">
+          <p class="eyebrow">NEGOTIATIONS</p>
+          <h1>暂无协商会话</h1>
+          <p>买家针对卖家商品发起协商后，会显示在这里。</p>
+        </div>
+
+        <template v-else>
+          <div class="editor-heading">
+            <div>
+              <p class="eyebrow">NEGOTIATION #{{ selectedNegotiation.negotiation.id }}</p>
+              <h1>{{ selectedNegotiation.negotiation.product_title }}</h1>
+            </div>
+            <span
+              class="negotiation-status"
+              :data-status="selectedNegotiation.negotiation.status"
+            >
+              {{ negotiationStatusLabel(selectedNegotiation.negotiation.status) }}
+            </span>
+          </div>
+
+          <div class="approval-meta-grid">
+            <div>
+              <span>商品编号</span>
+              <strong>#{{ selectedNegotiation.negotiation.product_id }}</strong>
+            </div>
+            <div>
+              <span>协商轮次</span>
+              <strong>{{ selectedNegotiation.negotiation.round_count }} 轮</strong>
+            </div>
+            <div>
+              <span>创建时间</span>
+              <strong>{{ formatDate(selectedNegotiation.negotiation.created_at) }}</strong>
+            </div>
+            <div>
+              <span>最近更新</span>
+              <strong>{{ formatDate(selectedNegotiation.negotiation.updated_at) }}</strong>
+            </div>
+          </div>
+
+          <div class="negotiation-offer-grid">
+            <section class="negotiation-offer-card">
+              <p class="eyebrow">CURRENT OFFER</p>
+              <template v-if="selectedNegotiation.negotiation.current_offer">
+                <strong>¥{{ selectedNegotiation.negotiation.current_offer.price }}</strong>
+                <span>{{ offerShippingLabel(selectedNegotiation.negotiation.current_offer) }}</span>
+                <span>
+                  {{ selectedNegotiation.negotiation.current_offer.proposer === 'BUYER'
+                    ? '买家报价'
+                    : 'Agent 还价' }}
+                  · {{ offerStatusLabel(selectedNegotiation.negotiation.current_offer.status) }}
+                </span>
+              </template>
+              <span v-else>暂无正式报价</span>
+            </section>
+            <section class="negotiation-offer-card confirmed-card">
+              <p class="eyebrow">CONFIRMED INTENT</p>
+              <template v-if="selectedNegotiation.negotiation.confirmed_offer">
+                <strong>¥{{ selectedNegotiation.negotiation.confirmed_offer.price }}</strong>
+                <span>
+                  买家确认于 {{ formatDate(selectedNegotiation.negotiation.confirmed_at) }}
+                </span>
+                <span>仅代表交易意向，不代表付款或实际成交</span>
+              </template>
+              <span v-else>买家尚未确认交易意向</span>
+            </section>
+          </div>
+
+          <section
+            v-if="selectedNegotiation.negotiation.latest_approval"
+            class="negotiation-approval-summary"
+          >
+            <div>
+              <p class="eyebrow">LATEST APPROVAL</p>
+              <strong>
+                {{ approvalStatusLabel(selectedNegotiation.negotiation.latest_approval.status) }}
+                · {{ followupStatusLabel(
+                  selectedNegotiation.negotiation.latest_approval.followup_status,
+                ) }}
+              </strong>
+            </div>
+            <button
+              class="inline-link-button"
+              type="button"
+              @click="openApproval(selectedNegotiation.negotiation.latest_approval.id)"
+            >
+              查看审批 #{{ selectedNegotiation.negotiation.latest_approval.id }}
+            </button>
+          </section>
+
+          <div class="negotiation-detail-grid">
+            <section>
+              <div class="detail-section-heading">
+                <h2>消息记录</h2>
+                <span>{{ selectedNegotiation.messages.length }} 条</span>
+              </div>
+              <div class="seller-message-timeline">
+                <p v-if="selectedNegotiation.messages.length === 0" class="empty-note">
+                  暂无消息。
+                </p>
+                <article
+                  v-for="message in selectedNegotiation.messages"
+                  :key="message.id"
+                  :data-role="message.role"
+                >
+                  <div>
+                    <strong>{{ messageRoleLabel(message.role) }}</strong>
+                    <time>{{ formatDate(message.created_at) }}</time>
+                  </div>
+                  <p>{{ message.content }}</p>
+                </article>
+              </div>
+            </section>
+
+            <section>
+              <div class="detail-section-heading">
+                <h2>报价时间线</h2>
+                <span>{{ selectedNegotiation.offers.length }} 份</span>
+              </div>
+              <div class="offer-timeline">
+                <p v-if="selectedNegotiation.offers.length === 0" class="empty-note">
+                  暂无正式报价。
+                </p>
+                <article v-for="offer in selectedNegotiation.offers" :key="offer.id">
+                  <div>
+                    <strong>#{{ offer.id }} · ¥{{ offer.price }}</strong>
+                    <span>{{ offerStatusLabel(offer.status) }}</span>
+                  </div>
+                  <small>
+                    {{ offer.proposer === 'BUYER' ? '买家报价' : 'Agent 还价' }} ·
+                    {{ offerShippingLabel(offer) }} · {{ formatDate(offer.created_at) }}
+                  </small>
+                </article>
+              </div>
+            </section>
+          </div>
+
+          <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
         </template>
       </section>
     </div>
