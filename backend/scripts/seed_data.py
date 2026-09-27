@@ -15,16 +15,18 @@ from app.db.models import (
     Offer,
     Product,
     ProductStatus,
-    SellerAccount,
     SellerPolicy,
+    UserAccount,
 )
 from app.db.session import get_engine
+from app.services.auth_service import ensure_historical_buyer_account
 
 DEMO_PRODUCT_ID = 1001
 DEMO_POLICY_ID = 1001
 DEMO_SESSION_ID = 1001
 DEMO_SELLER_ID = "demo-seller"
 DEMO_SELLER_USERNAME = "demo-seller"
+DEMO_SELLER_DISPLAY_NAME = "演示卖家"
 DEMO_BUYER_ID = "demo-buyer"
 
 
@@ -43,11 +45,12 @@ def seed_demo_data(
 ) -> SeedResult:
     """以固定主键补齐演示数据，重复执行不会创建重复记录。"""
 
-    seller = db.get(SellerAccount, DEMO_SELLER_ID)
+    seller = db.get(UserAccount, DEMO_SELLER_ID)
     if seller is None:
-        seller = SellerAccount(
+        seller = UserAccount(
             id=DEMO_SELLER_ID,
             username=DEMO_SELLER_USERNAME,
+            display_name=DEMO_SELLER_DISPLAY_NAME,
             password_hash=hash_password(seller_password),
             is_active=True,
         )
@@ -63,6 +66,11 @@ def seed_demo_data(
         seller.password_hash = hash_password(seller_password)
         seller.is_active = True
         db.flush()
+    if seller.display_name != DEMO_SELLER_DISPLAY_NAME:
+        seller.display_name = DEMO_SELLER_DISPLAY_NAME
+        db.flush()
+
+    ensure_historical_buyer_account(db, buyer_id=DEMO_BUYER_ID)
 
     product = db.get(Product, DEMO_PRODUCT_ID)
     if product is None:

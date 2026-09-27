@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
 from app.core.security import SELLER_SESSION_COOKIE, create_identity_token, hash_password
-from app.db.models import NegotiationSession, Product, SellerAccount
+from app.db.models import NegotiationSession, Product, UserAccount
 from app.main import create_app
 from app.services.approval_service import ApprovalService
 from app.services.negotiation_service import NegotiationService
@@ -83,9 +83,10 @@ def test_seller_approval_api_enforces_authentication_and_ownership(
     outsider_id = f"seller-{uuid4().hex}"
     with service_session_factory() as db, db.begin():
         db.add(
-            SellerAccount(
+            UserAccount(
                 id=outsider_id,
                 username=f"outsider-{uuid4().hex}",
+                display_name="审批接口外部卖家",
                 password_hash=hash_password("approval-api-test-password"),
                 is_active=True,
             )

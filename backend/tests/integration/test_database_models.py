@@ -19,12 +19,19 @@ from app.db.models import (
     OfferStatus,
     Product,
     ProductStatus,
-    SellerAccount,
     SellerPolicy,
     ShippingPayer,
+    UserAccount,
+)
+from app.services.auth_service import (
+    HISTORICAL_ACCOUNT_PASSWORD_HASH,
+    ensure_historical_buyer_account,
 )
 from scripts.seed_data import (
+    DEMO_BUYER_ID,
     DEMO_PRODUCT_ID,
+    DEMO_SELLER_DISPLAY_NAME,
+    DEMO_SELLER_ID,
     DEMO_SESSION_ID,
     seed_demo_data,
 )
@@ -34,11 +41,16 @@ pytestmark = pytest.mark.mysql_integration
 
 def test_business_models_support_crud_and_exact_money(db_session: Session) -> None:
     unique_suffix = uuid4().hex
-    seller = SellerAccount(
+    seller = UserAccount(
         id=f"seller-{unique_suffix}",
         username=f"seller-{unique_suffix}",
+        display_name="数据库模型测试卖家",
         password_hash=hash_password("integration-test-password"),
         is_active=True,
+    )
+    buyer = ensure_historical_buyer_account(
+        db_session,
+        buyer_id=f"buyer-{unique_suffix}",
     )
     product = Product(
         seller=seller,
@@ -56,7 +68,7 @@ def test_business_models_support_crud_and_exact_money(db_session: Session) -> No
     )
     negotiation = NegotiationSession(
         product=product,
-        buyer_id=f"buyer-{unique_suffix}",
+        buyer=buyer,
         status=NegotiationStatus.ACTIVE,
         round_count=1,
         version=1,
@@ -118,6 +130,14 @@ def test_seed_data_is_idempotent(db_session: Session) -> None:
     assert first.session_id == DEMO_SESSION_ID
     assert db_session.get(Product, DEMO_PRODUCT_ID) is not None
     assert db_session.get(NegotiationSession, DEMO_SESSION_ID) is not None
+    seller = db_session.get(UserAccount, DEMO_SELLER_ID)
+    historical_buyer = db_session.get(UserAccount, DEMO_BUYER_ID)
+    assert seller is not None
+    assert seller.display_name == DEMO_SELLER_DISPLAY_NAME
+    assert seller.is_active is True
+    assert historical_buyer is not None
+    assert historical_buyer.is_active is False
+    assert historical_buyer.password_hash == HISTORICAL_ACCOUNT_PASSWORD_HASH
 
 
 def test_seed_data_can_explicitly_reset_only_the_demo_session(

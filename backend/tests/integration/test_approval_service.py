@@ -17,8 +17,8 @@ from app.db.models import (
     Offer,
     OfferStatus,
     Product,
-    SellerAccount,
     SellerPolicy,
+    UserAccount,
 )
 from app.schemas.approval import ApprovalResponse
 from app.services.approval_service import ApprovalService
@@ -533,6 +533,7 @@ def _delete_committed_negotiation(
         product = db.get(Product, negotiation.product_id)
         assert product is not None
         seller_id = product.seller_id
+        buyer_id = negotiation.buyer_id
         negotiation.current_offer_id = None
         db.flush()
         db.execute(
@@ -546,6 +547,9 @@ def _delete_committed_negotiation(
         )
         db.delete(product)
         db.flush()
-        seller = db.get(SellerAccount, seller_id)
+        seller = db.get(UserAccount, seller_id)
         if seller is not None:
             db.delete(seller)
+        buyer = db.get(UserAccount, buyer_id)
+        if buyer is not None:
+            db.delete(buyer)

@@ -10,9 +10,10 @@ from app.db.models import (
     NegotiationStyle,
     Product,
     ProductStatus,
-    SellerAccount,
     SellerPolicy,
+    UserAccount,
 )
+from app.services.auth_service import ensure_historical_buyer_account
 
 
 def create_negotiation(
@@ -26,12 +27,14 @@ def create_negotiation(
 
     suffix = uuid4().hex
     with session_factory() as db, db.begin():
-        seller = SellerAccount(
+        seller = UserAccount(
             id=f"seller-{suffix}",
             username=f"seller-{suffix}",
+            display_name="集成测试卖家",
             password_hash=hash_password("integration-test-password"),
             is_active=True,
         )
+        buyer = ensure_historical_buyer_account(db, buyer_id=f"buyer-{suffix}")
         product = Product(
             seller=seller,
             title="阶段四测试商品",
@@ -48,7 +51,7 @@ def create_negotiation(
         )
         negotiation = NegotiationSession(
             product=product,
-            buyer_id=f"buyer-{suffix}",
+            buyer=buyer,
             status=NegotiationStatus.ACTIVE,
             round_count=0,
             version=1,

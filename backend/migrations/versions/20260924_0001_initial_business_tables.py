@@ -283,7 +283,7 @@ def downgrade() -> None:
     )
     op.drop_table("offers")
     op.drop_table("messages")
-    op.drop_index("ix_negotiation_sessions_product_buyer", table_name="negotiation_sessions")
+    # MySQL 会复用该索引支撑 product_id 外键；删除整张表时会自动清理索引。
     op.drop_table("negotiation_sessions")
     op.drop_table("seller_policies")
     op.drop_index(op.f("ix_products_seller_id"), table_name="products")

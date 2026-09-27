@@ -10,7 +10,7 @@ from app.db.models.enums import ProductStatus, stored_enum
 if TYPE_CHECKING:
     from app.db.models.negotiation import NegotiationSession
     from app.db.models.policy import SellerPolicy
-    from app.db.models.seller import SellerAccount
+    from app.db.models.user import UserAccount
 
 
 class Product(TimestampMixin, Base):
@@ -23,7 +23,7 @@ class Product(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     seller_id: Mapped[str] = mapped_column(
-        ForeignKey("seller_accounts.id", ondelete="RESTRICT"),
+        ForeignKey("user_accounts.id", ondelete="RESTRICT"),
         nullable=False,
         index=True,
     )
@@ -44,4 +44,4 @@ class Product(TimestampMixin, Base):
     negotiations: Mapped[list["NegotiationSession"]] = relationship(
         back_populates="product"
     )
-    seller: Mapped["SellerAccount"] = relationship(back_populates="products")
+    seller: Mapped["UserAccount"] = relationship(back_populates="products")

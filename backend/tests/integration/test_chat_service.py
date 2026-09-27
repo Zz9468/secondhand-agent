@@ -19,6 +19,7 @@ from app.db.models import (
     OfferStatus,
     Product,
     SellerPolicy,
+    UserAccount,
 )
 from app.services.chat_service import BuyerOfferSubmission, ChatService
 from app.services.errors import (
@@ -596,9 +597,20 @@ def test_same_session_chat_turns_are_serialized_across_connections(
             negotiation = db.get(NegotiationSession, session_id)
             if negotiation is not None:
                 product_id = negotiation.product_id
+                buyer_id = negotiation.buyer_id
+                product = db.get(Product, product_id)
+                seller_id = product.seller_id if product is not None else None
                 db.execute(delete(Message).where(Message.session_id == session_id))
                 db.execute(delete(Offer).where(Offer.session_id == session_id))
                 db.delete(negotiation)
                 db.flush()
                 db.execute(delete(SellerPolicy).where(SellerPolicy.product_id == product_id))
                 db.execute(delete(Product).where(Product.id == product_id))
+                db.flush()
+                buyer = db.get(UserAccount, buyer_id)
+                if buyer is not None:
+                    db.delete(buyer)
+                if seller_id is not None:
+                    seller = db.get(UserAccount, seller_id)
+                    if seller is not None:
+                        db.delete(seller)

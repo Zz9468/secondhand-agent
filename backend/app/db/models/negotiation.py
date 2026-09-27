@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.db.models.message import Message
     from app.db.models.offer import Offer
     from app.db.models.product import Product
+    from app.db.models.user import UserAccount
 
 
 class NegotiationSession(TimestampMixin, Base):
@@ -29,7 +30,11 @@ class NegotiationSession(TimestampMixin, Base):
         ForeignKey("products.id", ondelete="RESTRICT"),
         nullable=False,
     )
-    buyer_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    buyer_id: Mapped[str] = mapped_column(
+        ForeignKey("user_accounts.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
     status: Mapped[NegotiationStatus] = mapped_column(
         stored_enum(NegotiationStatus, name="negotiation_status"),
         nullable=False,
@@ -67,6 +72,7 @@ class NegotiationSession(TimestampMixin, Base):
     version: Mapped[int] = mapped_column(nullable=False, default=1)
 
     product: Mapped["Product"] = relationship(back_populates="negotiations")
+    buyer: Mapped["UserAccount"] = relationship(back_populates="negotiations")
     messages: Mapped[list["Message"]] = relationship(
         back_populates="session",
         cascade="all, delete-orphan",

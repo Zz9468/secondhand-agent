@@ -20,6 +20,7 @@ from app.db.models import (
     SellerPolicy,
 )
 from app.db.models import ShippingPayer as StoredShippingPayer
+from app.services.auth_service import ensure_historical_buyer_account
 from app.services.errors import (
     InvalidNegotiationStateError,
     InvalidOfferTermsError,
@@ -129,6 +130,8 @@ class NegotiationService:
             if existing is not None:
                 return existing.id, False
 
+            # 阶段一仍保留 V2 访客入口；先建立不可登录映射，避免悬空 buyer_id。
+            ensure_historical_buyer_account(db, buyer_id=buyer_id)
             negotiation = NegotiationSession(
                 product_id=product_id,
                 buyer_id=buyer_id,

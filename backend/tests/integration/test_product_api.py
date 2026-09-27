@@ -12,7 +12,7 @@ from app.core.security import (
     create_identity_token,
     hash_password,
 )
-from app.db.models import SellerAccount
+from app.db.models import UserAccount
 from app.main import create_app
 from app.services.negotiation_service import NegotiationService
 
@@ -42,9 +42,10 @@ def _create_seller(
     seller_id = f"seller-{uuid4().hex}"
     with session_factory() as db, db.begin():
         db.add(
-            SellerAccount(
+            UserAccount(
                 id=seller_id,
                 username=username,
+                display_name="商品接口测试卖家",
                 password_hash=hash_password("product-api-test-password"),
                 is_active=True,
             )

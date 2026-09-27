@@ -18,7 +18,7 @@ from app.db.models.negotiation import NegotiationSession
 from app.db.models.offer import Offer
 from app.db.models.policy import SellerPolicy
 from app.db.models.product import Product
-from app.db.models.seller import SellerAccount
+from app.db.models.user import UserAccount
 
 __all__ = [
     "ApprovalFollowupStatus",
@@ -36,6 +36,6 @@ __all__ = [
     "Product",
     "ProductStatus",
     "SellerPolicy",
-    "SellerAccount",
     "ShippingPayer",
+    "UserAccount",
 ]

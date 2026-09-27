@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
 from app.core.security import hash_password
-from app.db.models import SellerAccount
+from app.db.models import UserAccount
 from app.main import create_app
 
 pytestmark = pytest.mark.mysql_integration
@@ -40,9 +40,10 @@ def test_seller_login_me_and_logout(
     password = "seller-test-password"
     with service_session_factory() as db, db.begin():
         db.add(
-            SellerAccount(
+            UserAccount(
                 id=username,
                 username=username,
+                display_name="认证测试卖家",
                 password_hash=hash_password(password),
                 is_active=True,
             )
