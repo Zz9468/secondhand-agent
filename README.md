@@ -310,6 +310,7 @@ python -m app.workers.approval_processor --once
 - `POST http://localhost:8000/api/products`：当前账号创建商品及初始私有策略；
 - `GET http://localhost:8000/api/seller/products`：当前账号读取自己发布的商品和策略；
 - `PUT http://localhost:8000/api/seller/products/{product_id}`：编辑自己的商品或上下架；
+- `DELETE http://localhost:8000/api/seller/products/{product_id}`：删除本人未上架且从未产生协商记录的商品；
 - `PUT http://localhost:8000/api/seller/products/{product_id}/policy`：按版本更新自己的私有策略；
 - `GET http://localhost:8000/api/seller/approvals`：登录卖家读取自己的审批列表，可用 `status` 过滤；
 - `GET http://localhost:8000/api/seller/approvals/{approval_id}`：读取审批、商品及报价详情；

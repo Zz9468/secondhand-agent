@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
 from app.core.security import hash_password
-from app.db.models import NegotiationSession, UserAccount
+from app.db.models import NegotiationSession, Product, SellerPolicy, UserAccount
 from app.main import create_app
 from app.services.negotiation_service import NegotiationService
 from tests.integration.auth_helpers import authenticate_user
@@ -214,6 +214,99 @@ def test_seller_manages_only_owned_products_and_policy_versions(
     )
     assert state.negotiation_style.value == "FIRM"
     assert state.max_rounds == 4
+
+
+def test_seller_deletes_only_unlisted_products_without_negotiation_history(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    owner_id = _create_seller(
+        service_session_factory,
+        username=f"delete-owner-{uuid4().hex}",
+    )
+    other_id = _create_seller(
+        service_session_factory,
+        username=f"delete-other-{uuid4().hex}",
+    )
+    buyer_id = create_user_account(
+        service_session_factory,
+        display_name="商品删除测试买家",
+    )
+    owner = _test_client(service_session_factory)
+    other = _test_client(service_session_factory)
+    buyer = _test_client(service_session_factory)
+    _authenticate_seller(owner, owner_id)
+    _authenticate_seller(other, other_id)
+    authenticate_user(buyer, user_id=buyer_id, settings=TEST_SETTINGS)
+
+    draft = owner.post("/api/products", json=_product_payload(status="DRAFT"))
+    draft_id = draft.json()["id"]
+    draft_deleted = owner.delete(f"/api/seller/products/{draft_id}")
+
+    assert draft_deleted.status_code == 204
+    assert draft_deleted.content == b""
+    assert owner.get(f"/api/seller/products/{draft_id}").status_code == 404
+    assert owner.delete(f"/api/seller/products/{draft_id}").status_code == 404
+    with service_session_factory() as db:
+        assert db.get(Product, draft_id) is None
+        assert db.scalar(
+            select(SellerPolicy).where(SellerPolicy.product_id == draft_id)
+        ) is None
+
+    unavailable = owner.post(
+        "/api/products",
+        json=_product_payload(status="UNAVAILABLE"),
+    )
+    unavailable_id = unavailable.json()["id"]
+    forbidden_other = other.delete(f"/api/seller/products/{unavailable_id}")
+    unavailable_deleted = owner.delete(f"/api/seller/products/{unavailable_id}")
+
+    assert forbidden_other.status_code == 404
+    assert unavailable_deleted.status_code == 204
+
+    available = owner.post(
+        "/api/products",
+        json=_product_payload(status="AVAILABLE"),
+    )
+    available_id = available.json()["id"]
+    available_delete = owner.delete(f"/api/seller/products/{available_id}")
+
+    assert available_delete.status_code == 409
+    assert available_delete.json()["detail"] == "上架中的商品不能删除，请先下架"
+    assert owner.get(f"/api/seller/products/{available_id}").status_code == 200
+
+    negotiated = owner.post(
+        "/api/products",
+        json=_product_payload(status="AVAILABLE"),
+    )
+    negotiated_id = negotiated.json()["id"]
+    session_created = buyer.post(
+        "/api/negotiations",
+        json={"product_id": negotiated_id},
+    )
+    taken_down = owner.put(
+        f"/api/seller/products/{negotiated_id}",
+        json={
+            "title": negotiated.json()["title"],
+            "description": negotiated.json()["description"],
+            "listed_price": negotiated.json()["listed_price"],
+            "status": "UNAVAILABLE",
+        },
+    )
+    history_delete = owner.delete(f"/api/seller/products/{negotiated_id}")
+
+    assert session_created.status_code == 200
+    assert taken_down.status_code == 200
+    assert history_delete.status_code == 409
+    assert history_delete.json()["detail"] == (
+        "商品已有协商记录，只能保留下架状态，不能删除"
+    )
+    with service_session_factory() as db:
+        assert db.get(Product, negotiated_id) is not None
+        assert db.scalar(
+            select(func.count(NegotiationSession.id)).where(
+                NegotiationSession.product_id == negotiated_id
+            )
+        ) == 1
 
 
 def test_registered_accounts_share_one_session_across_buyer_and_seller_modes(

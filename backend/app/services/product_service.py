@@ -15,6 +15,7 @@ from app.services.errors import (
     NegotiationNotFoundError,
     PolicyVersionConflictError,
     PricingPolicyNotFoundError,
+    ProductDeletionConflictError,
     ProductNotFoundError,
 )
 
@@ -221,6 +222,32 @@ class ProductService:
             product.status = data.status
             db.flush()
             return self._seller_snapshot(product)
+
+    def delete_owned_product(self, *, product_id: int, seller_id: str) -> None:
+        """删除未上架且从未产生协商记录的本人商品。"""
+
+        with self._session_factory() as db, db.begin():
+            product = self._get_owned_product(
+                db,
+                product_id=product_id,
+                seller_id=seller_id,
+                for_update=True,
+            )
+            if product.status is ProductStatus.AVAILABLE:
+                raise ProductDeletionConflictError("上架中的商品不能删除，请先下架")
+
+            negotiation_id = db.scalar(
+                select(NegotiationSession.id)
+                .where(NegotiationSession.product_id == product.id)
+                .limit(1)
+            )
+            if negotiation_id is not None:
+                raise ProductDeletionConflictError(
+                    "商品已有协商记录，只能保留下架状态，不能删除"
+                )
+
+            db.delete(product)
+            db.flush()
 
     def update_owned_policy(
         self,

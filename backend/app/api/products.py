@@ -1,6 +1,6 @@
 from typing import Annotated, Never
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.api.dependencies import CurrentUser, SessionFactoryDependency
 from app.schemas.product import (
@@ -15,6 +15,7 @@ from app.schemas.product import (
 from app.services.errors import (
     PolicyVersionConflictError,
     PricingPolicyNotFoundError,
+    ProductDeletionConflictError,
     ProductNotFoundError,
     ServiceError,
 )
@@ -135,6 +136,22 @@ def update_seller_product(
     return SellerProductResponse.model_validate(product)
 
 
+@seller_router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_seller_product(
+    product_id: int,
+    user: CurrentUser,
+    session_factory: SessionFactoryDependency,
+) -> Response:
+    try:
+        ProductService(session_factory).delete_owned_product(
+            product_id=product_id,
+            seller_id=user.id,
+        )
+    except ServiceError as exc:
+        _raise_http_error(exc)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @seller_router.put("/{product_id}/policy", response_model=SellerProductResponse)
 def update_seller_policy(
     product_id: int,
@@ -162,7 +179,10 @@ def update_seller_policy(
 def _raise_http_error(error: ServiceError) -> Never:
     if isinstance(error, ProductNotFoundError):
         code = status.HTTP_404_NOT_FOUND
-    elif isinstance(error, PolicyVersionConflictError):
+    elif isinstance(
+        error,
+        (PolicyVersionConflictError, ProductDeletionConflictError),
+    ):
         code = status.HTTP_409_CONFLICT
     elif isinstance(error, PricingPolicyNotFoundError):
         code = status.HTTP_422_UNPROCESSABLE_ENTITY

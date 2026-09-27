@@ -11,6 +11,7 @@ import {
 import { ApiError } from '../api/client'
 import {
   createProduct,
+  deleteProduct,
   listSellerProducts,
   updatePolicy,
   updateProduct,
@@ -63,6 +64,7 @@ const pendingReviewRequest = ref<{
 } | null>(null)
 const loading = ref(true)
 const saving = ref(false)
+const deleting = ref(false)
 const reviewing = ref(false)
 const polling = ref(false)
 const errorMessage = ref('')
@@ -373,6 +375,34 @@ async function saveProduct(): Promise<void> {
   }
 }
 
+async function deleteSelectedProduct(): Promise<void> {
+  const product = selectedProduct.value
+  if (
+    product === null
+    || product.status === 'AVAILABLE'
+    || deleting.value
+    || saving.value
+  ) return
+
+  const confirmed = window.confirm(
+    `确定永久删除商品“${product.title}”吗？此操作不可恢复。`,
+  )
+  if (!confirmed) return
+
+  deleting.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    await deleteProduct(product.id)
+    await loadProducts()
+    successMessage.value = '商品已删除。'
+  } catch (error) {
+    errorMessage.value = readableError(error)
+  } finally {
+    deleting.value = false
+  }
+}
+
 function readableError(error: unknown): string {
   if (error instanceof Error) return error.message
   return '请求失败，请检查后端与数据库状态。'
@@ -610,7 +640,21 @@ onUnmounted(() => {
         <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
         <p v-else-if="successMessage" class="outcome-banner">{{ successMessage }}</p>
         <div class="editor-actions">
-          <button type="submit" :disabled="saving">
+          <button
+            v-if="selectedProduct"
+            class="delete-button"
+            type="button"
+            :disabled="saving || deleting || selectedProduct.status === 'AVAILABLE'"
+            :title="selectedProduct.status === 'AVAILABLE' ? '请先将商品下架并保存' : ''"
+            @click="deleteSelectedProduct"
+          >
+            {{ deleting
+              ? '删除中…'
+              : selectedProduct.status === 'AVAILABLE'
+                ? '请先下架再删除'
+                : '删除商品' }}
+          </button>
+          <button type="submit" :disabled="saving || deleting">
             {{ saving ? '保存中…' : '保存商品' }}
           </button>
         </div>

@@ -20,6 +20,10 @@ class ProductNotFoundError(ServiceError):
     code = "PRODUCT_NOT_FOUND"
 
 
+class ProductDeletionConflictError(ServiceError):
+    code = "PRODUCT_DELETION_CONFLICT"
+
+
 class SellerNotFoundError(ServiceError):
     code = "SELLER_NOT_FOUND"
 

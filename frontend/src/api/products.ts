@@ -87,6 +87,12 @@ export function updateProduct(
   })
 }
 
+export function deleteProduct(productId: number): Promise<void> {
+  return requestJson<void>(`/api/seller/products/${productId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function updatePolicy(
   productId: number,
   payload: PolicyWritePayload & { expected_version: number },
