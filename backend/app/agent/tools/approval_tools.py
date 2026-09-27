@@ -5,7 +5,7 @@ from langchain_core.tools import BaseTool, tool
 from app.agent.tools.context import AgentToolContext
 from app.agent.tools.schemas import RequestApprovalInput
 from app.agent.tools.serialization import approval_result, error_result
-from app.services.approval_service import ApprovalService
+from app.services.approval_service import ApprovalService, render_seller_approval_reason
 from app.services.errors import ApprovalNotAuthorizedError, ServiceError
 from app.services.negotiation_service import NegotiationService, OfferSnapshot
 
@@ -22,7 +22,7 @@ def build_approval_tools(
 
     @tool("request_approval", args_schema=RequestApprovalInput)
     def request_approval_tool(offer_id: int, reason: str) -> dict[str, object]:
-        """重新校验当前正式报价，并为审批区报价创建唯一待审批记录。"""
+        """重新校验报价并创建审批；模型原因不会作为卖家可见事实保存。"""
 
         try:
             if context.current_turn_offer_id is None or (
@@ -46,7 +46,7 @@ def build_approval_tools(
                 buyer_id=context.buyer_id,
                 offer_id=offer_id,
                 expected_policy_version=state.policy_version,
-                reason=reason,
+                reason=render_seller_approval_reason(current_offer),
                 expires_at=expires_at,
             )
         except ServiceError as exc:

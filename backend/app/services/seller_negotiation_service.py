@@ -16,6 +16,7 @@ from app.db.models import (
     Product,
     ProductStatus,
 )
+from app.services.approval_service import render_seller_approval_reason
 from app.services.errors import NegotiationNotFoundError
 from app.services.negotiation_service import NegotiationService, OfferSnapshot
 
@@ -95,7 +96,9 @@ class SellerNegotiationService:
                     selectinload(NegotiationSession.product),
                     selectinload(NegotiationSession.current_offer),
                     selectinload(NegotiationSession.confirmed_offer),
-                    selectinload(NegotiationSession.approval_requests),
+                    selectinload(NegotiationSession.approval_requests).selectinload(
+                        ApprovalRequest.offer
+                    ),
                 )
                 .order_by(
                     NegotiationSession.updated_at.desc(),
@@ -130,7 +133,9 @@ class SellerNegotiationService:
                     selectinload(NegotiationSession.confirmed_offer),
                     selectinload(NegotiationSession.messages),
                     selectinload(NegotiationSession.offers),
-                    selectinload(NegotiationSession.approval_requests),
+                    selectinload(NegotiationSession.approval_requests).selectinload(
+                        ApprovalRequest.offer
+                    ),
                 )
             )
             if negotiation is None:
@@ -193,7 +198,7 @@ class SellerNegotiationService:
             offer_id=approval.offer_id,
             policy_version=approval.policy_version,
             status=approval.status,
-            reason=approval.reason,
+            reason=render_seller_approval_reason(approval.offer),
             seller_comment=approval.seller_comment,
             expires_at=approval.expires_at,
             reviewed_at=approval.reviewed_at,

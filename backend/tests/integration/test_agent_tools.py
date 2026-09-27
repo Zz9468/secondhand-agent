@@ -147,7 +147,10 @@ def test_request_approval_tool_is_bound_to_current_turn_and_idempotent(
     request_approval = next(item for item in tools if item.name == "request_approval")
 
     first = request_approval.invoke(
-        {"offer_id": buyer_offer.id, "reason": "需要卖家确认"}
+        {
+            "offer_id": buyer_offer.id,
+            "reason": "The model generated an English internal explanation.",
+        }
     )
     repeated = request_approval.invoke(
         {"offer_id": buyer_offer.id, "reason": "重复申请不会新增记录"}
@@ -168,6 +171,9 @@ def test_request_approval_tool_is_bound_to_current_turn_and_idempotent(
         assert count == 1
         assert approval is not None
         assert approval.status is ApprovalStatus.PENDING
+        assert "买家提交了 2800.00 元的正式报价" in approval.reason
+        assert "需要卖家确认" in approval.reason
+        assert "English internal explanation" not in approval.reason
         assert negotiation is not None
         assert negotiation.status is NegotiationStatus.WAITING_APPROVAL
 
@@ -204,4 +210,11 @@ def test_request_approval_tool_rejects_offer_outside_bound_turn(
     assert result["ok"] is False
     assert result["error"]["code"] == "APPROVAL_NOT_AUTHORIZED"
     with service_session_factory() as db:
-        assert db.scalar(select(func.count()).select_from(ApprovalRequest)) == 0
+        assert (
+            db.scalar(
+                select(func.count())
+                .select_from(ApprovalRequest)
+                .where(ApprovalRequest.session_id == session_id)
+            )
+            == 0
+        )

@@ -19,6 +19,7 @@ from app.db.models import (
     ProductStatus,
     SellerPolicy,
 )
+from app.db.models import ShippingPayer as StoredShippingPayer
 from app.services.errors import (
     ApprovalConflictError,
     ApprovalNotAuthorizedError,
@@ -33,6 +34,27 @@ from app.services.negotiation_service import NegotiationService, OfferSnapshot
 from app.services.pricing_service import PricingService
 
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
+
+
+def render_seller_approval_reason(offer: Offer | OfferSnapshot) -> str:
+    """根据可信报价事实生成中文审批原因，不展示模型自由推理。"""
+
+    if offer.shipping_paid_by is StoredShippingPayer.BUYER:
+        shipping_text = "买家承担运费"
+    elif offer.shipping_cost is None:
+        shipping_text = "卖家承担运费"
+    else:
+        shipping_text = f"卖家承担 {offer.shipping_cost:.2f} 元运费"
+
+    discount_text = ""
+    if offer.seller_borne_discount > 0:
+        discount_text = f"，卖家承担其他优惠 {offer.seller_borne_discount:.2f} 元"
+
+    return (
+        f"买家提交了 {offer.price:.2f} 元的正式报价（报价 #{offer.id}），"
+        f"{shipping_text}{discount_text}。系统规则校验结果为需要卖家确认，"
+        "当前尚未接受该报价，请核对后选择同意或拒绝。"
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -837,7 +859,7 @@ class ApprovalService:
             offer_id=approval.offer_id,
             policy_version=approval.policy_version,
             status=approval.status,
-            reason=approval.reason,
+            reason=render_seller_approval_reason(offer),
             seller_comment=approval.seller_comment,
             expires_at=approval.expires_at,
             reviewed_at=approval.reviewed_at,

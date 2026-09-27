@@ -62,7 +62,7 @@ def _create_pending_approval(
         buyer_id=buyer_id,
         offer_id=offer.id,
         expected_policy_version=1,
-        reason="API 审批测试",
+        reason="Legacy English approval reason.",
         expires_at=datetime.now() + timedelta(hours=1),
     )
     with session_factory() as db:
@@ -104,6 +104,8 @@ def test_seller_approval_api_enforces_authentication_and_ownership(
     assert detail.status_code == 200
     assert detail.json()["offer"]["price"] == "2800.00"
     assert detail.json()["status"] == "PENDING"
+    assert "买家提交了 2800.00 元的正式报价" in detail.json()["reason"]
+    assert "Legacy English" not in detail.json()["reason"]
     assert hidden.status_code == 404
 
 

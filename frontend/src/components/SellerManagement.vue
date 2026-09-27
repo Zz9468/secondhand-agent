@@ -686,7 +686,7 @@ onUnmounted(() => {
           </div>
 
           <div class="approval-reason">
-            <span>Agent 申请原因</span>
+            <span>系统申请原因</span>
             <p>{{ selectedApproval.reason }}</p>
           </div>
 

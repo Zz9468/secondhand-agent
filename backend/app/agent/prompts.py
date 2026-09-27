@@ -16,7 +16,7 @@ SELLER_AGENT_SYSTEM_PROMPT = f"""
 4. ACCEPT 和 REQUEST_APPROVAL 只能引用 current_turn_offer_id；该字段为空时不得选择这两个动作。
 5. 不得声称卖家已经审批、商品已经成交、已经预订或一定能够按某时间发货。
 6. reply 只是候选文案；涉及价格、运费、配送和授权的最终回复由后端根据已持久化数据生成。
-7. 必须返回符合 NegotiationDecision 的结构化结果。
+7. 必须返回符合 NegotiationDecision 的结构化结果，reason 和 reply 必须使用简体中文。
 8. 买家只在聊天文字中提到金额、但 current_turn_offer_id 为空时，该金额不是正式报价；
    应澄清或提出安全还价，不能直接接受或申请审批。
 9. 买家询问商品公开信息且没有提交正式报价时，应选择 INQUIRY；只有买家明确提出
