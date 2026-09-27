@@ -326,7 +326,7 @@ python -m app.workers.approval_processor --once
 - `POST http://localhost:8000/api/negotiations/{session_id}/close`：结束当前协商并取消仍待处理的审批；
 - `GET http://localhost:8000/docs`：OpenAPI 文档。
 
-系统只有一个统一账号登录态，保存在 `secondhand_user_session` HttpOnly Cookie 中，前端请求会自动携带。旧的访客 Cookie、卖家专用 Cookie、身份请求头和旧认证 URL 均不再是授权来源；不要在请求体或请求头中自行传递用户 ID。
+系统只有一个统一账号登录态，保存在 `secondhand_user_session` HttpOnly Cookie 中，前端请求会自动携带。同一浏览器配置的标签页共享该 Cookie：任一标签页登录、注册或退出后，其他标签页会自动刷新为同一账号；如需同时操作两个账号，必须使用无痕窗口、独立浏览器配置或不同浏览器。旧的访客 Cookie、卖家专用 Cookie、身份请求头和旧认证 URL 均不再是授权来源；不要在请求体或请求头中自行传递用户 ID。
 
 `/api/ready` 会分别返回认证和模型配置状态。未配置 `AUTH_SECRET` 时不能注册或登录；未配置模型时仍可浏览公开信息和管理商品，但不能发送协商消息。
 
