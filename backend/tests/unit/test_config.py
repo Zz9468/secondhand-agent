@@ -37,18 +37,18 @@ def test_auth_secret_requires_explicit_strong_value() -> None:
     assert configured.auth_is_configured is True
 
 
-def test_unified_session_lifetime_accepts_legacy_seller_setting(
+def test_unified_session_lifetime_ignores_removed_seller_setting(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("USER_SESSION_MINUTES", raising=False)
     monkeypatch.setenv("SELLER_SESSION_MINUTES", "720")
 
-    legacy = Settings(_env_file=None, database_url="sqlite://")
+    without_unified_setting = Settings(_env_file=None, database_url="sqlite://")
     explicit = Settings(
         _env_file=None,
         database_url="sqlite://",
         user_session_minutes=60,
     )
 
-    assert legacy.user_session_minutes == 720
+    assert without_unified_setting.user_session_minutes == 480
     assert explicit.user_session_minutes == 60

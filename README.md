@@ -1,6 +1,6 @@
 # SecondHand Agent
 
-面向个人闲置交易的自主协商卖家助手。V1 已形成一个演示卖家、一个商品和一个买家会话的最小聊天闭环，用于验证自主协商与硬约束。
+面向个人闲置交易的自主协商卖家助手。当前已完成 V1、V2 和 V2.1：注册用户使用同一个账号买卖闲置商品，在商品大厅浏览公开信息，并在明确发起协商后进入受规则、审批和最终确认约束的议价闭环。
 
 ## 当前阶段
 
@@ -135,12 +135,23 @@ V2 阶段八已完成双端整合与全量验收能力：
 - 新增完整 V2 端到端集成测试，以及身份、权限、状态机、并发、幂等、迁移和 Worker 故障回归；
 - 人工验收步骤见 [`docs/V2_验收清单.md`](docs/V2_验收清单.md)。
 
+V2.1 七个阶段已完成统一账号与商品大厅升级：
+
+- `user_accounts` 同时承载商品卖家和会话买家，历史访客按原访客 ID 一对一迁移为不可登录账号；
+- 注册和登录统一使用 `secondhand_user_session` HttpOnly Cookie，买家/卖家模式只是前端路由上下文；
+- 商品大厅、个人卖家公开主页和商品详情均可直接浏览，刷新或切换浏览页面不会创建协商会话；
+- 只有登录用户在商品详情点击“与卖家协商”后，才会创建或恢复自己对该商品的进行中会话；
+- 用户不能协商自己发布的商品，商品、会话、审批和确认操作均按当前账号及资源归属校验；
+- 买家协商列表和卖家工作台已拆分为 Vue Router 页面，同一登录态可随时切换；
+- V2 原有的价格规则、Agent 安全边界、审批 Worker、幂等处理和交易意向确认语义保持不变；
+- V2.1 人工验收步骤见 [`docs/V2.1_验收清单.md`](docs/V2.1_验收清单.md)。
+
 V2 当前已经满足本地演示和验收要求。以下事项不属于 V2 功能缺失，但在长期运行、多人并发或正式部署前需要处理：
 
 - 为审批 Worker 的 `FAILED` 任务增加重试次数、`next_retry_at`、指数退避、最大重试上限及人工处理入口，避免模型长期不可用时按轮询间隔持续重试；
 - 将聊天和审批通知中的外部模型调用从持有数据库行锁的长事务中拆出。推荐采用“短事务领取并保存状态快照 → 事务外调用模型 → 新事务重新锁定、校验版本并幂等写入”的方式；不能只把调用移到事务外而省略二次校验，否则过期模型结果可能覆盖新的报价或规则状态。
 
-下一步计划实施 V2.1“统一账号与商品大厅”：用户注册时不选择身份，同一账号可随时进入买家或卖家模式；买家先浏览卖家与商品，查看列表和详情不会创建会话，只有在商品详情明确点击“与卖家协商”后才创建或恢复协商。详细设计、七个开发阶段和验收标准见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。该计划尚未实现，当前运行行为仍以本 README 上述 V2 说明为准。
+V2.1 的完整设计、迁移原则和七阶段实施记录见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。后续 V3 将聚焦可靠性、可观测性和离线评测，V4 将聚焦云服务器部署与运维。
 
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
@@ -221,19 +232,11 @@ npm install
 cd ..
 ```
 
-如需清空固定演示会话 `1001` 的消息和报价并重新演示，请显式执行：
+种子脚本只幂等补齐演示统一账号 `demo-seller`、公开商品 `1001` 及其私有策略，不创建、删除或重置任何协商会话。协商会话必须由已登录买家在商品详情明确发起。
 
-```powershell
-cd backend
-python scripts/seed_data.py --reset-session
-cd ..
-```
+### 从旧版本升级
 
-该选项只重置从 V1 保留的固定演示会话 `1001`；不带参数执行时仍是非破坏性的幂等初始化。V2 页面会为每个浏览器访客创建独立会话，如需从新访客开始演示，可使用新的无痕窗口或清除 `localhost` 的站点 Cookie。
-
-### 从 V1 升级
-
-已有 V1 `.env` 的开发者无需覆盖原文件，但必须补充 `AUTH_SECRET` 和 `DEMO_SELLER_PASSWORD`。随后升级数据库并重新执行种子脚本；迁移会先为已有商品建立禁用卖家账号，种子脚本再设置密码并启用演示卖家：
+已有 `.env` 的开发者无需覆盖原文件，但必须补充 `AUTH_SECRET`、`USER_SESSION_MINUTES` 和 `DEMO_SELLER_PASSWORD`。随后升级数据库并重新执行种子脚本。迁移会把旧卖家账号升级为统一账号，并为每个历史访客建立独立、不可登录的账号映射；商品、会话、消息、报价、审批和确认记录会保留：
 
 ```powershell
 conda activate secondhand-agent
@@ -295,14 +298,17 @@ python -m app.workers.approval_processor --once
 
 - `GET http://localhost:8000/api/health`：仅检查 API 进程；
 - `GET http://localhost:8000/api/ready`：检查 MySQL、认证和模型配置状态；
-- `POST http://localhost:8000/api/auth/visitor`：签发或续签当前浏览器的买家访客身份；
-- `POST http://localhost:8000/api/auth/seller/login`：演示卖家登录；用户名为 `demo-seller`，密码取自本地 `DEMO_SELLER_PASSWORD`；
-- `GET http://localhost:8000/api/auth/seller/me`：读取当前卖家身份；
-- `POST http://localhost:8000/api/auth/seller/logout`：退出卖家登录；
+- `POST http://localhost:8000/api/auth/register`：注册统一账号并建立登录态，注册时不选择身份；
+- `POST http://localhost:8000/api/auth/login`：统一账号登录；演示账号用户名为 `demo-seller`，密码取自本地 `DEMO_SELLER_PASSWORD`；
+- `GET http://localhost:8000/api/auth/me`：读取当前统一账号；
+- `POST http://localhost:8000/api/auth/logout`：退出统一账号；
 - `GET http://localhost:8000/api/products`：列出已上架商品的公开信息；
 - `GET http://localhost:8000/api/products/{product_id}`：读取已上架商品的公开详情；
-- `POST http://localhost:8000/api/products`：登录卖家创建商品及初始私有策略；
-- `GET http://localhost:8000/api/seller/products`：登录卖家读取自己的商品和策略；
+- `GET http://localhost:8000/api/sellers`：列出拥有公开商品的个人卖家；
+- `GET http://localhost:8000/api/sellers/{seller_id}`：读取卖家公开主页；
+- `GET http://localhost:8000/api/sellers/{seller_id}/products`：读取该卖家的公开商品；
+- `POST http://localhost:8000/api/products`：当前账号创建商品及初始私有策略；
+- `GET http://localhost:8000/api/seller/products`：当前账号读取自己发布的商品和策略；
 - `PUT http://localhost:8000/api/seller/products/{product_id}`：编辑自己的商品或上下架；
 - `PUT http://localhost:8000/api/seller/products/{product_id}/policy`：按版本更新自己的私有策略；
 - `GET http://localhost:8000/api/seller/approvals`：登录卖家读取自己的审批列表，可用 `status` 过滤；
@@ -311,17 +317,18 @@ python -m app.workers.approval_processor --once
 - `POST http://localhost:8000/api/seller/approvals/{approval_id}/reject`：幂等拒绝当前有效报价；
 - `GET http://localhost:8000/api/seller/negotiations`：登录卖家读取自己商品下的协商列表，可用 `status` 过滤；
 - `GET http://localhost:8000/api/seller/negotiations/{session_id}`：读取卖家有权访问的消息、报价与审批时间线；
-- `POST http://localhost:8000/api/negotiations`：为当前访客创建或复用商品协商会话；
-- `GET http://localhost:8000/api/negotiations/{session_id}`：读取当前访客的协商状态；
+- `GET http://localhost:8000/api/buyer/negotiations`：读取当前账号作为买家的协商列表；
+- `POST http://localhost:8000/api/negotiations`：在用户明确发起时创建或复用当前账号对商品的进行中会话；
+- `GET http://localhost:8000/api/negotiations/{session_id}`：读取当前账号拥有的买家协商状态；
 - `GET http://localhost:8000/api/negotiations/{session_id}/messages`：读取聊天记录；
 - `POST http://localhost:8000/api/negotiations/{session_id}/messages`：发送消息并触发 Seller Agent；
 - `POST http://localhost:8000/api/negotiations/{session_id}/confirm`：按当前有效报价明确确认交易意向；
 - `POST http://localhost:8000/api/negotiations/{session_id}/close`：结束当前协商并取消仍待处理的审批；
 - `GET http://localhost:8000/docs`：OpenAPI 文档。
 
-买家和卖家登录态均保存在 HttpOnly Cookie 中，前端请求会自动携带；不要再手工填写 `X-Buyer-ID`。不同浏览器配置文件或无痕窗口会获得不同的买家访客身份，不能读取彼此的协商会话。
+系统只有一个统一账号登录态，保存在 `secondhand_user_session` HttpOnly Cookie 中，前端请求会自动携带。旧的访客 Cookie、卖家专用 Cookie、身份请求头和旧认证 URL 均不再是授权来源；不要在请求体或请求头中自行传递用户 ID。
 
-`/api/ready` 会分别返回认证和模型配置状态。未配置 `AUTH_SECRET` 时不能创建访客身份；未配置模型时页面仍可查看演示数据，但会显示“模型未配置”并禁止发送消息。
+`/api/ready` 会分别返回认证和模型配置状态。未配置 `AUTH_SECRET` 时不能注册或登录；未配置模型时仍可浏览公开信息和管理商品，但不能发送协商消息。
 
 配置真实千问地址和密钥后，可显式执行一次结构化输出冒烟测试；该命令会真实调用模型并可能产生少量费用：
 
@@ -332,7 +339,7 @@ python scripts/smoke_model.py
 
 ## 验证
 
-完整的双浏览器 V2 人工验收流程与异常场景见 [`docs/V2_验收清单.md`](docs/V2_验收清单.md)。
+完整的双账号 V2.1 人工验收流程与异常场景见 [`docs/V2.1_验收清单.md`](docs/V2.1_验收清单.md)；V2 历史验收记录保留在 [`docs/V2_验收清单.md`](docs/V2_验收清单.md)。
 
 ```powershell
 cd backend
@@ -357,8 +364,8 @@ npm audit --omit=dev --registry=https://registry.npmjs.org
 
 ```text
 backend/      FastAPI、业务 Service、Agent 工具、审批 Worker、ORM、迁移、种子脚本和测试
-frontend/     Vue 3 最简页面
+frontend/     Vue 3 商品大厅、认证页、买家协商页与卖家工作台
 compose.yaml 本地 MySQL
 ```
 
-V1 最小闭环以及 V2 八个阶段均已完成，V2.1 统一账号与商品大厅升级已完成规划、尚未开始开发。系统终点是记录交易意向，不包含支付、库存锁定或订单履约。
+V1 最小闭环、V2 八个阶段和 V2.1 七个阶段均已完成。系统终点是记录交易意向，不包含支付、库存锁定或订单履约。

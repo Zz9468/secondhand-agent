@@ -1,14 +1,12 @@
-from datetime import datetime
 from decimal import Decimal
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
 from app.db.models import (
-    ConfirmationSource,
     Message,
     MessageRole,
     NegotiationSession,
@@ -23,16 +21,10 @@ from app.db.models import (
     ShippingPayer,
     UserAccount,
 )
-from app.services.auth_service import (
-    HISTORICAL_ACCOUNT_PASSWORD_HASH,
-    ensure_historical_buyer_account,
-)
 from scripts.seed_data import (
-    DEMO_BUYER_ID,
     DEMO_PRODUCT_ID,
     DEMO_SELLER_DISPLAY_NAME,
     DEMO_SELLER_ID,
-    DEMO_SESSION_ID,
     seed_demo_data,
 )
 
@@ -48,9 +40,12 @@ def test_business_models_support_crud_and_exact_money(db_session: Session) -> No
         password_hash=hash_password("integration-test-password"),
         is_active=True,
     )
-    buyer = ensure_historical_buyer_account(
-        db_session,
-        buyer_id=f"buyer-{unique_suffix}",
+    buyer = UserAccount(
+        id=f"buyer-{unique_suffix}",
+        username=f"buyer-{unique_suffix}",
+        display_name="数据库模型测试买家",
+        password_hash=hash_password("integration-test-password"),
+        is_active=True,
     )
     product = Product(
         seller=seller,
@@ -121,80 +116,20 @@ def test_business_models_support_crud_and_exact_money(db_session: Session) -> No
 
 
 def test_seed_data_is_idempotent(db_session: Session) -> None:
+    original_session_count = db_session.scalar(
+        select(func.count()).select_from(NegotiationSession)
+    )
     first = seed_demo_data(db_session, seller_password="demo-test-password")
     second = seed_demo_data(db_session, seller_password="demo-test-password")
     db_session.flush()
 
     assert first == second
     assert first.product_id == DEMO_PRODUCT_ID
-    assert first.session_id == DEMO_SESSION_ID
     assert db_session.get(Product, DEMO_PRODUCT_ID) is not None
-    assert db_session.get(NegotiationSession, DEMO_SESSION_ID) is not None
+    assert db_session.scalar(
+        select(func.count()).select_from(NegotiationSession)
+    ) == original_session_count
     seller = db_session.get(UserAccount, DEMO_SELLER_ID)
-    historical_buyer = db_session.get(UserAccount, DEMO_BUYER_ID)
     assert seller is not None
     assert seller.display_name == DEMO_SELLER_DISPLAY_NAME
     assert seller.is_active is True
-    assert historical_buyer is not None
-    assert historical_buyer.is_active is False
-    assert historical_buyer.password_hash == HISTORICAL_ACCOUNT_PASSWORD_HASH
-
-
-def test_seed_data_can_explicitly_reset_only_the_demo_session(
-    db_session: Session,
-) -> None:
-    seed_demo_data(
-        db_session,
-        seller_password="demo-test-password",
-        reset_session=True,
-    )
-    negotiation = db_session.get(NegotiationSession, DEMO_SESSION_ID)
-    assert negotiation is not None
-    offer = Offer(
-        session_id=negotiation.id,
-        proposer=OfferProposer.BUYER,
-        price=Decimal("2800.00"),
-        shipping_paid_by=ShippingPayer.BUYER,
-        seller_borne_discount=Decimal("0.00"),
-        terms={},
-        status=OfferStatus.PROPOSED,
-    )
-    message = Message(
-        session_id=negotiation.id,
-        role=MessageRole.BUYER,
-        content="用于验证显式重置。",
-        request_id=f"reset-{uuid4().hex}",
-    )
-    db_session.add_all([offer, message])
-    db_session.flush()
-    negotiation.current_offer = offer
-    negotiation.confirmed_offer = offer
-    negotiation.confirmed_at = datetime.now()
-    negotiation.confirmation_request_id = f"confirm-reset-{uuid4().hex}"
-    negotiation.confirmation_source = ConfirmationSource.AUTO_ACCEPTED_BUYER_OFFER
-    negotiation.round_count = 1
-    negotiation.status = NegotiationStatus.AGREED
-    previous_version = negotiation.version
-    db_session.flush()
-
-    seed_demo_data(
-        db_session,
-        seller_password="demo-test-password",
-        reset_session=True,
-    )
-    db_session.flush()
-
-    assert negotiation.current_offer_id is None
-    assert negotiation.confirmed_offer_id is None
-    assert negotiation.confirmed_at is None
-    assert negotiation.confirmation_request_id is None
-    assert negotiation.confirmation_source is None
-    assert negotiation.round_count == 0
-    assert negotiation.status is NegotiationStatus.ACTIVE
-    assert negotiation.version == previous_version + 1
-    assert list(
-        db_session.scalars(select(Message).where(Message.session_id == negotiation.id))
-    ) == []
-    assert list(
-        db_session.scalars(select(Offer).where(Offer.session_id == negotiation.id))
-    ) == []

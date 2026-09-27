@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import hmac
+import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -35,7 +39,6 @@ def test_identity_token_binds_type_signature_and_expiration() -> None:
     now = datetime(2026, 9, 25, 10, 0, tzinfo=UTC)
     token = create_identity_token(
         subject="user-123",
-        kind="user",
         secret=TEST_SECRET,
         lifetime=timedelta(minutes=30),
         now=now,
@@ -43,7 +46,6 @@ def test_identity_token_binds_type_signature_and_expiration() -> None:
 
     claims = decode_identity_token(
         token,
-        expected_kind="user",
         secret=TEST_SECRET,
         now=now + timedelta(minutes=1),
     )
@@ -51,22 +53,42 @@ def test_identity_token_binds_type_signature_and_expiration() -> None:
 
     with pytest.raises(IdentityTokenError):
         decode_identity_token(
-            token,
-            expected_kind="buyer",
-            secret=TEST_SECRET,
-            now=now,
-        )
-    with pytest.raises(IdentityTokenError):
-        decode_identity_token(
             f"{token[:-1]}x",
-            expected_kind="user",
             secret=TEST_SECRET,
             now=now,
         )
     with pytest.raises(IdentityTokenError):
         decode_identity_token(
             token,
-            expected_kind="user",
             secret=TEST_SECRET,
             now=now + timedelta(minutes=31),
         )
+
+    with pytest.raises(IdentityTokenError):
+        decode_identity_token(
+            _legacy_token(subject="user-123", kind="seller", now=now),
+            secret=TEST_SECRET,
+            now=now + timedelta(minutes=1),
+        )
+
+
+def _legacy_token(*, subject: str, kind: str, now: datetime) -> str:
+    """仅为回归测试构造已停止签发的 V2 身份类型令牌。"""
+
+    payload = {
+        "exp": int((now + timedelta(minutes=30)).timestamp()),
+        "iat": int(now.timestamp()),
+        "sub": subject,
+        "typ": kind,
+        "ver": 1,
+    }
+    encoded = base64.urlsafe_b64encode(
+        json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
+    ).rstrip(b"=").decode("ascii")
+    signature = hmac.new(
+        TEST_SECRET.encode(),
+        encoded.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    encoded_signature = base64.urlsafe_b64encode(signature).rstrip(b"=").decode()
+    return f"{encoded}.{encoded_signature}"

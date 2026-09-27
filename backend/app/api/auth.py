@@ -11,11 +11,7 @@ from app.api.dependencies import (
     get_session_factory_dependency,
 )
 from app.core.config import Settings, get_settings
-from app.core.security import (
-    BUYER_SESSION_COOKIE,
-    SELLER_SESSION_COOKIE,
-    USER_SESSION_COOKIE,
-)
+from app.core.security import USER_SESSION_COOKIE
 from app.schemas.auth import (
     LogoutResponse,
     UserIdentityResponse,
@@ -90,53 +86,6 @@ def logout(
     return LogoutResponse()
 
 
-@router.post("/visitor", deprecated=True, response_model=None)
-def disabled_visitor_identity() -> None:
-    """阶段七删除路由前，明确阻止旧访客入口继续签发身份。"""
-
-    raise HTTPException(
-        status_code=status.HTTP_410_GONE,
-        detail="visitor authentication has been replaced by unified account login",
-    )
-
-
-@router.post(
-    "/seller/login",
-    response_model=UserIdentityResponse,
-    deprecated=True,
-)
-def legacy_seller_login(
-    payload: UserLoginRequest,
-    response: Response,
-    settings: SettingsDependency,
-    session_factory: SessionFactory,
-) -> UserIdentityResponse:
-    """兼容尚未迁移的卖家页面，但只建立统一账号登录态。"""
-
-    return login(payload, response, settings, session_factory)
-
-
-@router.get(
-    "/seller/me",
-    response_model=UserIdentityResponse,
-    deprecated=True,
-)
-def legacy_seller_me(user: CurrentUser) -> UserIdentityResponse:
-    return _identity_response(user)
-
-
-@router.post(
-    "/seller/logout",
-    response_model=LogoutResponse,
-    deprecated=True,
-)
-def legacy_seller_logout(
-    response: Response,
-    settings: SettingsDependency,
-) -> LogoutResponse:
-    return logout(response, settings)
-
-
 def _establish_login(
     user: UserPrincipal,
     *,
@@ -174,18 +123,13 @@ def _identity_response(
 
 
 def _delete_identity_cookies(response: Response, *, secure: bool) -> None:
-    for cookie_name in (
+    response.delete_cookie(
         USER_SESSION_COOKIE,
-        SELLER_SESSION_COOKIE,
-        BUYER_SESSION_COOKIE,
-    ):
-        response.delete_cookie(
-            cookie_name,
-            path="/",
-            httponly=True,
-            secure=secure,
-            samesite="lax",
-        )
+        path="/",
+        httponly=True,
+        secure=secure,
+        samesite="lax",
+    )
 
 
 def _raise_invalid_credentials() -> Never:

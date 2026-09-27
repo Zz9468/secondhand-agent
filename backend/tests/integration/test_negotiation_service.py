@@ -21,7 +21,6 @@ from app.db.models import (
     SellerPolicy,
     UserAccount,
 )
-from app.services.auth_service import ensure_historical_buyer_account
 from app.services.errors import (
     NegotiationLifecycleConflictError,
     NegotiationNotFoundError,
@@ -87,9 +86,14 @@ def test_disabled_historical_account_cannot_create_new_session(
         existing_session = db.get(NegotiationSession, existing_session_id)
         assert existing_session is not None
         product_id = existing_session.product_id
-        ensure_historical_buyer_account(
-            db,
-            buyer_id=historical_buyer_id,
+        db.add(
+            UserAccount(
+                id=historical_buyer_id,
+                username=f"history-{uuid4().hex}",
+                display_name="历史访客",
+                password_hash="!HISTORICAL_VISITOR_NO_LOGIN!",
+                is_active=False,
+            )
         )
 
     with pytest.raises(NegotiationLifecycleConflictError):

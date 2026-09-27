@@ -17,7 +17,6 @@ def authenticate_user(
     assert settings.auth_secret is not None
     token = create_identity_token(
         subject=user_id,
-        kind="user",
         secret=settings.auth_secret.get_secret_value(),
         lifetime=timedelta(minutes=30),
     )

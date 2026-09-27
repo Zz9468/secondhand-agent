@@ -1,49 +1,38 @@
-import argparse
 from dataclasses import dataclass
 from decimal import Decimal
 
-from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.security import hash_password, verify_password
 from app.db.models import (
-    Message,
-    NegotiationSession,
-    NegotiationStatus,
     NegotiationStyle,
-    Offer,
     Product,
     ProductStatus,
     SellerPolicy,
     UserAccount,
 )
 from app.db.session import get_engine
-from app.services.auth_service import ensure_historical_buyer_account
 
 DEMO_PRODUCT_ID = 1001
 DEMO_POLICY_ID = 1001
-DEMO_SESSION_ID = 1001
 DEMO_SELLER_ID = "demo-seller"
 DEMO_SELLER_USERNAME = "demo-seller"
 DEMO_SELLER_DISPLAY_NAME = "演示卖家"
-DEMO_BUYER_ID = "demo-buyer"
 
 
 @dataclass(frozen=True, slots=True)
 class SeedResult:
     product_id: int
     policy_id: int
-    session_id: int
 
 
 def seed_demo_data(
     db: Session,
     *,
     seller_password: str,
-    reset_session: bool = False,
 ) -> SeedResult:
-    """以固定主键补齐演示数据，重复执行不会创建重复记录。"""
+    """幂等补齐演示账号、商品和策略，不代替买家创建协商会话。"""
 
     seller = db.get(UserAccount, DEMO_SELLER_ID)
     if seller is None:
@@ -69,8 +58,6 @@ def seed_demo_data(
     if seller.display_name != DEMO_SELLER_DISPLAY_NAME:
         seller.display_name = DEMO_SELLER_DISPLAY_NAME
         db.flush()
-
-    ensure_historical_buyer_account(db, buyer_id=DEMO_BUYER_ID)
 
     product = db.get(Product, DEMO_PRODUCT_ID)
     if product is None:
@@ -103,64 +90,23 @@ def seed_demo_data(
     elif policy.product_id != product.id:
         raise RuntimeError("演示规则 ID 已绑定其他商品，拒绝覆盖现有数据")
 
-    negotiation = db.get(NegotiationSession, DEMO_SESSION_ID)
-    if negotiation is None:
-        negotiation = NegotiationSession(
-            id=DEMO_SESSION_ID,
-            product_id=product.id,
-            buyer_id=DEMO_BUYER_ID,
-            status=NegotiationStatus.ACTIVE,
-            round_count=0,
-            version=1,
-        )
-        db.add(negotiation)
-        db.flush()
-    elif (
-        negotiation.product_id != product.id
-        or negotiation.buyer_id != DEMO_BUYER_ID
-    ):
-        raise RuntimeError("演示会话 ID 已用于其他买家或商品，拒绝覆盖现有数据")
-
-    if reset_session:
-        # 先解除当前报价外键，再按固定演示会话精确清理，避免影响其他数据。
-        negotiation.current_offer = None
-        negotiation.confirmed_offer = None
-        negotiation.confirmed_at = None
-        negotiation.confirmation_request_id = None
-        negotiation.confirmation_source = None
-        negotiation.status = NegotiationStatus.ACTIVE
-        negotiation.round_count = 0
-        negotiation.version += 1
-        db.flush()
-        db.execute(delete(Message).where(Message.session_id == negotiation.id))
-        db.execute(delete(Offer).where(Offer.session_id == negotiation.id))
-
     return SeedResult(
         product_id=product.id,
         policy_id=policy.id,
-        session_id=negotiation.id,
     )
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="初始化 SecondHand Agent 演示数据")
-    parser.add_argument(
-        "--reset-session",
-        action="store_true",
-        help="清空演示会话的消息和报价，并恢复为可重复执行 V2 双端验收的状态",
-    )
-    args = parser.parse_args()
     settings = get_settings()
     if settings.demo_seller_password is None:
-        parser.error("请先在本地 .env 设置 DEMO_SELLER_PASSWORD")
+        raise SystemExit("请先在本地 .env 设置 DEMO_SELLER_PASSWORD")
     seller_password = settings.demo_seller_password.get_secret_value()
     if len(seller_password) < 12 or "CHANGE_ME" in seller_password.upper():
-        parser.error("DEMO_SELLER_PASSWORD 必须替换为至少 12 个字符的真实密码")
+        raise SystemExit("DEMO_SELLER_PASSWORD 必须替换为至少 12 个字符的真实密码")
     with Session(get_engine()) as db, db.begin():
         result = seed_demo_data(
             db,
             seller_password=seller_password,
-            reset_session=args.reset_session,
         )
 
     print(
@@ -168,9 +114,8 @@ def main() -> None:
         f"seller_id={DEMO_SELLER_ID}, "
         f"seller_username={DEMO_SELLER_USERNAME}, "
         f"product_id={result.product_id}, "
-        f"policy_id={result.policy_id}, "
-        f"session_id={result.session_id}, "
-        f"session_reset={args.reset_session}"
+        f"policy_id={result.policy_id}。"
+        "协商会话只会在买家明确点击“与卖家协商”后创建。"
     )
 
 

@@ -1,4 +1,8 @@
-from datetime import timedelta
+import base64
+import hashlib
+import hmac
+import json
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -9,11 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
 from app.core.security import (
-    BUYER_SESSION_COOKIE,
-    SELLER_SESSION_COOKIE,
     USER_SESSION_COOKIE,
-    IdentityKind,
-    create_identity_token,
     hash_password,
     verify_password,
 )
@@ -65,14 +65,29 @@ def _add_user(
     return user_id, username, password
 
 
-def _legacy_token(*, subject: str, kind: IdentityKind) -> str:
+def _legacy_token(*, subject: str, kind: str) -> str:
+    """仅为回归测试构造旧类型令牌，生产代码不再提供签发入口。"""
+
     assert TEST_SETTINGS.auth_secret is not None
-    return create_identity_token(
-        subject=subject,
-        kind=kind,
-        secret=TEST_SETTINGS.auth_secret.get_secret_value(),
-        lifetime=timedelta(minutes=30),
-    )
+    secret = TEST_SETTINGS.auth_secret.get_secret_value()
+    now = datetime.now(UTC)
+    payload = {
+        "exp": int((now + timedelta(minutes=30)).timestamp()),
+        "iat": int(now.timestamp()),
+        "sub": subject,
+        "typ": kind,
+        "ver": 1,
+    }
+    encoded = base64.urlsafe_b64encode(
+        json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()
+    ).rstrip(b"=").decode("ascii")
+    signature = hmac.new(
+        secret.encode(),
+        encoded.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    encoded_signature = base64.urlsafe_b64encode(signature).rstrip(b"=").decode()
+    return f"{encoded}.{encoded_signature}"
 
 
 def test_register_me_duplicate_and_logout(
@@ -113,8 +128,8 @@ def test_register_me_duplicate_and_logout(
     assert USER_SESSION_COOKIE in cookie_header
     assert "HttpOnly" in cookie_header
     assert "SameSite=lax" in cookie_header
-    assert SELLER_SESSION_COOKIE not in cookie_header
-    assert BUYER_SESSION_COOKIE not in cookie_header
+    assert "secondhand_seller_session" not in cookie_header
+    assert "secondhand_buyer_session" not in cookie_header
     assert profile.status_code == 200
     assert profile.json()["id"] == registered.json()["id"]
     assert profile.json()["expires_at"] is None
@@ -214,12 +229,12 @@ def test_legacy_cookies_and_token_kinds_are_not_authorization_sources(
 
     legacy_seller = _test_client(service_session_factory)
     legacy_seller.cookies.set(
-        SELLER_SESSION_COOKIE,
+        "secondhand_seller_session",
         _legacy_token(subject=user_id, kind="seller"),
     )
     legacy_buyer = _test_client(service_session_factory)
     legacy_buyer.cookies.set(
-        BUYER_SESSION_COOKIE,
+        "secondhand_buyer_session",
         _legacy_token(subject=user_id, kind="buyer"),
     )
     wrong_kind = _test_client(service_session_factory)
@@ -233,25 +248,24 @@ def test_legacy_cookies_and_token_kinds_are_not_authorization_sources(
     assert wrong_kind.get("/api/seller/products").status_code == 401
 
 
-def test_legacy_seller_alias_uses_unified_cookie_and_visitor_is_disabled(
+def test_removed_authentication_routes_return_not_found(
     service_session_factory: sessionmaker[Session],
 ) -> None:
-    _, username, password = _add_user(service_session_factory)
     client = _test_client(service_session_factory)
 
     visitor = client.post("/api/auth/visitor")
     logged_in = client.post(
         "/api/auth/seller/login",
-        json={"username": username, "password": password},
+        json={"username": "removed", "password": "removed-password"},
     )
     profile = client.get("/api/auth/seller/me")
+    logout = client.post("/api/auth/seller/logout")
 
-    assert visitor.status_code == 410
+    assert visitor.status_code == 404
     assert "set-cookie" not in visitor.headers
-    assert logged_in.status_code == 200
-    assert USER_SESSION_COOKIE in logged_in.headers["set-cookie"]
-    assert SELLER_SESSION_COOKIE not in logged_in.headers["set-cookie"]
-    assert profile.status_code == 200
+    assert logged_in.status_code == 404
+    assert profile.status_code == 404
+    assert logout.status_code == 404
 
 
 def test_authentication_endpoints_fail_closed_without_secret(

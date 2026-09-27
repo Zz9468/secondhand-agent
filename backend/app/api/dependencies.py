@@ -74,7 +74,6 @@ def create_user_session_token(
     return (
         create_identity_token(
             subject=subject,
-            kind="user",
             secret=secret,
             lifetime=lifetime,
         ),
@@ -101,7 +100,6 @@ def _required_user_subject(
     try:
         return decode_identity_token(
             token,
-            expected_kind="user",
             secret=_auth_secret(settings),
         ).subject
     except IdentityTokenError as exc:

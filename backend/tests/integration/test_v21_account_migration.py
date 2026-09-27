@@ -8,12 +8,12 @@ from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import Engine, make_url
 
 from app.core.config import get_settings
-from app.services.auth_service import HISTORICAL_ACCOUNT_PASSWORD_HASH
 
 pytestmark = pytest.mark.mysql_integration
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 SAFE_DATABASE_PREFIX = "secondhand_agent_migration_test_"
+HISTORICAL_ACCOUNT_PASSWORD_HASH = "!HISTORICAL_VISITOR_NO_LOGIN!"
 
 
 def test_v2_upgrade_downgrade_and_empty_database_full_migration(

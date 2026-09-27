@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import AliasChoices, Field, SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -27,16 +27,7 @@ class Settings(BaseSettings):
     # 身份令牌没有源码内默认密钥；未配置时认证接口会明确拒绝服务。
     auth_secret: SecretStr | None = None
     auth_cookie_secure: bool = False
-    # 兼容读取阶段二之前的卖家会话时长配置，统一 Cookie 不再使用买家天数配置。
-    user_session_minutes: int = Field(
-        default=480,
-        ge=5,
-        le=10080,
-        validation_alias=AliasChoices(
-            "USER_SESSION_MINUTES",
-            "SELLER_SESSION_MINUTES",
-        ),
-    )
+    user_session_minutes: int = Field(default=480, ge=5, le=10080)
     demo_seller_password: SecretStr | None = None
 
     model_provider: str = "qwen"

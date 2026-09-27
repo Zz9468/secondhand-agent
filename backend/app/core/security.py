@@ -5,7 +5,6 @@ import json
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Literal
 
 PASSWORD_SCHEME = "scrypt"
 PASSWORD_N = 2**14
@@ -13,11 +12,8 @@ PASSWORD_R = 8
 PASSWORD_P = 1
 PASSWORD_DKLEN = 32
 
-# seller/buyer 仅用于识别并拒绝 V2 遗留令牌，V2.1 只签发 user 令牌。
-IdentityKind = Literal["user", "seller", "buyer"]
 USER_SESSION_COOKIE = "secondhand_user_session"
-SELLER_SESSION_COOKIE = "secondhand_seller_session"
-BUYER_SESSION_COOKIE = "secondhand_buyer_session"
+_IDENTITY_KIND = "user"
 
 
 class IdentityTokenError(ValueError):
@@ -27,7 +23,6 @@ class IdentityTokenError(ValueError):
 @dataclass(frozen=True, slots=True)
 class IdentityClaims:
     subject: str
-    kind: IdentityKind
     expires_at: datetime
 
 
@@ -90,7 +85,6 @@ def verify_password(password: str, encoded: str) -> bool:
 def create_identity_token(
     *,
     subject: str,
-    kind: IdentityKind,
     secret: str,
     lifetime: timedelta,
     now: datetime | None = None,
@@ -110,7 +104,7 @@ def create_identity_token(
         "exp": int(expires_at.timestamp()),
         "iat": int(issued_at.timestamp()),
         "sub": subject,
-        "typ": kind,
+        "typ": _IDENTITY_KIND,
         "ver": 1,
     }
     payload_bytes = json.dumps(
@@ -131,7 +125,6 @@ def create_identity_token(
 def decode_identity_token(
     token: str,
     *,
-    expected_kind: IdentityKind,
     secret: str,
     now: datetime | None = None,
 ) -> IdentityClaims:
@@ -168,7 +161,7 @@ def decode_identity_token(
         not isinstance(subject, str)
         or not subject
         or len(subject) > 64
-        or kind != expected_kind
+        or kind != _IDENTITY_KIND
         or version != 1
         or issued_at > current_timestamp + 60
         or expires_at <= current_timestamp
@@ -177,7 +170,6 @@ def decode_identity_token(
         raise IdentityTokenError("身份令牌已经失效")
     return IdentityClaims(
         subject=subject,
-        kind=expected_kind,
         expires_at=datetime.fromtimestamp(expires_at, tz=UTC),
     )
 
