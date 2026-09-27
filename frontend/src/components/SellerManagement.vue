@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import {
   listSellerApprovals,
@@ -41,13 +42,19 @@ interface ProductForm {
 type SellerSection = 'products' | 'approvals' | 'negotiations'
 
 const auth = useAuth()
+const route = useRoute()
+const router = useRouter()
 const products = ref<SellerProduct[]>([])
 const selectedProduct = ref<SellerProduct | null>(null)
 const approvals = ref<SellerApproval[]>([])
 const selectedApproval = ref<SellerApproval | null>(null)
 const negotiations = ref<SellerNegotiationSummary[]>([])
 const selectedNegotiation = ref<SellerNegotiationDetail | null>(null)
-const activeSection = ref<SellerSection>('products')
+const activeSection = computed<SellerSection>(() => {
+  if (route.name === 'seller-approvals') return 'approvals'
+  if (route.name === 'seller-negotiations') return 'negotiations'
+  return 'products'
+})
 const approvalComment = ref('')
 const pendingReviewRequest = ref<{
   approvalId: number
@@ -97,12 +104,16 @@ async function loadProducts(preferredId?: number): Promise<void> {
   if (target) {
     selectProduct(target)
   } else {
-    startNewProduct()
+    resetProductForm()
   }
 }
 
 function startNewProduct(): void {
-  activeSection.value = 'products'
+  void navigateToSection('products')
+  resetProductForm()
+}
+
+function resetProductForm(): void {
   selectedProduct.value = null
   Object.assign(form, blankForm())
   errorMessage.value = ''
@@ -110,7 +121,6 @@ function startNewProduct(): void {
 }
 
 function selectProduct(product: SellerProduct): void {
-  activeSection.value = 'products'
   selectedProduct.value = product
   Object.assign(form, {
     title: product.title,
@@ -144,7 +154,7 @@ async function loadApprovals(
 }
 
 async function showApprovals(): Promise<void> {
-  activeSection.value = 'approvals'
+  await navigateToSection('approvals')
   errorMessage.value = ''
   successMessage.value = ''
   try {
@@ -174,7 +184,7 @@ async function loadNegotiations(preferredId?: number): Promise<void> {
 }
 
 async function showNegotiations(preferredId?: number): Promise<void> {
-  activeSection.value = 'negotiations'
+  await navigateToSection('negotiations')
   errorMessage.value = ''
   successMessage.value = ''
   try {
@@ -189,12 +199,11 @@ async function selectNegotiation(negotiation: SellerNegotiationSummary): Promise
 }
 
 async function openApproval(approvalId: number): Promise<void> {
-  activeSection.value = 'approvals'
+  await navigateToSection('approvals')
   await loadApprovals(approvalId)
 }
 
 function selectApproval(approval: SellerApproval): void {
-  activeSection.value = 'approvals'
   selectedApproval.value = approval
   approvalComment.value = approval.seller_comment ?? ''
   if (pendingReviewRequest.value?.approvalId !== approval.id) {
@@ -202,6 +211,17 @@ function selectApproval(approval: SellerApproval): void {
   }
   errorMessage.value = ''
   successMessage.value = ''
+}
+
+async function navigateToSection(section: SellerSection): Promise<void> {
+  const routeNames: Record<SellerSection, string> = {
+    products: 'seller-products',
+    approvals: 'seller-approvals',
+    negotiations: 'seller-negotiations',
+  }
+  if (route.name !== routeNames[section]) {
+    await router.push({ name: routeNames[section] })
+  }
 }
 
 async function reviewApproval(action: 'approve' | 'reject'): Promise<void> {
@@ -379,6 +399,21 @@ async function pollSellerUpdates(): Promise<void> {
   }
 }
 
+watch(activeSection, (section) => {
+  errorMessage.value = ''
+  successMessage.value = ''
+  if (section === 'approvals') {
+    approvalComment.value = selectedApproval.value?.seller_comment ?? ''
+    void loadApprovals().catch((error: unknown) => {
+      errorMessage.value = readableError(error)
+    })
+  } else if (section === 'negotiations') {
+    void loadNegotiations().catch((error: unknown) => {
+      errorMessage.value = readableError(error)
+    })
+  }
+})
+
 onMounted(() => {
   void loadWorkspace()
   sellerPollTimer = window.setInterval(
@@ -410,29 +445,26 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="seller-section-tabs">
-          <button
+          <RouterLink
+            :to="{ name: 'seller-products' }"
             :data-active="activeSection === 'products'"
-            type="button"
-            @click="activeSection = 'products'"
           >
             商品管理
-          </button>
-          <button
+          </RouterLink>
+          <RouterLink
+            :to="{ name: 'seller-approvals' }"
             :data-active="activeSection === 'approvals'"
-            type="button"
-            @click="showApprovals"
           >
             报价审批
             <span>{{ approvals.filter((item) => item.status === 'PENDING').length }}</span>
-          </button>
-          <button
+          </RouterLink>
+          <RouterLink
+            :to="{ name: 'seller-negotiations' }"
             :data-active="activeSection === 'negotiations'"
-            type="button"
-            @click="showNegotiations()"
           >
             协商会话
             <span>{{ negotiations.length }}</span>
-          </button>
+          </RouterLink>
         </div>
 
         <template v-if="activeSection === 'products'">
@@ -467,7 +499,10 @@ onUnmounted(() => {
             @click="selectApproval(approval)"
           >
             <span>{{ approval.product_title }}</span>
-            <small>¥{{ approval.offer.price }} · {{ approvalStatusLabel(approval.status) }}</small>
+            <small>
+              {{ approval.buyer_display_name }} · ¥{{ approval.offer.price }} ·
+              {{ approvalStatusLabel(approval.status) }}
+            </small>
           </button>
         </template>
 
@@ -486,7 +521,8 @@ onUnmounted(() => {
           >
             <span>{{ item.product_title }}</span>
             <small>
-              #{{ item.id }} · {{ negotiationStatusLabel(item.status) }}
+              {{ item.buyer_display_name }} · #{{ item.id }} ·
+              {{ negotiationStatusLabel(item.status) }}
               <template v-if="item.current_offer"> · ¥{{ item.current_offer.price }}</template>
             </small>
           </button>
@@ -584,7 +620,7 @@ onUnmounted(() => {
         <div v-if="!selectedApproval" class="approval-empty">
           <p class="eyebrow">APPROVALS</p>
           <h1>暂无报价审批</h1>
-          <p>Agent 提交需要人工确认的买家报价后，会显示在这里。</p>
+          <p>{{ errorMessage || 'Agent 提交需要人工确认的买家报价后，会显示在这里。' }}</p>
         </div>
 
         <template v-else>
@@ -607,6 +643,10 @@ onUnmounted(() => {
           </button>
 
           <div class="approval-meta-grid">
+            <div>
+              <span>买家</span>
+              <strong>{{ selectedApproval.buyer_display_name }}</strong>
+            </div>
             <div>
               <span>协商会话</span>
               <strong>#{{ selectedApproval.session_id }}</strong>
@@ -686,13 +726,16 @@ onUnmounted(() => {
         <div v-if="!selectedNegotiation" class="approval-empty">
           <p class="eyebrow">NEGOTIATIONS</p>
           <h1>暂无协商会话</h1>
-          <p>买家针对卖家商品发起协商后，会显示在这里。</p>
+          <p>{{ errorMessage || '买家针对卖家商品发起协商后，会显示在这里。' }}</p>
         </div>
 
         <template v-else>
           <div class="editor-heading">
             <div>
-              <p class="eyebrow">NEGOTIATION #{{ selectedNegotiation.negotiation.id }}</p>
+              <p class="eyebrow">
+                与 {{ selectedNegotiation.negotiation.buyer_display_name }} 的协商
+                · #{{ selectedNegotiation.negotiation.id }}
+              </p>
               <h1>{{ selectedNegotiation.negotiation.product_title }}</h1>
             </div>
             <span
@@ -704,6 +747,10 @@ onUnmounted(() => {
           </div>
 
           <div class="approval-meta-grid">
+            <div>
+              <span>买家</span>
+              <strong>{{ selectedNegotiation.negotiation.buyer_display_name }}</strong>
+            </div>
             <div>
               <span>商品编号</span>
               <strong>#{{ selectedNegotiation.negotiation.product_id }}</strong>

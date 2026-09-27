@@ -216,6 +216,84 @@ def test_seller_manages_only_owned_products_and_policy_versions(
     assert state.max_rounds == 4
 
 
+def test_registered_accounts_share_one_session_across_buyer_and_seller_modes(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    """统一账号无需角色切换即可同时购买他人商品并管理自己的商品。"""
+
+    suffix = uuid4().hex
+    account = _test_client(service_session_factory)
+    other = _test_client(service_session_factory)
+    registered = account.post(
+        "/api/auth/register",
+        json={
+            "username": f"workspace-{suffix}",
+            "display_name": "工作台测试用户",
+            "password": "Strong-workspace-password-2026",
+        },
+    )
+    other_registered = other.post(
+        "/api/auth/register",
+        json={
+            "username": f"workspace-other-{suffix}",
+            "display_name": "工作台测试买家",
+            "password": "Strong-workspace-password-2026",
+        },
+    )
+
+    empty_products = account.get("/api/seller/products")
+    empty_approvals = account.get("/api/seller/approvals")
+    empty_negotiations = account.get("/api/seller/negotiations")
+    own_product = account.post(
+        "/api/products",
+        json=_product_payload(status="AVAILABLE"),
+    )
+    other_product = other.post(
+        "/api/products",
+        json=_product_payload(status="AVAILABLE"),
+    )
+
+    self_negotiation = account.post(
+        "/api/negotiations",
+        json={"product_id": own_product.json()["id"]},
+    )
+    buying_session = account.post(
+        "/api/negotiations",
+        json={"product_id": other_product.json()["id"]},
+    )
+    incoming_session = other.post(
+        "/api/negotiations",
+        json={"product_id": own_product.json()["id"]},
+    )
+    owned_products = account.get("/api/seller/products")
+    buyer_history = account.get("/api/buyer/negotiations")
+    seller_history = account.get("/api/seller/negotiations")
+
+    assert registered.status_code == 201
+    assert other_registered.status_code == 201
+    assert empty_products.json() == {"products": []}
+    assert empty_approvals.json() == {"approvals": []}
+    assert empty_negotiations.json() == {"negotiations": []}
+    assert own_product.status_code == 201
+    assert other_product.status_code == 201
+    assert self_negotiation.status_code == 409
+    assert buying_session.status_code == 200
+    assert incoming_session.status_code == 200
+    assert [item["id"] for item in owned_products.json()["products"]] == [
+        own_product.json()["id"]
+    ]
+    assert [item["id"] for item in buyer_history.json()["negotiations"]] == [
+        buying_session.json()["session_id"]
+    ]
+    assert [item["id"] for item in seller_history.json()["negotiations"]] == [
+        incoming_session.json()["session_id"]
+    ]
+    assert (
+        seller_history.json()["negotiations"][0]["buyer_display_name"]
+        == "工作台测试买家"
+    )
+
+
 def test_public_catalog_and_seller_pages_are_read_only_and_hide_private_fields(
     service_session_factory: sessionmaker[Session],
 ) -> None:

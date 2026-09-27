@@ -52,6 +52,7 @@ class SellerNegotiationSummary:
     product_id: int
     product_title: str
     product_status: ProductStatus
+    buyer_display_name: str
     status: NegotiationStatus
     current_offer_id: int | None
     confirmed_offer_id: int | None
@@ -94,6 +95,7 @@ class SellerNegotiationService:
                 .where(Product.seller_id == seller_id)
                 .options(
                     selectinload(NegotiationSession.product),
+                    selectinload(NegotiationSession.buyer),
                     selectinload(NegotiationSession.current_offer),
                     selectinload(NegotiationSession.confirmed_offer),
                     selectinload(NegotiationSession.approval_requests).selectinload(
@@ -129,6 +131,7 @@ class SellerNegotiationService:
                 )
                 .options(
                     selectinload(NegotiationSession.product),
+                    selectinload(NegotiationSession.buyer),
                     selectinload(NegotiationSession.current_offer),
                     selectinload(NegotiationSession.confirmed_offer),
                     selectinload(NegotiationSession.messages),
@@ -167,6 +170,7 @@ class SellerNegotiationService:
             product_id=negotiation.product_id,
             product_title=negotiation.product.title,
             product_status=negotiation.product.status,
+            buyer_display_name=negotiation.buyer.display_name,
             status=negotiation.status,
             current_offer_id=negotiation.current_offer_id,
             confirmed_offer_id=negotiation.confirmed_offer_id,

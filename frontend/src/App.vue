@@ -55,7 +55,7 @@ watch(auth.currentUser, (user) => {
             <RouterLink to="/buyer" :data-active="activeMode === 'buyer'">
               买家模式
             </RouterLink>
-            <RouterLink to="/seller" :data-active="activeMode === 'seller'">
+            <RouterLink :to="{ name: 'seller-products' }" :data-active="activeMode === 'seller'">
               卖家模式
             </RouterLink>
           </nav>

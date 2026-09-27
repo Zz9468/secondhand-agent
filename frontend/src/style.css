@@ -232,10 +232,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .seller-profile strong, .seller-profile small { display: block; }
 .seller-profile small { margin-top: 0.2rem; color: #7b847c; font-size: 0.68rem; }
 .seller-section-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; margin-bottom: 1rem; padding: 0.25rem; border-radius: 0.8rem; background: #e7ebe3; }
-.seller-section-tabs button { border: 0; border-radius: 0.65rem; padding: 0.6rem; color: #657066; background: transparent; font-size: 0.75rem; font-weight: 750; }
-.seller-section-tabs button[data-active="true"] { color: white; background: #294d35; }
+.seller-section-tabs a { border: 0; border-radius: 0.65rem; padding: 0.6rem; color: #657066; background: transparent; font-size: 0.75rem; font-weight: 750; text-align: center; text-decoration: none; }
+.seller-section-tabs a[data-active="true"] { color: white; background: #294d35; }
 .seller-section-tabs span { display: inline-grid; min-width: 1.25rem; margin-left: 0.25rem; border-radius: 999px; padding: 0.1rem 0.3rem; color: #294d35; background: #d9e5d6; font-size: 0.65rem; }
-.seller-section-tabs button[data-active="true"] span { color: #294d35; background: white; }
+.seller-section-tabs a[data-active="true"] span { color: #294d35; background: white; }
 .new-product-button { width: 100%; margin-bottom: 1rem; }
 .product-list-item, .approval-list-item, .negotiation-list-item { display: grid; gap: 0.25rem; width: 100%; margin-bottom: 0.45rem; border: 1px solid transparent; border-radius: 0.75rem; padding: 0.75rem; color: #344338; background: transparent; text-align: left; }
 .product-list-item:hover, .product-list-item[data-active="true"], .approval-list-item:hover, .approval-list-item[data-active="true"], .negotiation-list-item:hover, .negotiation-list-item[data-active="true"] { border-color: #ccd6c9; background: #e8ede5; }

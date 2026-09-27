@@ -102,16 +102,19 @@ def test_seller_negotiation_api_lists_owned_sessions_and_detail(
     assert listed.status_code == 200
     summaries = listed.json()["negotiations"]
     assert [item["id"] for item in summaries] == [session_id]
+    assert summaries[0]["buyer_display_name"] == "集成测试买家"
     assert summaries[0]["current_offer"]["id"] == offer_id
     assert summaries[0]["latest_approval"]["id"] == approval_id
     assert summaries[0]["latest_approval"]["status"] == "PENDING"
     assert detail.status_code == 200
     payload = detail.json()
     assert payload["negotiation"]["id"] == session_id
+    assert payload["negotiation"]["buyer_display_name"] == "集成测试买家"
     assert payload["messages"][0]["content"] == "2800 元可以吗？"
     assert payload["offers"][0]["id"] == offer_id
     assert payload["approvals"][0]["id"] == approval_id
     assert "buyer_id" not in detail.text
+    assert "buyer-" not in detail.text
     assert "minimum_net_price" not in detail.text
     assert empty_filter.status_code == 200
     assert empty_filter.json()["negotiations"] == []

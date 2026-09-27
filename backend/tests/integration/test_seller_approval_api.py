@@ -96,11 +96,15 @@ def test_seller_approval_api_enforces_authentication_and_ownership(
     assert unauthenticated.status_code == 401
     assert listed.status_code == 200
     assert [item["id"] for item in listed.json()["approvals"]] == [approval_id]
+    assert listed.json()["approvals"][0]["buyer_display_name"] == "集成测试买家"
     assert detail.status_code == 200
+    assert detail.json()["buyer_display_name"] == "集成测试买家"
     assert detail.json()["offer"]["price"] == "2800.00"
     assert detail.json()["status"] == "PENDING"
     assert "买家提交了 2800.00 元的正式报价" in detail.json()["reason"]
     assert "Legacy English" not in detail.json()["reason"]
+    assert "buyer_id" not in detail.text
+    assert "buyer-" not in detail.text
     assert hidden.status_code == 404
 
 

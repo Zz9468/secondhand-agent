@@ -240,6 +240,7 @@ class SellerNegotiationSummaryResponse(BaseModel):
     product_id: int
     product_title: str
     product_status: ProductStatus
+    buyer_display_name: str
     status: NegotiationStatus
     current_offer_id: int | None
     confirmed_offer_id: int | None

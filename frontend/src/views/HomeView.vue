@@ -25,7 +25,7 @@ const auth = useAuth()
         </div>
         <b aria-hidden="true">→</b>
       </RouterLink>
-      <RouterLink class="mode-card" to="/seller">
+      <RouterLink class="mode-card" :to="{ name: 'seller-products' }">
         <span class="mode-icon">卖</span>
         <div>
           <p class="eyebrow">SELLER MODE</p>

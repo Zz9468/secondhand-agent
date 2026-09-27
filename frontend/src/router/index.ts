@@ -58,7 +58,24 @@ const router = createRouter({
     },
     {
       path: '/seller',
-      name: 'seller',
+      redirect: { name: 'seller-products' },
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/seller/products',
+      name: 'seller-products',
+      component: SellerView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/seller/approvals',
+      name: 'seller-approvals',
+      component: SellerView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/seller/negotiations',
+      name: 'seller-negotiations',
       component: SellerView,
       meta: { requiresAuth: true },
     },

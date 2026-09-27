@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, selectinload, sessionmaker
 
 from app.db.models import (
     ApprovalFollowupStatus,
@@ -82,6 +82,7 @@ class SellerApprovalSnapshot:
     session_id: int
     product_id: int
     product_title: str
+    buyer_display_name: str
     offer_id: int
     policy_version: int
     status: ApprovalStatus
@@ -264,6 +265,7 @@ class ApprovalService:
                 .join(Product, Product.id == NegotiationSession.product_id)
                 .join(Offer, Offer.id == ApprovalRequest.offer_id)
                 .where(Product.seller_id == seller_id)
+                .options(selectinload(NegotiationSession.buyer))
                 .order_by(ApprovalRequest.id.desc())
                 .limit(limit)
             )
@@ -856,6 +858,7 @@ class ApprovalService:
             session_id=approval.session_id,
             product_id=product.id,
             product_title=product.title,
+            buyer_display_name=negotiation.buyer.display_name,
             offer_id=approval.offer_id,
             policy_version=approval.policy_version,
             status=approval.status,

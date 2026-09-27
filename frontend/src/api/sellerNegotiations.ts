@@ -37,6 +37,7 @@ export interface SellerNegotiationSummary {
   product_id: number
   product_title: string
   product_status: ProductStatus
+  buyer_display_name: string
   status: NegotiationStatus
   current_offer_id: number | null
   confirmed_offer_id: number | null

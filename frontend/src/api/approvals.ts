@@ -21,6 +21,7 @@ export interface SellerApproval {
   session_id: number
   product_id: number
   product_title: string
+  buyer_display_name: string
   offer_id: number
   policy_version: number
   status: ApprovalStatus

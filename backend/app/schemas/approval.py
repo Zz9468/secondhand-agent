@@ -90,6 +90,7 @@ class SellerApprovalOfferResponse(BaseModel):
 class SellerApprovalResponse(ApprovalResponse):
     product_id: int
     product_title: str
+    buyer_display_name: str
     session_status: NegotiationStatus
     current_offer_id: int | None
     offer: SellerApprovalOfferResponse
