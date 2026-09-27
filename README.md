@@ -135,6 +135,11 @@ V2 阶段八已完成双端整合与全量验收能力：
 - 新增完整 V2 端到端集成测试，以及身份、权限、状态机、并发、幂等、迁移和 Worker 故障回归；
 - 人工验收步骤见 [`docs/V2_验收清单.md`](docs/V2_验收清单.md)。
 
+V2 当前已经满足本地演示和验收要求。以下事项不属于 V2 功能缺失，但在长期运行、多人并发或正式部署前需要处理：
+
+- 为审批 Worker 的 `FAILED` 任务增加重试次数、`next_retry_at`、指数退避、最大重试上限及人工处理入口，避免模型长期不可用时按轮询间隔持续重试；
+- 将聊天和审批通知中的外部模型调用从持有数据库行锁的长事务中拆出。推荐采用“短事务领取并保存状态快照 → 事务外调用模型 → 新事务重新锁定、校验版本并幂等写入”的方式；不能只把调用移到事务外而省略二次校验，否则过期模型结果可能覆盖新的报价或规则状态。
+
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
 ## 开发约定
@@ -329,13 +334,13 @@ python scripts/smoke_model.py
 
 ```powershell
 cd backend
-pytest
-ruff check app tests scripts migrations
+python -m pytest
+python -m ruff check app tests scripts migrations
 python -m pip_audit -r requirements.lock
 
 # MySQL 运行且已迁移时，额外执行集成测试
 $env:RUN_MYSQL_INTEGRATION = "1"
-pytest tests/integration
+python -m pytest tests/integration
 Remove-Item Env:RUN_MYSQL_INTEGRATION
 
 cd ..\frontend
