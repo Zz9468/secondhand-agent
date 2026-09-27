@@ -67,6 +67,62 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .buyer-page-heading { display: flex; align-items: center; justify-content: space-between; min-height: 4rem; }
 .buyer-page-heading h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: 1.4rem; font-weight: 500; }
 
+.catalog-page, .public-detail-page { padding: 2rem 0 4rem; }
+.catalog-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; min-height: 18rem; margin-bottom: 3rem; border: 1px solid rgba(39, 75, 53, 0.12); border-radius: 1.75rem; padding: clamp(2rem, 6vw, 5rem); background: linear-gradient(135deg, rgba(251, 252, 247, 0.92), rgba(226, 235, 217, 0.75)); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.08); }
+.catalog-hero > div { max-width: 52rem; }
+.catalog-hero h1 { max-width: 48rem; margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: clamp(2.4rem, 5.5vw, 5rem); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
+.catalog-hero p:last-child { max-width: 42rem; margin: 1.25rem 0 0; color: #647066; line-height: 1.8; }
+.section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; }
+.section-heading h2 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 500; }
+.section-heading > span { color: #748076; font-size: 0.78rem; }
+.seller-strip { margin-bottom: 3.5rem; }
+.seller-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+.seller-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.85rem; min-width: 0; border: 1px solid #d2d9cf; border-radius: 1rem; padding: 1rem; color: inherit; background: rgba(255, 255, 255, 0.58); text-decoration: none; transition: transform 160ms ease, box-shadow 160ms ease; }
+.seller-card:hover { transform: translateY(-2px); box-shadow: 0 0.8rem 2rem rgba(43, 58, 46, 0.08); }
+.seller-avatar { display: grid; width: 2.7rem; height: 2.7rem; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #f4f7ef; background: #63806a; font-weight: 800; }
+.seller-card div { min-width: 0; }
+.seller-card strong, .seller-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seller-card small { margin-top: 0.25rem; color: #7a837b; font-size: 0.7rem; }
+.seller-card b { color: #67806d; }
+.catalog-product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.catalog-product-card { min-width: 0; overflow: hidden; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.35rem; background: rgba(251, 252, 247, 0.88); box-shadow: 0 1rem 3rem rgba(43, 58, 46, 0.07); }
+.catalog-product-visual { display: flex; align-items: baseline; justify-content: center; gap: 0.45rem; min-height: 12rem; color: #e8efdd; background: linear-gradient(145deg, #1c2520, #405647); text-decoration: none; }
+.catalog-product-visual span { font-family: Georgia, serif; font-size: 4.6rem; letter-spacing: -0.08em; }
+.catalog-product-visual small { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.18em; }
+.catalog-product-body { display: grid; gap: 0.65rem; padding: 1.2rem; }
+.seller-inline-link { width: fit-content; color: #63806a; font-size: 0.7rem; font-weight: 800; text-decoration: none; }
+.catalog-product-title { overflow: hidden; color: #263028; font-family: Georgia, "Noto Serif SC", serif; font-size: 1.35rem; font-weight: 600; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.catalog-product-body > p { display: -webkit-box; min-height: 3rem; margin: 0; overflow: hidden; color: #707b72; font-size: 0.78rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.catalog-product-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 0.4rem; border-top: 1px solid #e5e8df; }
+.catalog-product-footer strong { font-family: Georgia, serif; font-size: 1.35rem; font-weight: 500; }
+.catalog-product-footer a { color: #356447; font-size: 0.75rem; font-weight: 800; text-decoration: none; }
+.catalog-empty-note { margin: 0; color: #748076; }
+.catalog-empty-card { border: 1px dashed #c5cec2; border-radius: 1.2rem; padding: 3rem; text-align: center; }
+.catalog-empty-card strong { color: #3c4b40; }
+.catalog-empty-card p { margin: 0.5rem 0 0; }
+
+.back-link { display: inline-block; margin-bottom: 1.25rem; color: #496552; font-size: 0.8rem; font-weight: 800; text-decoration: none; }
+.product-detail-layout { display: grid; grid-template-columns: minmax(20rem, 0.9fr) minmax(24rem, 1.1fr); min-height: 38rem; overflow: hidden; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.75rem; background: rgba(251, 252, 247, 0.9); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.1); }
+.product-detail-visual { display: flex; align-items: center; justify-content: center; gap: 0.75rem; min-height: 34rem; color: #e8efdd; background: radial-gradient(circle at 30% 25%, #5d7664, transparent 18rem), linear-gradient(145deg, #1b241f, #354a3b); }
+.product-detail-visual span { font-family: Georgia, serif; font-size: clamp(6rem, 12vw, 10rem); letter-spacing: -0.1em; }
+.product-detail-visual small { font-weight: 800; letter-spacing: 0.2em; writing-mode: vertical-rl; }
+.product-detail-copy { align-self: center; padding: clamp(2rem, 6vw, 5rem); }
+.product-detail-copy h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: clamp(2.2rem, 5vw, 4.4rem); font-weight: 500; letter-spacing: -0.035em; line-height: 1.05; }
+.product-detail-description { margin: 1.5rem 0; color: #626d63; line-height: 1.85; white-space: pre-wrap; }
+.product-detail-price { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.25rem; padding: 1rem 0; border-block: 1px solid #dce1d6; }
+.product-detail-price span { color: #737d74; font-size: 0.8rem; }
+.product-detail-price strong { font-family: Georgia, serif; font-size: 2.2rem; font-weight: 500; }
+.seller-detail-link { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.8rem; border-radius: 1rem; padding: 0.9rem; color: inherit; background: #edf1e8; text-decoration: none; }
+.seller-detail-link small, .seller-detail-link strong { display: block; }
+.seller-detail-link small { color: #7a837b; font-size: 0.68rem; }
+.seller-detail-link strong { margin-top: 0.2rem; font-size: 0.86rem; }
+.seller-detail-link b { color: #4f6d58; font-size: 0.75rem; }
+.browse-only-note { margin: 1.25rem 0 0; color: #7b847c; font-size: 0.75rem; line-height: 1.7; }
+.seller-public-hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 3rem; border: 1px solid rgba(39, 75, 53, 0.12); border-radius: 1.75rem; padding: clamp(2rem, 5vw, 4rem); background: rgba(251, 252, 247, 0.78); }
+.seller-public-avatar { display: grid; width: clamp(5rem, 12vw, 8rem); height: clamp(5rem, 12vw, 8rem); flex: 0 0 auto; place-items: center; border-radius: 50%; color: #eef4e9; background: #365640; font-family: Georgia, serif; font-size: clamp(2rem, 5vw, 4rem); }
+.seller-public-hero h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: clamp(2rem, 5vw, 4rem); font-weight: 500; }
+.seller-public-hero p:last-child { margin: 0.65rem 0 0; color: #6b766d; }
+
 .workspace { display: grid; grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr); min-height: calc(100vh - 7.5rem); overflow: hidden; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.75rem; background: rgba(251, 252, 247, 0.88); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.11); backdrop-filter: blur(16px); }
 .product-panel { padding: clamp(1.5rem, 4vw, 2.6rem); border-right: 1px solid #dfe3d8; background: rgba(244, 246, 238, 0.86); }
 .product-visual { display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; min-height: 12rem; margin-bottom: 2rem; border-radius: 1.4rem; color: #e8efdd; background: linear-gradient(145deg, #1c2520, #405647); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 1rem 2.5rem rgba(28,37,32,0.16); }
@@ -219,6 +275,9 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 @media (max-width: 900px) {
   .mode-grid { grid-template-columns: 1fr; }
+  .seller-card-grid, .catalog-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .product-detail-layout { grid-template-columns: 1fr; }
+  .product-detail-visual { min-height: 20rem; }
   .workspace { grid-template-columns: 1fr; }
   .product-panel { border-right: 0; border-bottom: 1px solid #dfe3d8; }
   .product-visual { min-height: 8rem; }
@@ -240,6 +299,16 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   .view-switcher button, .view-switcher a { padding-inline: 0.65rem; }
   .home-page { min-height: calc(100vh - 6rem); padding: 1.5rem; }
   .home-copy h1 { font-size: clamp(2.35rem, 14vw, 3.5rem); }
+  .catalog-page, .public-detail-page { padding-top: 1rem; }
+  .catalog-hero { display: grid; min-height: 0; margin-bottom: 2rem; padding: 1.5rem; }
+  .catalog-hero h1 { font-size: 2.5rem; }
+  .seller-card-grid, .catalog-product-grid { grid-template-columns: 1fr; }
+  .product-detail-layout { border-radius: 1.1rem; }
+  .product-detail-visual { min-height: 13rem; }
+  .product-detail-copy { padding: 1.5rem; }
+  .seller-detail-link { grid-template-columns: auto 1fr; }
+  .seller-detail-link b { grid-column: 2; }
+  .seller-public-hero { align-items: flex-start; padding: 1.5rem; }
   .mode-card { grid-template-columns: auto 1fr; }
   .mode-card > b { display: none; }
   .workspace { border-radius: 1.1rem; }

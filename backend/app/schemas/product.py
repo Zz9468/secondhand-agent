@@ -4,6 +4,7 @@ from typing import Self
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.db.models import NegotiationStyle, ProductStatus
+from app.schemas.seller import PublicSellerSummaryResponse
 
 
 class PolicyWriteRequest(BaseModel):
@@ -62,7 +63,7 @@ class PolicyUpdateRequest(PolicyWriteRequest):
     expected_version: int = Field(ge=1)
 
 
-class PublicProductResponse(BaseModel):
+class ProductFactsResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -70,6 +71,10 @@ class PublicProductResponse(BaseModel):
     description: str
     listed_price: Decimal
     status: ProductStatus
+
+
+class PublicProductResponse(ProductFactsResponse):
+    seller: PublicSellerSummaryResponse
 
 
 class PublicProductListResponse(BaseModel):
@@ -86,7 +91,7 @@ class SellerPolicyResponse(BaseModel):
     version: int
 
 
-class SellerProductResponse(PublicProductResponse):
+class SellerProductResponse(ProductFactsResponse):
     policy: SellerPolicyResponse
 
 

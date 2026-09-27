@@ -2,12 +2,13 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
 from app.core.security import hash_password
-from app.db.models import UserAccount
+from app.db.models import NegotiationSession, UserAccount
 from app.main import create_app
 from app.services.negotiation_service import NegotiationService
 from tests.integration.auth_helpers import authenticate_user
@@ -72,9 +73,10 @@ def _product_payload(*, status: str = "DRAFT") -> dict[str, object]:
 def test_public_products_only_expose_available_public_fields(
     service_session_factory: sessionmaker[Session],
 ) -> None:
+    username = f"catalog-{uuid4().hex}"
     seller_id = _create_seller(
         service_session_factory,
-        username=f"catalog-{uuid4().hex}",
+        username=username,
     )
     seller_client = _test_client(service_session_factory)
     _authenticate_seller(seller_client, seller_id)
@@ -108,7 +110,13 @@ def test_public_products_only_expose_available_public_fields(
         "description",
         "listed_price",
         "status",
+        "seller",
     }
+    assert public_detail.json()["seller"] == {
+        "id": seller_id,
+        "display_name": "商品接口测试卖家",
+    }
+    assert username not in public_detail.text
     assert "2700" not in public_detail.text
     assert hidden_detail.status_code == 404
     assert unauthenticated_create.status_code == 401
@@ -206,3 +214,92 @@ def test_seller_manages_only_owned_products_and_policy_versions(
     )
     assert state.negotiation_style.value == "FIRM"
     assert state.max_rounds == 4
+
+
+def test_public_catalog_and_seller_pages_are_read_only_and_hide_private_fields(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    username = f"public-seller-{uuid4().hex}"
+    seller_id = _create_seller(service_session_factory, username=username)
+    seller = _test_client(service_session_factory)
+    _authenticate_seller(seller, seller_id)
+    first = seller.post(
+        "/api/products",
+        json=_product_payload(status="AVAILABLE"),
+    )
+    second_payload = _product_payload(status="AVAILABLE")
+    second_payload["title"] = "另一件公开商品"
+    second = seller.post("/api/products", json=second_payload)
+    draft = seller.post("/api/products", json=_product_payload())
+    hidden_seller_id = _create_seller(
+        service_session_factory,
+        username=f"draft-only-{uuid4().hex}",
+    )
+    hidden_seller = _test_client(service_session_factory)
+    _authenticate_seller(hidden_seller, hidden_seller_id)
+    hidden_product = hidden_seller.post("/api/products", json=_product_payload())
+    anonymous = _test_client(service_session_factory)
+
+    with service_session_factory() as db:
+        session_count_before = db.scalar(select(func.count(NegotiationSession.id)))
+
+    seller_list = anonymous.get("/api/sellers")
+    seller_detail = anonymous.get(f"/api/sellers/{seller_id}")
+    seller_products = anonymous.get(f"/api/sellers/{seller_id}/products")
+    filtered_products = anonymous.get(
+        "/api/products",
+        params={"seller_id": seller_id},
+    )
+    refreshed_detail = anonymous.get(f"/api/products/{first.json()['id']}")
+    missing_seller = anonymous.get("/api/sellers/not-a-real-seller")
+    hidden_seller_detail = anonymous.get(f"/api/sellers/{hidden_seller_id}")
+
+    with service_session_factory() as db:
+        session_count_after = db.scalar(select(func.count(NegotiationSession.id)))
+
+    assert seller_list.status_code == 200
+    assert hidden_product.status_code == 201
+    listed_seller = next(
+        item for item in seller_list.json()["sellers"] if item["id"] == seller_id
+    )
+    assert listed_seller == {
+        "id": seller_id,
+        "display_name": "商品接口测试卖家",
+        "available_product_count": 2,
+    }
+    assert hidden_seller_id not in {
+        item["id"] for item in seller_list.json()["sellers"]
+    }
+    assert seller_detail.status_code == 200
+    assert seller_detail.json() == listed_seller
+    assert seller_products.status_code == 200
+    assert filtered_products.status_code == 200
+    expected_product_ids = {first.json()["id"], second.json()["id"]}
+    seller_product_ids = {
+        item["id"] for item in seller_products.json()["products"]
+    }
+    filtered_product_ids = {
+        item["id"] for item in filtered_products.json()["products"]
+    }
+    assert seller_product_ids == expected_product_ids
+    assert filtered_product_ids == expected_product_ids
+    assert draft.json()["id"] not in seller_product_ids
+    assert refreshed_detail.status_code == 200
+    assert missing_seller.status_code == 404
+    assert hidden_seller_detail.status_code == 404
+    public_responses = "".join(
+        response.text
+        for response in (
+            seller_list,
+            seller_detail,
+            seller_products,
+            filtered_products,
+            refreshed_detail,
+        )
+    )
+    assert username not in public_responses
+    assert "product-api-test-password" not in public_responses
+    assert "password_hash" not in public_responses
+    assert "minimum_net_price" not in public_responses
+    assert "auto_accept_threshold" not in public_responses
+    assert session_count_after == session_count_before

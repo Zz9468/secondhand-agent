@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload, sessionmaker
+from sqlalchemy.orm import Session, joinedload, selectinload, sessionmaker
 
 from app.db.models import (
     NegotiationSession,
@@ -26,6 +26,17 @@ class ProductInfo:
     description: str
     listed_price: Decimal
     status: ProductStatus
+
+
+@dataclass(frozen=True, slots=True)
+class PublicSellerSummary:
+    id: str
+    display_name: str
+
+
+@dataclass(frozen=True, slots=True)
+class PublicProductInfo(ProductInfo):
+    seller: PublicSellerSummary
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,28 +88,40 @@ class ProductService:
     def __init__(self, session_factory: sessionmaker[Session]) -> None:
         self._session_factory = session_factory
 
-    def list_public(self, *, offset: int = 0, limit: int = 50) -> tuple[ProductInfo, ...]:
+    def list_public(
+        self,
+        *,
+        seller_id: str | None = None,
+        offset: int = 0,
+        limit: int = 50,
+    ) -> tuple[PublicProductInfo, ...]:
         with self._session_factory() as db:
-            products = db.scalars(
+            statement = (
                 select(Product)
+                .options(joinedload(Product.seller))
                 .where(Product.status == ProductStatus.AVAILABLE)
                 .order_by(Product.id)
                 .offset(offset)
                 .limit(limit)
             )
-            return tuple(self._public_snapshot(product) for product in products)
+            if seller_id is not None:
+                statement = statement.where(Product.seller_id == seller_id)
+            products = db.scalars(statement)
+            return tuple(self._catalog_snapshot(product) for product in products)
 
-    def get_public(self, *, product_id: int) -> ProductInfo:
+    def get_public(self, *, product_id: int) -> PublicProductInfo:
         with self._session_factory() as db:
             product = db.scalar(
-                select(Product).where(
+                select(Product)
+                .options(joinedload(Product.seller))
+                .where(
                     Product.id == product_id,
                     Product.status == ProductStatus.AVAILABLE,
                 )
             )
             if product is None:
                 raise ProductNotFoundError("商品不存在或尚未公开")
-            return self._public_snapshot(product)
+            return self._catalog_snapshot(product)
 
     def get_for_negotiation(self, *, session_id: int, buyer_id: str) -> ProductInfo:
         with self._session_factory() as db:
@@ -263,6 +286,21 @@ class ProductService:
             description=product.description,
             listed_price=product.listed_price,
             status=product.status,
+        )
+
+    @classmethod
+    def _catalog_snapshot(cls, product: Product) -> PublicProductInfo:
+        public = cls._public_snapshot(product)
+        return PublicProductInfo(
+            id=public.id,
+            title=public.title,
+            description=public.description,
+            listed_price=public.listed_price,
+            status=public.status,
+            seller=PublicSellerSummary(
+                id=product.seller.id,
+                display_name=product.seller.display_name,
+            ),
         )
 
     @classmethod

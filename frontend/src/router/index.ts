@@ -33,6 +33,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/sellers/:sellerId',
+      name: 'seller-public',
+      component: () => import('../views/SellerPublicView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/products/:productId',
+      name: 'product-detail',
+      component: () => import('../views/ProductDetailView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/seller',
       name: 'seller',
       component: SellerView,

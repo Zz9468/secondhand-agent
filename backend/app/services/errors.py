@@ -20,6 +20,10 @@ class ProductNotFoundError(ServiceError):
     code = "PRODUCT_NOT_FOUND"
 
 
+class SellerNotFoundError(ServiceError):
+    code = "SELLER_NOT_FOUND"
+
+
 class PricingPolicyNotFoundError(ServiceError):
     code = "PRICING_POLICY_NOT_FOUND"
 

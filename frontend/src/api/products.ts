@@ -3,12 +3,19 @@ import { requestJson } from './client'
 export type ProductStatus = 'DRAFT' | 'AVAILABLE' | 'UNAVAILABLE'
 export type NegotiationStyle = 'FIRM' | 'BALANCED' | 'FLEXIBLE'
 
-export interface PublicProduct {
+interface ProductFacts {
   id: number
   title: string
   description: string
   listed_price: string
   status: ProductStatus
+}
+
+export interface PublicProduct extends ProductFacts {
+  seller: {
+    id: string
+    display_name: string
+  }
 }
 
 export interface SellerPolicy {
@@ -19,7 +26,7 @@ export interface SellerPolicy {
   version: number
 }
 
-export interface SellerProduct extends PublicProduct {
+export interface SellerProduct extends ProductFacts {
   policy: SellerPolicy
 }
 
@@ -45,9 +52,14 @@ interface SellerProductListResponse {
   products: SellerProduct[]
 }
 
-export async function listPublicProducts(): Promise<PublicProduct[]> {
-  const result = await requestJson<PublicProductListResponse>('/api/products')
+export async function listPublicProducts(sellerId?: string): Promise<PublicProduct[]> {
+  const query = sellerId ? `?seller_id=${encodeURIComponent(sellerId)}` : ''
+  const result = await requestJson<PublicProductListResponse>(`/api/products${query}`)
   return result.products
+}
+
+export function getPublicProduct(productId: number): Promise<PublicProduct> {
+  return requestJson<PublicProduct>(`/api/products/${productId}`)
 }
 
 export function createProduct(

@@ -32,10 +32,15 @@ seller_router = APIRouter(prefix="/seller/products", tags=["seller-products"])
 @public_router.get("/products", response_model=PublicProductListResponse)
 def list_public_products(
     session_factory: SessionFactoryDependency,
+    seller_id: Annotated[str | None, Query(min_length=1, max_length=64)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> PublicProductListResponse:
-    products = ProductService(session_factory).list_public(offset=offset, limit=limit)
+    products = ProductService(session_factory).list_public(
+        seller_id=seller_id,
+        offset=offset,
+        limit=limit,
+    )
     return PublicProductListResponse(
         products=[PublicProductResponse.model_validate(product) for product in products]
     )
