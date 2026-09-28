@@ -191,6 +191,18 @@ def _assert_upgraded_v21_data(engine: Engine) -> None:
     assert "user_accounts" in tables
     assert "seller_accounts" not in tables
     assert "model_execution_tasks" in tables
+    assert "observability_events" in tables
+    task_columns = {
+        item["name"] for item in inspector.get_columns("model_execution_tasks")
+    }
+    assert {
+        "correlation_id",
+        "cached_input_tokens",
+        "input_price_per_million",
+        "output_price_per_million",
+        "cached_input_price_per_million",
+        "cost_currency",
+    } <= task_columns
 
     product_foreign_keys = inspector.get_foreign_keys("products")
     buyer_foreign_keys = inspector.get_foreign_keys("negotiation_sessions")
@@ -292,6 +304,7 @@ def _assert_empty_database_head_schema(engine: Engine) -> None:
         "negotiation_sessions",
         "messages",
         "model_execution_tasks",
+        "observability_events",
         "offers",
         "approval_requests",
     } <= tables

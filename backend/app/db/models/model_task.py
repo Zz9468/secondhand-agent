@@ -59,12 +59,29 @@ class ModelExecutionTask(TimestampMixin, Base):
             name="output_tokens_nonnegative",
         ),
         CheckConstraint(
+            "cached_input_tokens IS NULL OR cached_input_tokens >= 0",
+            name="cached_input_tokens_nonnegative",
+        ),
+        CheckConstraint(
             "total_tokens IS NULL OR total_tokens >= 0",
             name="total_tokens_nonnegative",
         ),
         CheckConstraint(
             "estimated_cost IS NULL OR estimated_cost >= 0",
             name="estimated_cost_nonnegative",
+        ),
+        CheckConstraint(
+            "input_price_per_million IS NULL OR input_price_per_million >= 0",
+            name="input_price_per_million_nonnegative",
+        ),
+        CheckConstraint(
+            "output_price_per_million IS NULL OR output_price_per_million >= 0",
+            name="output_price_per_million_nonnegative",
+        ),
+        CheckConstraint(
+            "cached_input_price_per_million IS NULL "
+            "OR cached_input_price_per_million >= 0",
+            name="cached_input_price_per_million_nonnegative",
         ),
         CheckConstraint(
             "CHAR_LENGTH(input_snapshot_hash) = 64",
@@ -93,6 +110,10 @@ class ModelExecutionTask(TimestampMixin, Base):
             "session_id",
             "task_type",
         ),
+        Index(
+            "ix_model_execution_tasks_correlation_id",
+            "correlation_id",
+        ),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -118,6 +139,7 @@ class ModelExecutionTask(TimestampMixin, Base):
     policy_version: Mapped[int] = mapped_column(nullable=False)
     input_snapshot: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
     input_snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    correlation_id: Mapped[str] = mapped_column(String(36), nullable=False)
     status: Mapped[ModelTaskStatus] = mapped_column(
         stored_enum(ModelTaskStatus, name="model_task_status"),
         nullable=False,
@@ -151,11 +173,25 @@ class ModelExecutionTask(TimestampMixin, Base):
     model_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     input_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     output_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    cached_input_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     total_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    input_price_per_million: Mapped[Decimal | None] = mapped_column(
+        Numeric(18, 8),
+        nullable=True,
+    )
+    output_price_per_million: Mapped[Decimal | None] = mapped_column(
+        Numeric(18, 8),
+        nullable=True,
+    )
+    cached_input_price_per_million: Mapped[Decimal | None] = mapped_column(
+        Numeric(18, 8),
+        nullable=True,
+    )
     estimated_cost: Mapped[Decimal | None] = mapped_column(
         Numeric(18, 8),
         nullable=True,
     )
+    cost_currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
     result_snapshot: Mapped[dict[str, object] | None] = mapped_column(
         JSON,
         nullable=True,

@@ -212,8 +212,13 @@ def test_lease_and_complete_task_persists_result_and_usage(
             model_name="qwen-plus",
             input_tokens=120,
             output_tokens=35,
+            cached_input_tokens=20,
             total_tokens=155,
+            input_price_per_million=Decimal("2.00000000"),
+            output_price_per_million=Decimal("8.00000000"),
+            cached_input_price_per_million=Decimal("0.50000000"),
             estimated_cost=Decimal("0.00012345"),
+            cost_currency="CNY",
         ),
         now=leased_at + timedelta(seconds=2),
     )
@@ -225,7 +230,10 @@ def test_lease_and_complete_task_persists_result_and_usage(
         "dialogue_acts": [],
     }
     assert completed.total_tokens == 155
+    assert completed.cached_input_tokens == 20
+    assert completed.input_price_per_million == Decimal("2.00000000")
     assert completed.estimated_cost == Decimal("0.00012345")
+    assert completed.cost_currency == "CNY"
     assert service.lease_next(worker_id="worker-02", now=leased_at) is None
 
 
@@ -295,11 +303,19 @@ def test_retry_schedule_and_expired_lease_are_recoverable(
         task_id=reclaimed.id,
         lease_token=reclaimed.lease_token,
         error_message="会话版本已经变化",
+        usage=ModelUsage(
+            provider="qwen",
+            model_name="qwen-plus",
+            input_tokens=10,
+            output_tokens=5,
+            total_tokens=15,
+        ),
         now=started_at + timedelta(seconds=43),
     )
     assert stale.status is ModelTaskStatus.STALE
     assert stale.last_error_category is ModelTaskErrorCategory.BUSINESS_CONFLICT
     assert stale.completed_at is not None
+    assert stale.total_tokens == 15
     assert stale.lease_owner is None
 
 

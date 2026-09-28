@@ -1,5 +1,6 @@
 import hashlib
 import json
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -13,6 +14,7 @@ from app.agent.decision_provider import (
     DecisionProvider,
     DecisionRequest,
 )
+from app.agent.model_observation import ObservedProviderResult, ProviderUsage
 from app.agent.seller_agent import (
     AgentTurnOutcome,
     AgentTurnPreparation,
@@ -34,6 +36,8 @@ from app.db.models import (
     Product,
     SellerPolicy,
 )
+from app.observability.context import observation_scope
+from app.observability.service import ObservabilityEventInput, ObservabilityService
 from app.services.approval_service import ApprovalService
 from app.services.errors import (
     IncompleteRequestError,
@@ -49,6 +53,7 @@ from app.services.model_task_service import (
     ModelTaskService,
     ModelUsage,
 )
+from app.services.model_usage_service import ModelUsageService
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, ShippingPayer
 from app.services.product_service import ProductService
@@ -120,11 +125,14 @@ class ChatService:
     ) -> None:
         self._session_factory = session_factory
         self._decision_provider = decision_provider
+        self._settings = get_settings()
         self._negotiation_service = NegotiationService(session_factory)
         self._approval_service = ApprovalService(session_factory)
         self._task_service = ModelTaskService(session_factory)
+        self._usage_service = ModelUsageService(self._settings)
+        self._observer = ObservabilityService(session_factory)
         self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(
-            get_settings()
+            self._settings
         )
 
     def send_buyer_message(
@@ -382,6 +390,19 @@ class ChatService:
         pending: _PendingChatTurn,
         leased: ModelExecutionTaskSnapshot,
     ) -> ChatTurnSnapshot:
+        with observation_scope(
+            correlation_id=leased.correlation_id,
+            session_id=leased.session_id,
+            model_task_id=leased.id,
+        ):
+            return self._execute_leased_turn_observed(pending=pending, leased=leased)
+
+    def _execute_leased_turn_observed(
+        self,
+        *,
+        pending: _PendingChatTurn,
+        leased: ModelExecutionTaskSnapshot,
+    ) -> ChatTurnSnapshot:
         lease_token = self._required_lease_token(leased)
         try:
             replay = self._reconcile_existing_reply(
@@ -423,17 +444,53 @@ class ChatService:
             raise ModelTaskRecoveryRequiredError(
                 "模型任务幂等结果冲突，需要卖家人工处理"
             ) from exc
+        started = time.perf_counter()
+        self._observer.record(
+            ObservabilityEventInput(
+                event_type="MODEL_TASK_ATTEMPT_STARTED",
+                action="CHAT_DECISION",
+                outcome="STARTED",
+                attempt_count=leased.attempt_count,
+                attributes={"task_type": leased.task_type.value},
+            )
+        )
         try:
             provider = self._decision_provider
             if provider is None:  # pragma: no cover - 入口已校验
                 raise RuntimeError("发送消息前必须配置决策模型")
-            decision = provider.decide(request)
+            observed_method = getattr(provider, "decide_with_usage", None)
+            if callable(observed_method):
+                observed = observed_method(request)
+            else:
+                observed = ObservedProviderResult(
+                    value=provider.decide(request),
+                    usage=ProviderUsage(
+                        provider=type(provider).__name__[:50] or "unknown",
+                        model_name="unreported",
+                    ),
+                )
+            decision = observed.value
+            usage = self._usage_service.build(observed.usage)
         except Exception as exc:
             plan = self._retry_policy.plan_failure(
                 task_id=leased.id,
                 attempt_count=leased.attempt_count,
                 max_attempts=leased.max_attempts,
                 error=exc,
+            )
+            self._observer.record(
+                ObservabilityEventInput(
+                    event_type="MODEL_CALL_COMPLETED",
+                    action="CHAT_DECISION",
+                    outcome="ERROR",
+                    attempt_count=leased.attempt_count,
+                    duration_ms=round((time.perf_counter() - started) * 1000),
+                    error_category=plan.category.value,
+                    attributes={
+                        "model_call_purpose": "CHAT_DECISION",
+                        "retry_scheduled": plan.should_retry,
+                    },
+                )
             )
             if plan.should_retry and plan.next_retry_at is not None:
                 self._task_service.defer_retry(
@@ -456,12 +513,58 @@ class ChatService:
                 "模型任务已停止自动重试，需要卖家人工处理"
             ) from exc
 
+        self._observer.record(
+            ObservabilityEventInput(
+                event_type="MODEL_CALL_COMPLETED",
+                action="CHAT_DECISION",
+                outcome="SUCCESS",
+                attempt_count=leased.attempt_count,
+                duration_ms=round((time.perf_counter() - started) * 1000),
+                usage=usage,
+                attributes={"model_call_purpose": "CHAT_DECISION"},
+            )
+        )
+
+        finalization_started = time.perf_counter()
         try:
-            return self._finalize_model_turn(
+            turn = self._finalize_model_turn(
                 pending=pending,
                 leased=leased,
                 decision=decision,
+                usage=usage,
             )
+            tool_name = self._write_tool_name(decision)
+            if tool_name is not None:
+                self._observer.record(
+                    ObservabilityEventInput(
+                        event_type="TOOL_ACTION_COMPLETED",
+                        action="EXECUTE_NEGOTIATION_TOOL",
+                        outcome=(
+                            "SUCCESS"
+                            if turn.outcome != AgentTurnOutcome.SAFE_FAILURE.value
+                            else "REJECTED"
+                        ),
+                        offer_id=turn.formal_offer_id or leased.offer_id,
+                        duration_ms=round(
+                            (time.perf_counter() - finalization_started) * 1000
+                        ),
+                        attributes={"tool_name": tool_name},
+                    )
+                )
+            self._observer.record(
+                ObservabilityEventInput(
+                    event_type="CHAT_TURN_COMPLETED",
+                    action="APPLY_CHAT_DECISION",
+                    outcome="SUCCESS",
+                    offer_id=turn.formal_offer_id,
+                    attributes={
+                        "agent_outcome": turn.outcome,
+                        "formal_commitment": turn.formal_offer_id is not None,
+                        "idempotent_replay": turn.idempotent_replay,
+                    },
+                )
+            )
+            return turn
         except ModelExecutionTaskLeaseError as exc:
             replay = self._load_reply(
                 session_id=pending.session_id,
@@ -483,6 +586,14 @@ class ChatService:
             raise ModelTaskRecoveryRequiredError(
                 "模型任务幂等结果冲突，需要卖家人工处理"
             ) from exc
+
+    @staticmethod
+    def _write_tool_name(decision: NegotiationDecision) -> str | None:
+        return {
+            "COUNTER": "submit_counter_offer",
+            "ACCEPT": "accept_offer",
+            "REQUEST_APPROVAL": "request_approval",
+        }.get(decision.action.value)
 
     def _reconcile_existing_reply(
         self,
@@ -527,6 +638,7 @@ class ChatService:
         pending: _PendingChatTurn,
         leased: ModelExecutionTaskSnapshot,
         decision: NegotiationDecision,
+        usage: ModelUsage,
     ) -> ChatTurnSnapshot:
         lease_token = leased.lease_token
         if lease_token is None:  # pragma: no cover - 调用方只传入已领取任务
@@ -588,6 +700,7 @@ class ChatService:
                     task_id=current_task.id,
                     lease_token=lease_token,
                     error_message=stale_reason,
+                    usage=usage,
                 )
                 return snapshot
 
@@ -614,7 +727,7 @@ class ChatService:
                 task_id=current_task.id,
                 lease_token=lease_token,
                 result_snapshot={"decision": decision.model_dump(mode="json")},
-                usage=self._model_usage(),
+                usage=usage,
             )
             return snapshot
 
@@ -1022,13 +1135,6 @@ class ChatService:
             separators=(",", ":"),
         )
         return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
-    def _model_usage(self) -> ModelUsage:
-        provider_name = type(self._decision_provider).__name__[:50]
-        return ModelUsage(
-            provider=provider_name or "unknown",
-            model_name="unreported",
-        )
 
     @classmethod
     def _turn_snapshot(

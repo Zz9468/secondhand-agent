@@ -17,6 +17,19 @@ def test_health_returns_process_status() -> None:
         "service": "SecondHand Agent API",
         "environment": "development",
     }
+    assert response.headers["X-Request-ID"]
+    assert response.headers["X-Correlation-ID"]
+
+
+def test_request_observation_preserves_valid_ids_and_replaces_invalid_ones() -> None:
+    request_id = "e0d2aa6a-a42a-45de-82b7-064f2cafba0f"
+    response = client.get(
+        "/api/health",
+        headers={"X-Request-ID": request_id, "X-Correlation-ID": "unsafe"},
+    )
+
+    assert response.headers["X-Request-ID"] == request_id
+    assert response.headers["X-Correlation-ID"] != "unsafe"
 
 
 def test_ready_returns_database_status(monkeypatch) -> None:

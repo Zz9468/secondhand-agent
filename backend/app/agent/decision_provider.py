@@ -7,10 +7,12 @@ from langchain.agents.structured_output import (
     ProviderStrategy,
     StructuredOutputValidationError,
 )
+from langchain_core.callbacks import UsageMetadataCallbackHandler
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 
 from app.agent.decision import NegotiationDecision
+from app.agent.model_observation import ObservedProviderResult, usage_from_callback
 from app.agent.prompts import DECISION_FIELD_RULES, SELLER_AGENT_SYSTEM_PROMPT
 
 
@@ -48,15 +50,46 @@ class LangChainDecisionProvider:
             system_prompt=SELLER_AGENT_SYSTEM_PROMPT,
             response_format=ProviderStrategy(NegotiationDecision, strict=True),
         )
+        self._model_name = str(getattr(model, "model_name", "unreported"))
 
     def decide(self, request: DecisionRequest) -> NegotiationDecision:
+        return self._invoke_decision(request, config=None)
+
+    def decide_with_usage(
+        self,
+        request: DecisionRequest,
+    ) -> ObservedProviderResult[NegotiationDecision]:
+        callback = UsageMetadataCallbackHandler()
+        config = {"callbacks": [callback]}
+        decision = self._invoke_decision(request, config=config)
+        return ObservedProviderResult(
+            value=decision,
+            usage=usage_from_callback(
+                callback,
+                provider="qwen",
+                fallback_model_name=self._model_name,
+            ),
+        )
+
+    def _invoke_decision(
+        self,
+        request: DecisionRequest,
+        *,
+        config: dict[str, object] | None,
+    ) -> NegotiationDecision:
         messages = self._messages(request)
+
+        def invoke(payload: dict[str, object]) -> dict[str, object]:
+            if config is None:
+                return self._agent.invoke(payload)
+            return self._agent.invoke(payload, config=config)
+
         try:
-            result = self._agent.invoke({"messages": messages})
+            result = invoke({"messages": messages})
         except StructuredOutputValidationError:
             # 原生 JSON Schema 无法表达所有跨字段条件。仅在结构化结果字段组合
             # 无效时补充规则重试一次；价格和权限仍由后端业务层重新校验。
-            result = self._agent.invoke(
+            result = invoke(
                 {
                     "messages": [
                         *messages,
@@ -72,8 +105,10 @@ class LangChainDecisionProvider:
             )
         structured_response = result.get("structured_response")
         if isinstance(structured_response, NegotiationDecision):
-            return structured_response
-        return NegotiationDecision.model_validate(structured_response)
+            decision = structured_response
+        else:
+            decision = NegotiationDecision.model_validate(structured_response)
+        return decision
 
     @staticmethod
     def _messages(request: DecisionRequest) -> list[BaseMessage]:

@@ -19,6 +19,7 @@ from app.db.models.enums import (
 from app.db.models.message import Message
 from app.db.models.model_task import ModelExecutionTask
 from app.db.models.negotiation import NegotiationSession
+from app.db.models.observability import ObservabilityEvent
 from app.db.models.offer import Offer
 from app.db.models.policy import SellerPolicy
 from app.db.models.product import Product
@@ -38,6 +39,7 @@ __all__ = [
     "NegotiationSession",
     "NegotiationStatus",
     "NegotiationStyle",
+    "ObservabilityEvent",
     "Offer",
     "OfferProposer",
     "OfferStatus",

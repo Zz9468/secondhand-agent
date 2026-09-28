@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from app.api.dependencies import CurrentUser, SessionFactoryDependency
 from app.db.models import ApprovalStatus
+from app.observability.service import ObservabilityEventInput, ObservabilityService
 from app.schemas.approval import (
     SellerApprovalDecisionRequest,
     SellerApprovalListResponse,
@@ -71,6 +72,17 @@ def approve_seller_approval(
         )
     except ServiceError as exc:
         _raise_http_error(exc)
+    ObservabilityService(session_factory).record(
+        ObservabilityEventInput(
+            event_type="APPROVAL_REVIEWED",
+            action="APPROVE_REQUEST",
+            outcome="SUCCESS",
+            session_id=approval.session_id,
+            approval_id=approval.id,
+            offer_id=approval.offer_id,
+            attributes={"approval_status": approval.status.value},
+        )
+    )
     return SellerApprovalResponse.model_validate(approval)
 
 
@@ -90,6 +102,17 @@ def reject_seller_approval(
         )
     except ServiceError as exc:
         _raise_http_error(exc)
+    ObservabilityService(session_factory).record(
+        ObservabilityEventInput(
+            event_type="APPROVAL_REVIEWED",
+            action="REJECT_REQUEST",
+            outcome="SUCCESS",
+            session_id=approval.session_id,
+            approval_id=approval.id,
+            offer_id=approval.offer_id,
+            attributes={"approval_status": approval.status.value},
+        )
+    )
     return SellerApprovalResponse.model_validate(approval)
 
 

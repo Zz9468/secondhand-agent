@@ -19,6 +19,7 @@ from app.agent.approval_followup import (
     SellerApprovalFollowupAgent,
 )
 from app.agent.model_factory import QwenChatModelFactory
+from app.agent.model_observation import ObservedProviderResult, ProviderUsage
 from app.core.config import get_settings
 from app.db.models import (
     ApprovalFollowupStatus,
@@ -38,6 +39,8 @@ from app.db.models import (
     SellerPolicy,
 )
 from app.db.session import get_session_factory
+from app.observability.context import observation_scope
+from app.observability.service import ObservabilityEventInput, ObservabilityService
 from app.services.errors import ModelExecutionTaskLeaseError
 from app.services.model_retry_policy import ModelRetryPolicy
 from app.services.model_task_service import (
@@ -45,6 +48,7 @@ from app.services.model_task_service import (
     ModelTaskService,
     ModelUsage,
 )
+from app.services.model_usage_service import ModelUsageService
 from app.services.negotiation_service import NegotiationService
 
 logger = logging.getLogger(__name__)
@@ -85,8 +89,11 @@ class ApprovalProcessor:
         self._provider = provider
         self._negotiation_service = NegotiationService(session_factory)
         self._task_service = ModelTaskService(session_factory)
+        self._settings = get_settings()
+        self._usage_service = ModelUsageService(self._settings)
+        self._observer = ObservabilityService(session_factory)
         self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(
-            get_settings()
+            self._settings
         )
 
     def process_batch(self, *, limit: int = 20) -> tuple[ApprovalProcessingResult, ...]:
@@ -113,13 +120,59 @@ class ApprovalProcessor:
         if leased is None or isinstance(leased, ApprovalProcessingResult):
             return leased
 
+        with observation_scope(
+            correlation_id=leased.correlation_id,
+            session_id=leased.session_id,
+            model_task_id=leased.id,
+        ):
+            return self._process_leased(leased)
+
+    def _process_leased(
+        self,
+        leased: ModelExecutionTaskSnapshot,
+    ) -> ApprovalProcessingResult:
+
         lease_token = leased.lease_token
         if lease_token is None:  # pragma: no cover - 数据库约束已保证
             raise RuntimeError("已领取审批通知任务缺少租约令牌")
+        started = time.perf_counter()
+        self._observer.record(
+            ObservabilityEventInput(
+                event_type="MODEL_TASK_ATTEMPT_STARTED",
+                action="APPROVAL_FOLLOWUP",
+                outcome="STARTED",
+                approval_id=leased.approval_id,
+                offer_id=leased.offer_id,
+                attempt_count=leased.attempt_count,
+                attributes={"task_type": leased.task_type.value},
+            )
+        )
         try:
             request, _ = self._task_input(leased.input_snapshot)
-            draft = self._agent.draft_followup(request)
+            draft, usage = self._draft_with_usage(request)
         except (ApprovalFollowupAgentError, KeyError, TypeError, ValueError) as exc:
+            plan = self._retry_policy.plan_failure(
+                task_id=leased.id,
+                attempt_count=leased.attempt_count,
+                max_attempts=leased.max_attempts,
+                error=exc,
+            )
+            self._observer.record(
+                ObservabilityEventInput(
+                    event_type="MODEL_CALL_COMPLETED",
+                    action="APPROVAL_FOLLOWUP",
+                    outcome="ERROR",
+                    approval_id=leased.approval_id,
+                    offer_id=leased.offer_id,
+                    attempt_count=leased.attempt_count,
+                    duration_ms=round((time.perf_counter() - started) * 1000),
+                    error_category=plan.category.value,
+                    attributes={
+                        "model_call_purpose": "APPROVAL_FOLLOWUP",
+                        "retry_scheduled": plan.should_retry,
+                    },
+                )
+            )
             try:
                 return self._handle_failed_task(
                     task=leased,
@@ -128,12 +181,42 @@ class ApprovalProcessor:
                 )
             except ModelExecutionTaskLeaseError:
                 return self._lease_lost_result(leased)
+        self._observer.record(
+            ObservabilityEventInput(
+                event_type="MODEL_CALL_COMPLETED",
+                action="APPROVAL_FOLLOWUP",
+                outcome="SUCCESS",
+                approval_id=leased.approval_id,
+                offer_id=leased.offer_id,
+                attempt_count=leased.attempt_count,
+                duration_ms=round((time.perf_counter() - started) * 1000),
+                usage=usage,
+                attributes={"model_call_purpose": "APPROVAL_FOLLOWUP"},
+            )
+        )
         try:
-            return self._finalize_followup(
+            result = self._finalize_followup(
                 task=leased,
                 lease_token=lease_token,
                 draft=draft,
+                usage=usage,
             )
+            self._observer.record(
+                ObservabilityEventInput(
+                    event_type="APPROVAL_FOLLOWUP_COMPLETED",
+                    action="APPLY_APPROVAL_FOLLOWUP",
+                    outcome="SUCCESS",
+                    approval_id=result.approval_id,
+                    offer_id=leased.offer_id,
+                    attributes={
+                        "approval_status": result.status.value,
+                        "agent_outcome": (
+                            result.outcome.value if result.outcome else None
+                        ),
+                    },
+                )
+            )
+            return result
         except ModelExecutionTaskLeaseError:
             return self._lease_lost_result(leased)
 
@@ -245,6 +328,7 @@ class ApprovalProcessor:
         task: ModelExecutionTaskSnapshot,
         lease_token: str,
         draft: ApprovalFollowupDraft,
+        usage: ModelUsage,
     ) -> ApprovalProcessingResult:
         with self._session_factory() as db, db.begin():
             approval = db.get(
@@ -264,6 +348,7 @@ class ApprovalProcessor:
                     task_id=current_task.id,
                     lease_token=lease_token,
                     error_message="审批记录已不存在",
+                    usage=usage,
                 )
                 return ApprovalProcessingResult(
                     approval_id=task.approval_id or 0,
@@ -279,6 +364,7 @@ class ApprovalProcessor:
                     task_id=current_task.id,
                     lease_token=lease_token,
                     error_message="审批通知幂等键已不存在",
+                    usage=usage,
                 )
                 return self._mark_manual_required(db, approval=approval)
             existing = self._existing_message(
@@ -294,6 +380,7 @@ class ApprovalProcessor:
                         task_id=current_task.id,
                         lease_token=lease_token,
                         error_message="审批通知幂等键已被其他消息占用",
+                        usage=usage,
                     )
                     return self._mark_manual_required(db, approval=approval)
                 approval.followup_status = ApprovalFollowupStatus.SENT
@@ -302,6 +389,7 @@ class ApprovalProcessor:
                     task_id=current_task.id,
                     lease_token=lease_token,
                     error_message="审批通知已经由其他执行者写入",
+                    usage=usage,
                 )
                 return ApprovalProcessingResult(
                     approval_id=approval.id,
@@ -319,6 +407,7 @@ class ApprovalProcessor:
                     task_id=current_task.id,
                     lease_token=lease_token,
                     error_message=str(exc),
+                    usage=usage,
                 )
                 return self._mark_manual_required(db, approval=approval)
 
@@ -368,7 +457,7 @@ class ApprovalProcessor:
                     task_id=current_task.id,
                     lease_token=lease_token,
                     result_snapshot={"draft": draft.model_dump(mode="json")},
-                    usage=self._model_usage(),
+                    usage=usage,
                 )
                 return ApprovalProcessingResult(
                     approval_id=approval.id,
@@ -400,6 +489,7 @@ class ApprovalProcessor:
                 task_id=current_task.id,
                 lease_token=lease_token,
                 error_message=stale_reason,
+                usage=usage,
             )
             return ApprovalProcessingResult(
                 approval_id=approval.id,
@@ -779,12 +869,27 @@ class ApprovalProcessor:
         db.refresh(message)
         return message
 
-    def _model_usage(self) -> ModelUsage:
-        provider_name = type(self._provider).__name__[:50]
-        return ModelUsage(
-            provider=provider_name or "unknown",
-            model_name="unreported",
-        )
+    def _draft_with_usage(
+        self,
+        request: ApprovalFollowupRequest,
+    ) -> tuple[ApprovalFollowupDraft, ModelUsage]:
+        try:
+            observed_method = getattr(self._provider, "draft_with_usage", None)
+            if callable(observed_method):
+                observed = observed_method(request)
+            else:
+                observed = ObservedProviderResult(
+                    value=self._provider.draft(request),
+                    usage=ProviderUsage(
+                        provider=type(self._provider).__name__[:50] or "unknown",
+                        model_name="unreported",
+                    ),
+                )
+        except ApprovalFollowupAgentError:
+            raise
+        except Exception as exc:
+            raise ApprovalFollowupAgentError("审批结果通知生成失败") from exc
+        return observed.value, self._usage_service.build(observed.usage)
 
     @staticmethod
     def _mark_failed(

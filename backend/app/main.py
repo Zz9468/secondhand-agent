@@ -12,6 +12,7 @@ from app.api.seller_model_tasks import router as seller_model_tasks_router
 from app.api.seller_negotiations import router as seller_negotiations_router
 from app.api.sellers import router as sellers_router
 from app.core.config import get_settings
+from app.observability.middleware import RequestObservationMiddleware
 
 
 def create_app() -> FastAPI:
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    application.add_middleware(RequestObservationMiddleware)
     application.include_router(health_router, prefix=settings.api_prefix)
     application.include_router(auth_router, prefix=settings.api_prefix)
     application.include_router(products_router, prefix=settings.api_prefix)

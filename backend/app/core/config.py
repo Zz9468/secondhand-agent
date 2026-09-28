@@ -1,3 +1,4 @@
+from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -43,6 +44,20 @@ class Settings(BaseSettings):
     model_task_retry_max_seconds: float = Field(default=300.0, gt=0.0, le=86400.0)
     model_task_retry_jitter_ratio: float = Field(default=0.2, ge=0.0, le=0.5)
     model_task_lease_seconds: int = Field(default=300, ge=1, le=3600)
+    model_input_price_per_million: Decimal | None = Field(default=None, ge=0)
+    model_output_price_per_million: Decimal | None = Field(default=None, ge=0)
+    model_cached_input_price_per_million: Decimal | None = Field(default=None, ge=0)
+    model_cost_currency: Literal["CNY", "USD"] | None = None
+
+    observability_langsmith_enabled: bool = False
+    observability_langsmith_api_key: SecretStr | None = None
+    observability_langsmith_endpoint: str = "https://api.smith.langchain.com"
+    observability_langsmith_project: str = "secondhand-agent"
+    observability_langsmith_timeout_seconds: float = Field(
+        default=2.0,
+        gt=0.0,
+        le=30.0,
+    )
 
     @property
     def model_is_configured(self) -> bool:
@@ -63,6 +78,22 @@ class Settings(BaseSettings):
             return False
         value = self.auth_secret.get_secret_value().strip()
         return len(value) >= 32 and "CHANGE_ME" not in value.upper()
+
+    @property
+    def model_cost_is_configured(self) -> bool:
+        return (
+            self.model_input_price_per_million is not None
+            and self.model_output_price_per_million is not None
+            and self.model_cost_currency is not None
+        )
+
+    @property
+    def langsmith_is_configured(self) -> bool:
+        if not self.observability_langsmith_enabled:
+            return False
+        if self.observability_langsmith_api_key is None:
+            return False
+        return bool(self.observability_langsmith_api_key.get_secret_value().strip())
 
 
 @lru_cache

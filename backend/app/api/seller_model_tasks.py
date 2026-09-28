@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from app.api.dependencies import CurrentUser, SessionFactoryDependency
 from app.db.models import ModelTaskStatus
+from app.observability.service import ObservabilityEventInput, ObservabilityService
 from app.schemas.model_task import (
     ModelTaskManualActionRequest,
     SellerModelTaskListResponse,
@@ -51,6 +52,23 @@ def retry_seller_model_task(
         )
     except ServiceError as exc:
         _raise_http_error(exc)
+    ObservabilityService(session_factory).record(
+        ObservabilityEventInput(
+            event_type="MODEL_TASK_MANUAL_ACTION",
+            action="RETRY_MODEL_TASK",
+            outcome="SUCCESS",
+            session_id=task.session_id,
+            model_task_id=task.id,
+            approval_id=task.approval_id,
+            offer_id=task.offer_id,
+            attempt_count=task.attempt_count,
+            attributes={
+                "manual_action": "RETRY",
+                "task_status": task.status.value,
+                "task_type": task.task_type.value,
+            },
+        )
+    )
     return SellerModelTaskResponse.model_validate(task)
 
 
@@ -69,6 +87,23 @@ def terminate_seller_model_task(
         )
     except ServiceError as exc:
         _raise_http_error(exc)
+    ObservabilityService(session_factory).record(
+        ObservabilityEventInput(
+            event_type="MODEL_TASK_MANUAL_ACTION",
+            action="TERMINATE_MODEL_TASK",
+            outcome="SUCCESS",
+            session_id=task.session_id,
+            model_task_id=task.id,
+            approval_id=task.approval_id,
+            offer_id=task.offer_id,
+            attempt_count=task.attempt_count,
+            attributes={
+                "manual_action": "TERMINATE",
+                "task_status": task.status.value,
+                "task_type": task.task_type.value,
+            },
+        )
+    )
     return SellerModelTaskResponse.model_validate(task)
 
 

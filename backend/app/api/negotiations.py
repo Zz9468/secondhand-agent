@@ -10,6 +10,7 @@ from app.api.dependencies import (
     get_decision_provider,
     get_session_factory_dependency,
 )
+from app.observability.service import ObservabilityEventInput, ObservabilityService
 from app.schemas.negotiation import (
     CloseNegotiationRequest,
     CloseNegotiationResponse,
@@ -111,6 +112,20 @@ def confirm_negotiation(
         )
     except ServiceError as exc:
         _raise_http_error(exc)
+    ObservabilityService(session_factory).record(
+        ObservabilityEventInput(
+            event_type="NEGOTIATION_FINALIZED",
+            action="CONFIRM_OFFER",
+            outcome="SUCCESS",
+            session_id=result.session_id,
+            offer_id=result.confirmed_offer_id,
+            attributes={
+                "session_status": result.status.value,
+                "confirmation_source": result.confirmation_source.value,
+                "idempotent_replay": result.idempotent_replay,
+            },
+        )
+    )
     return ConfirmNegotiationResponse.model_validate(result)
 
 
@@ -132,6 +147,19 @@ def close_negotiation(
         )
     except ServiceError as exc:
         _raise_http_error(exc)
+    ObservabilityService(session_factory).record(
+        ObservabilityEventInput(
+            event_type="NEGOTIATION_CLOSED",
+            action="CLOSE_NEGOTIATION",
+            outcome="SUCCESS",
+            session_id=result.session_id,
+            approval_id=result.cancelled_approval_id,
+            attributes={
+                "session_status": result.status.value,
+                "idempotent_replay": result.idempotent_replay,
+            },
+        )
+    )
     return CloseNegotiationResponse.model_validate(result)
 
 

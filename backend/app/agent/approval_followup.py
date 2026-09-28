@@ -5,10 +5,12 @@ from typing import Protocol
 
 from langchain.agents import create_agent
 from langchain.agents.structured_output import ProviderStrategy
+from langchain_core.callbacks import UsageMetadataCallbackHandler
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.agent.model_observation import ObservedProviderResult, usage_from_callback
 from app.agent.reply_policy import FormalReplyRenderer
 
 
@@ -82,8 +84,32 @@ class LangChainApprovalFollowupProvider:
             ),
             response_format=ProviderStrategy(ApprovalFollowupDraft, strict=True),
         )
+        self._model_name = str(getattr(model, "model_name", "unreported"))
 
     def draft(self, request: ApprovalFollowupRequest) -> ApprovalFollowupDraft:
+        return self._invoke_draft(request, config=None)
+
+    def draft_with_usage(
+        self,
+        request: ApprovalFollowupRequest,
+    ) -> ObservedProviderResult[ApprovalFollowupDraft]:
+        callback = UsageMetadataCallbackHandler()
+        draft = self._invoke_draft(request, config={"callbacks": [callback]})
+        return ObservedProviderResult(
+            value=draft,
+            usage=usage_from_callback(
+                callback,
+                provider="qwen",
+                fallback_model_name=self._model_name,
+            ),
+        )
+
+    def _invoke_draft(
+        self,
+        request: ApprovalFollowupRequest,
+        *,
+        config: dict[str, object] | None,
+    ) -> ApprovalFollowupDraft:
         trusted_context = json.dumps(
             {
                 "approval_id": request.approval_id,
@@ -101,8 +127,7 @@ class LangChainApprovalFollowupProvider:
             ensure_ascii=False,
             separators=(",", ":"),
         )
-        result = self._agent.invoke(
-            {
+        payload = {
                 "messages": [
                     SystemMessage(
                         content=(
@@ -120,11 +145,17 @@ class LangChainApprovalFollowupProvider:
                     ),
                 ]
             }
+        result = (
+            self._agent.invoke(payload)
+            if config is None
+            else self._agent.invoke(payload, config=config)
         )
         structured_response = result.get("structured_response")
         if isinstance(structured_response, ApprovalFollowupDraft):
-            return structured_response
-        return ApprovalFollowupDraft.model_validate(structured_response)
+            draft = structured_response
+        else:
+            draft = ApprovalFollowupDraft.model_validate(structured_response)
+        return draft
 
 
 class SellerApprovalFollowupAgent:

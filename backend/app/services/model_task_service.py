@@ -5,7 +5,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from sqlalchemy import and_, case, or_, select
 from sqlalchemy.exc import IntegrityError
@@ -23,6 +23,7 @@ from app.db.models import (
     Offer,
     SellerPolicy,
 )
+from app.observability.context import current_observation_context, new_correlation_id
 from app.services.errors import (
     InvalidModelExecutionTaskError,
     ModelExecutionTaskConflictError,
@@ -39,8 +40,13 @@ class ModelUsage:
     model_name: str
     input_tokens: int | None = None
     output_tokens: int | None = None
+    cached_input_tokens: int | None = None
     total_tokens: int | None = None
+    input_price_per_million: Decimal | None = None
+    output_price_per_million: Decimal | None = None
+    cached_input_price_per_million: Decimal | None = None
     estimated_cost: Decimal | None = None
+    cost_currency: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +62,7 @@ class ModelExecutionTaskSnapshot:
     policy_version: int
     input_snapshot: dict[str, object]
     input_snapshot_hash: str
+    correlation_id: str
     status: ModelTaskStatus
     attempt_count: int
     max_attempts: int
@@ -70,8 +77,13 @@ class ModelExecutionTaskSnapshot:
     model_name: str | None
     input_tokens: int | None
     output_tokens: int | None
+    cached_input_tokens: int | None
     total_tokens: int | None
+    input_price_per_million: Decimal | None
+    output_price_per_million: Decimal | None
+    cached_input_price_per_million: Decimal | None
     estimated_cost: Decimal | None
+    cost_currency: str | None
     result_snapshot: dict[str, object] | None
     started_at: datetime | None
     completed_at: datetime | None
@@ -106,6 +118,7 @@ class ModelTaskService:
         approval_id: int | None = None,
         snapshot_schema_version: int = 1,
         max_attempts: int = 3,
+        correlation_id: str | None = None,
     ) -> ModelTaskCreationResult:
         """按业务键幂等创建任务，并从数据库事实捕获版本。"""
 
@@ -134,6 +147,7 @@ class ModelTaskService:
                     approval_id=approval_id,
                     snapshot_schema_version=snapshot_schema_version,
                     max_attempts=max_attempts,
+                    correlation_id=self._resolved_correlation_id(correlation_id),
                 )
         except IntegrityError as exc:
             # 唯一约束是并发创建时的最终判定；相同请求返回已有任务。
@@ -166,6 +180,7 @@ class ModelTaskService:
         approval_id: int | None = None,
         snapshot_schema_version: int = 1,
         max_attempts: int = 3,
+        correlation_id: str | None = None,
     ) -> ModelTaskCreationResult:
         """在调用方事务内原子创建业务事实和模型任务。"""
 
@@ -191,6 +206,7 @@ class ModelTaskService:
             approval_id=approval_id,
             snapshot_schema_version=snapshot_schema_version,
             max_attempts=max_attempts,
+            correlation_id=self._resolved_correlation_id(correlation_id),
         )
 
     def _create_validated_task_in_transaction(
@@ -206,6 +222,7 @@ class ModelTaskService:
         approval_id: int | None,
         snapshot_schema_version: int,
         max_attempts: int,
+        correlation_id: str,
     ) -> ModelTaskCreationResult:
         existing = self._by_business_key(
             db,
@@ -240,6 +257,7 @@ class ModelTaskService:
             policy_version=policy_version,
             input_snapshot=stored_input,
             input_snapshot_hash=input_hash,
+            correlation_id=correlation_id,
             status=ModelTaskStatus.PENDING,
             attempt_count=0,
             max_attempts=max_attempts,
@@ -420,12 +438,7 @@ class ModelTaskService:
         )
         task.status = ModelTaskStatus.SUCCEEDED
         task.result_snapshot = stored_result
-        task.model_provider = stored_usage.provider
-        task.model_name = stored_usage.model_name
-        task.input_tokens = stored_usage.input_tokens
-        task.output_tokens = stored_usage.output_tokens
-        task.total_tokens = stored_usage.total_tokens
-        task.estimated_cost = stored_usage.estimated_cost
+        self._apply_usage(task, stored_usage)
         task.last_error_category = None
         task.last_error_message = None
         task.completed_at = completed_at
@@ -538,6 +551,7 @@ class ModelTaskService:
         task_id: int,
         lease_token: str,
         error_message: str | None = None,
+        usage: ModelUsage | None = None,
         now: datetime | None = None,
     ) -> ModelExecutionTaskSnapshot:
         """标记版本复核失败的迟到结果，禁止其成为业务事实。"""
@@ -548,6 +562,7 @@ class ModelTaskService:
             target_status=ModelTaskStatus.STALE,
             error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
             error_message=error_message,
+            usage=usage,
             now=now,
         )
 
@@ -558,6 +573,7 @@ class ModelTaskService:
         task_id: int,
         lease_token: str,
         error_message: str | None = None,
+        usage: ModelUsage | None = None,
         now: datetime | None = None,
     ) -> ModelExecutionTaskSnapshot:
         return self._complete_error_in_transaction(
@@ -567,6 +583,7 @@ class ModelTaskService:
             target_status=ModelTaskStatus.STALE,
             error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
             error_message=error_message,
+            usage=usage,
             now=now,
         )
 
@@ -617,6 +634,7 @@ class ModelTaskService:
         error_category: ModelTaskErrorCategory,
         error_message: str | None,
         now: datetime | None,
+        usage: ModelUsage | None = None,
     ) -> ModelExecutionTaskSnapshot:
         with self._session_factory() as db, db.begin():
             return self._complete_error_in_transaction(
@@ -627,6 +645,7 @@ class ModelTaskService:
                 error_category=error_category,
                 error_message=error_message,
                 now=now,
+                usage=usage,
             )
 
     def _complete_error_in_transaction(
@@ -639,6 +658,7 @@ class ModelTaskService:
         error_category: ModelTaskErrorCategory,
         error_message: str | None,
         now: datetime | None,
+        usage: ModelUsage | None = None,
     ) -> ModelExecutionTaskSnapshot:
         completed_at = self._database_datetime(now or datetime.now(UTC))
         stored_error = self._validated_error_category(error_category)
@@ -652,6 +672,8 @@ class ModelTaskService:
         task.status = target_status
         task.last_error_category = stored_error
         task.last_error_message = stored_message
+        if usage is not None:
+            self._apply_usage(task, self._validated_usage(usage))
         task.completed_at = completed_at
         self._clear_lease(task)
         if target_status is ModelTaskStatus.FAILED:
@@ -659,6 +681,20 @@ class ModelTaskService:
         db.flush()
         db.refresh(task)
         return self._snapshot(task)
+
+    @staticmethod
+    def _apply_usage(task: ModelExecutionTask, usage: ModelUsage) -> None:
+        task.model_provider = usage.provider
+        task.model_name = usage.model_name
+        task.input_tokens = usage.input_tokens
+        task.output_tokens = usage.output_tokens
+        task.cached_input_tokens = usage.cached_input_tokens
+        task.total_tokens = usage.total_tokens
+        task.input_price_per_million = usage.input_price_per_million
+        task.output_price_per_million = usage.output_price_per_million
+        task.cached_input_price_per_million = usage.cached_input_price_per_million
+        task.estimated_cost = usage.estimated_cost
+        task.cost_currency = usage.cost_currency
 
     @staticmethod
     def _capture_references(
@@ -920,19 +956,54 @@ class ModelTaskService:
             raise InvalidModelExecutionTaskError("模型提供商标识无效")
         if not model_name or len(model_name) > 100:
             raise InvalidModelExecutionTaskError("模型名称无效")
-        for value in (usage.input_tokens, usage.output_tokens, usage.total_tokens):
+        for value in (
+            usage.input_tokens,
+            usage.output_tokens,
+            usage.cached_input_tokens,
+            usage.total_tokens,
+        ):
             if value is not None and value < 0:
                 raise InvalidModelExecutionTaskError("模型 Token 用量不能为负数")
-        if usage.estimated_cost is not None and usage.estimated_cost < 0:
-            raise InvalidModelExecutionTaskError("模型估算成本不能为负数")
+        for value in (
+            usage.input_price_per_million,
+            usage.output_price_per_million,
+            usage.cached_input_price_per_million,
+            usage.estimated_cost,
+        ):
+            if value is not None and value < 0:
+                raise InvalidModelExecutionTaskError("模型价格或估算成本不能为负数")
+        currency = usage.cost_currency.strip().upper() if usage.cost_currency else None
+        if currency is not None and (len(currency) != 3 or not currency.isalpha()):
+            raise InvalidModelExecutionTaskError("模型成本币种必须是三位字母代码")
         return ModelUsage(
             provider=provider,
             model_name=model_name,
             input_tokens=usage.input_tokens,
             output_tokens=usage.output_tokens,
+            cached_input_tokens=usage.cached_input_tokens,
             total_tokens=usage.total_tokens,
+            input_price_per_million=usage.input_price_per_million,
+            output_price_per_million=usage.output_price_per_million,
+            cached_input_price_per_million=usage.cached_input_price_per_million,
             estimated_cost=usage.estimated_cost,
+            cost_currency=currency,
         )
+
+    @classmethod
+    def _resolved_correlation_id(cls, value: str | None) -> str:
+        context = current_observation_context()
+        candidate = value or (context.correlation_id if context else None)
+        return cls._validated_uuid(candidate or new_correlation_id())
+
+    @staticmethod
+    def _validated_uuid(value: str) -> str:
+        try:
+            parsed = UUID(value)
+        except (TypeError, ValueError) as exc:
+            raise InvalidModelExecutionTaskError("模型任务关联标识必须是 UUID") from exc
+        if str(parsed) != value:
+            raise InvalidModelExecutionTaskError("模型任务关联标识必须使用标准 UUID 格式")
+        return value
 
     @staticmethod
     def _validated_error_category(
@@ -969,6 +1040,7 @@ class ModelTaskService:
             policy_version=task.policy_version,
             input_snapshot=deepcopy(task.input_snapshot),
             input_snapshot_hash=task.input_snapshot_hash,
+            correlation_id=task.correlation_id,
             status=task.status,
             attempt_count=task.attempt_count,
             max_attempts=task.max_attempts,
@@ -983,8 +1055,13 @@ class ModelTaskService:
             model_name=task.model_name,
             input_tokens=task.input_tokens,
             output_tokens=task.output_tokens,
+            cached_input_tokens=task.cached_input_tokens,
             total_tokens=task.total_tokens,
+            input_price_per_million=task.input_price_per_million,
+            output_price_per_million=task.output_price_per_million,
+            cached_input_price_per_million=task.cached_input_price_per_million,
             estimated_cost=task.estimated_cost,
+            cost_currency=task.cost_currency,
             result_snapshot=deepcopy(task.result_snapshot),
             started_at=task.started_at,
             completed_at=task.completed_at,
