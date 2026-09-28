@@ -29,6 +29,7 @@ from app.db.models import (
     UserAccount,
 )
 from app.services.approval_service import ApprovalService
+from app.services.model_retry_policy import ModelRetryPolicy
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, ShippingPayer
 from app.workers.approval_processor import ApprovalProcessor
@@ -48,7 +49,7 @@ class RecordingFollowupProvider:
             self.requests.append(request)
             if self._remaining_failures > 0:
                 self._remaining_failures -= 1
-                raise RuntimeError("模拟模型超时")
+                raise TimeoutError("模拟模型超时")
         return ApprovalFollowupDraft(
             acknowledged_event=request.event,
             reason="按可信审批结果通知买家",
@@ -200,6 +201,50 @@ def test_worker_sends_rejection_and_retries_failed_model_call(
         assert task is not None
         assert task.status is ModelTaskStatus.SUCCEEDED
         assert task.attempt_count == 2
+
+
+def test_worker_stops_after_bounded_failure_and_requires_manual_action(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    _, _, approval_id = _create_reviewed_approval(
+        service_session_factory,
+        approved=False,
+        request_id="worker-bounded-failure-001",
+    )
+    provider = RecordingFollowupProvider(failures=1)
+    policy = ModelRetryPolicy(
+        max_attempts=1,
+        base_delay_seconds=1,
+        max_delay_seconds=5,
+        jitter_ratio=0,
+        lease_seconds=30,
+    )
+    processor = ApprovalProcessor(
+        service_session_factory,
+        provider,
+        retry_policy=policy,
+    )
+
+    failed = processor.process_next()
+    replay = processor.process_next()
+
+    assert failed is not None
+    assert failed.status is ApprovalFollowupStatus.MANUAL_REQUIRED
+    assert replay is None
+    assert len(provider.requests) == 1
+    with service_session_factory() as db:
+        approval = db.get(ApprovalRequest, approval_id)
+        task = db.scalar(
+            select(ModelExecutionTask).where(
+                ModelExecutionTask.approval_id == approval_id
+            )
+        )
+        assert approval is not None
+        assert approval.followup_status is ApprovalFollowupStatus.MANUAL_REQUIRED
+        assert task is not None
+        assert task.status is ModelTaskStatus.FAILED
+        assert task.attempt_count == 1
+        assert task.max_attempts == 1
 
 
 def test_worker_invalidates_approval_when_policy_changes_after_review(

@@ -148,7 +148,7 @@ V2.1 七个阶段已完成统一账号与商品大厅升级：
 - V2 原有的价格规则、Agent 安全边界、审批 Worker、幂等处理和交易意向确认语义保持不变；
 - V2.1 人工验收步骤见 [`docs/V2.1_验收清单.md`](docs/V2.1_验收清单.md)。
 
-V3 阶段一至三已完成回归基线、持久化模型任务和短事务模型执行：
+V3 阶段一至四已完成回归基线、持久化模型任务、短事务执行和有界恢复：
 
 - 将验证分为无外部依赖快速回归、MySQL 业务集成、专用数据库迁移和真实模型冒烟四层，真实模型不会被普通 Pytest 或构建命令隐式调用；
 - 盘点正式还价权限、Prompt Injection、虚假审批、履约越权、重复请求、跨账号访问、事务回滚和 Worker 恢复的现有测试证据及后续缺口；
@@ -158,12 +158,11 @@ V3 阶段一至三已完成回归基线、持久化模型任务和短事务模�
 - `ModelTaskService` 已实现幂等创建、并发安全领取、过期租约接管、成功完成、延后重试、终止失败和迟到结果失效，不调用真实模型，也不把模型结果直接写成正式业务事实；
 - 聊天和审批通知均已改为“短事务保存输入并领取任务 → 事务外调用模型 → 新短事务重新加锁复核并写入”；模型等待期间不持有业务行锁，旧版本结果进入 `STALE`，不能执行旧还价、接受或审批事实；
 - 同步聊天 API 使用 `409` 表达处理中、`503` 表达可重试模型失败；前端保留原请求幂等键并支持安全重试，轮询结果按消息 ID 去重；
-- 阶段一契约见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)，阶段二设计与验收见 [`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)，阶段三事务边界和迟到结果防护见 [`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)。
-
-V1、V2 和 V2.1 当前已经满足本地演示和验收要求。以下事项不属于既有版本的功能缺失，已纳入 V3 阶段四的可靠性改造：
-
-- 为审批 Worker 的 `FAILED` 任务增加重试次数、`next_retry_at`、指数退避、最大重试上限及人工处理入口，避免模型长期不可用时按轮询间隔持续重试；
-- 为聊天同步入口和审批 Worker 统一错误分类、指数退避、最大尝试次数、租约过期接管及人工恢复语义，并补齐进程退出和服务重启故障注入。
+- 聊天与审批回访共用错误分类、确定性抖动的指数退避、`next_retry_at`、租约接管和最大尝试次数；
+- 超过上限或遇到永久错误时进入 `FAILED` / `MANUAL_REQUIRED`，不再自动热重试；
+- 统一恢复 Worker 可在进程退出或服务重启后接管过期租约，并对“回复已写入、任务未收口”的部分成功直接对账；
+- 卖家工作台可查看自己的模型任务，对失败任务授权一次额外重试或安全终止，操作人、原因和时间会持久化。
+- 阶段一至四的设计与验收记录分别见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)、[`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)、[`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)和 [`docs/V3_阶段4_有界重试与人工恢复.md`](docs/V3_阶段4_有界重试与人工恢复.md)。
 
 V2.1 的完整设计、迁移原则和七阶段实施记录见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。后续 V3 将聚焦可靠性、可观测性和离线评测，V4 将聚焦云服务器部署与运维。
 
@@ -293,19 +292,19 @@ cd frontend
 npm run dev
 ```
 
-审批流程还需要打开第三个终端，激活同一个 Python 环境并启动独立 Worker：
+聊天故障恢复和审批回访需要打开第三个终端，激活同一个 Python 环境并启动统一 Worker：
 
 ```powershell
 conda activate secondhand-agent
 cd backend
-python -m app.workers.approval_processor
+python -m app.workers.model_task_worker
 ```
 
-Worker 与后端读取同一份 `.env`，需要有效的数据库和模型配置。它会持续领取审批后续任务；按 `Ctrl+C` 可以停止。若只想手动处理当前一批任务并退出，可执行：
+Worker 与后端读取同一份 `.env`，需要有效的数据库和模型配置。它会持续领取聊天决策与审批回访任务，并接管过期租约；按 `Ctrl+C` 可以停止。若只想手动处理当前一批任务并退出，可执行：
 
 ```powershell
 cd backend
-python -m app.workers.approval_processor --once
+python -m app.workers.model_task_worker --once
 ```
 
 浏览器访问 `http://localhost:5173`。后端接口：
@@ -332,6 +331,9 @@ python -m app.workers.approval_processor --once
 - `POST http://localhost:8000/api/seller/approvals/{approval_id}/reject`：幂等拒绝当前有效报价；
 - `GET http://localhost:8000/api/seller/negotiations`：登录卖家读取自己商品下的协商列表，可用 `status` 过滤；
 - `GET http://localhost:8000/api/seller/negotiations/{session_id}`：读取卖家有权访问的消息、报价与审批时间线；
+- `GET http://localhost:8000/api/seller/model-tasks`：读取当前卖家商品产生的模型任务及脱敏故障状态；
+- `POST http://localhost:8000/api/seller/model-tasks/{task_id}/retry`：对终止失败任务授权一次额外尝试；
+- `POST http://localhost:8000/api/seller/model-tasks/{task_id}/terminate`：安全终止可处置任务并记录人工原因；
 - `GET http://localhost:8000/api/buyer/negotiations`：读取当前账号作为买家的协商列表；
 - `POST http://localhost:8000/api/negotiations`：在用户明确发起时创建或复用当前账号对商品的进行中会话；
 - `GET http://localhost:8000/api/negotiations/{session_id}`：读取当前账号拥有的买家协商状态；

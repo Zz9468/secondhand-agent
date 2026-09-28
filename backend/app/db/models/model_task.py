@@ -45,6 +45,11 @@ class ModelExecutionTask(TimestampMixin, Base):
         CheckConstraint("session_version > 0", name="session_version_positive"),
         CheckConstraint("policy_version > 0", name="policy_version_positive"),
         CheckConstraint("attempt_count >= 0", name="attempt_count_nonnegative"),
+        CheckConstraint("max_attempts > 0", name="max_attempts_positive"),
+        CheckConstraint(
+            "manual_retry_count >= 0",
+            name="manual_retry_count_nonnegative",
+        ),
         CheckConstraint(
             "input_tokens IS NULL OR input_tokens >= 0",
             name="input_tokens_nonnegative",
@@ -123,6 +128,16 @@ class ModelExecutionTask(TimestampMixin, Base):
         default=0,
         server_default=text("0"),
     )
+    max_attempts: Mapped[int] = mapped_column(
+        nullable=False,
+        default=3,
+        server_default=text("3"),
+    )
+    manual_retry_count: Mapped[int] = mapped_column(
+        nullable=False,
+        default=0,
+        server_default=text("0"),
+    )
     next_retry_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     lease_owner: Mapped[str | None] = mapped_column(String(100), nullable=True)
     lease_token: Mapped[str | None] = mapped_column(String(64), nullable=True)
@@ -147,3 +162,7 @@ class ModelExecutionTask(TimestampMixin, Base):
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_manual_action: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    last_manual_actor_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    last_manual_reason: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    last_manual_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

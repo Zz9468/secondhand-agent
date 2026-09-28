@@ -10,6 +10,13 @@ import {
 } from '../api/approvals'
 import { ApiError } from '../api/client'
 import {
+  listSellerModelTasks,
+  retrySellerModelTask,
+  terminateSellerModelTask,
+  type ModelTaskStatus,
+  type SellerModelTask,
+} from '../api/modelTasks'
+import {
   createProduct,
   deleteProduct,
   listSellerProducts,
@@ -40,7 +47,7 @@ interface ProductForm {
   maxRounds: number
 }
 
-type SellerSection = 'products' | 'approvals' | 'negotiations'
+type SellerSection = 'products' | 'approvals' | 'negotiations' | 'model-tasks'
 
 const auth = useAuth()
 const route = useRoute()
@@ -51,12 +58,16 @@ const approvals = ref<SellerApproval[]>([])
 const selectedApproval = ref<SellerApproval | null>(null)
 const negotiations = ref<SellerNegotiationSummary[]>([])
 const selectedNegotiation = ref<SellerNegotiationDetail | null>(null)
+const modelTasks = ref<SellerModelTask[]>([])
+const selectedModelTask = ref<SellerModelTask | null>(null)
 const activeSection = computed<SellerSection>(() => {
   if (route.name === 'seller-approvals') return 'approvals'
   if (route.name === 'seller-negotiations') return 'negotiations'
+  if (route.name === 'seller-model-tasks') return 'model-tasks'
   return 'products'
 })
 const approvalComment = ref('')
+const modelTaskReason = ref('')
 const pendingReviewRequest = ref<{
   approvalId: number
   action: 'approve' | 'reject'
@@ -66,6 +77,7 @@ const loading = ref(true)
 const saving = ref(false)
 const deleting = ref(false)
 const reviewing = ref(false)
+const handlingModelTask = ref(false)
 const polling = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -91,7 +103,12 @@ async function loadWorkspace(): Promise<void> {
   loading.value = true
   errorMessage.value = ''
   try {
-    await Promise.all([loadProducts(), loadApprovals(), loadNegotiations()])
+    await Promise.all([
+      loadProducts(),
+      loadApprovals(),
+      loadNegotiations(),
+      loadModelTasks(),
+    ])
   } catch (error) {
     errorMessage.value = readableError(error)
   } finally {
@@ -200,6 +217,37 @@ async function selectNegotiation(negotiation: SellerNegotiationSummary): Promise
   await showNegotiations(negotiation.id)
 }
 
+async function loadModelTasks(preferredId?: number, preserveReason = false): Promise<void> {
+  modelTasks.value = await listSellerModelTasks()
+  const targetId = preferredId ?? selectedModelTask.value?.id
+  selectedModelTask.value =
+    modelTasks.value.find((task) => task.id === targetId) ??
+    modelTasks.value.find((task) => task.status === 'FAILED') ??
+    modelTasks.value[0] ??
+    null
+  if (!preserveReason) {
+    modelTaskReason.value = selectedModelTask.value?.last_manual_reason ?? ''
+  }
+}
+
+async function showModelTasks(): Promise<void> {
+  await navigateToSection('model-tasks')
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    await loadModelTasks()
+  } catch (error) {
+    errorMessage.value = readableError(error)
+  }
+}
+
+function selectModelTask(task: SellerModelTask): void {
+  selectedModelTask.value = task
+  modelTaskReason.value = task.last_manual_reason ?? ''
+  errorMessage.value = ''
+  successMessage.value = ''
+}
+
 async function openApproval(approvalId: number): Promise<void> {
   await navigateToSection('approvals')
   await loadApprovals(approvalId)
@@ -220,6 +268,7 @@ async function navigateToSection(section: SellerSection): Promise<void> {
     products: 'seller-products',
     approvals: 'seller-approvals',
     negotiations: 'seller-negotiations',
+    'model-tasks': 'seller-model-tasks',
   }
   if (route.name !== routeNames[section]) {
     await router.push({ name: routeNames[section] })
@@ -282,7 +331,80 @@ function followupStatusLabel(status: SellerApproval['followup_status']): string 
     PENDING: '等待通知买家',
     SENT: '已通知买家',
     FAILED: '通知失败，等待重试',
+    MANUAL_REQUIRED: '自动重试已停止，需要人工处理',
   }[status]
+}
+
+function modelTaskStatusLabel(status: ModelTaskStatus): string {
+  return {
+    PENDING: '等待执行',
+    RUNNING: '执行中',
+    RETRY_WAIT: '退避等待',
+    SUCCEEDED: '已成功',
+    FAILED: '需要人工处理',
+    STALE: '结果已过期',
+    CANCELLED: '已终止',
+  }[status]
+}
+
+function modelTaskTypeLabel(task: SellerModelTask): string {
+  return task.task_type === 'CHAT_DECISION' ? '聊天决策' : '审批结果通知'
+}
+
+function canTerminateModelTask(task: SellerModelTask): boolean {
+  if (task.status === 'PENDING' || task.status === 'RETRY_WAIT' || task.status === 'FAILED') {
+    return true
+  }
+  return task.status === 'RUNNING'
+    && task.lease_expires_at !== null
+    && new Date(task.lease_expires_at).getTime() <= Date.now()
+}
+
+async function retrySelectedModelTask(): Promise<void> {
+  const task = selectedModelTask.value
+  if (task === null || task.status !== 'FAILED' || handlingModelTask.value) return
+  handlingModelTask.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    const saved = await retrySellerModelTask(
+      task.id,
+      modelTaskReason.value.trim() || null,
+    )
+    await loadModelTasks(saved.id)
+    successMessage.value = '已授权该任务进行一次额外尝试。'
+  } catch (error) {
+    errorMessage.value = readableError(error)
+    await loadModelTasks(task.id, true)
+  } finally {
+    handlingModelTask.value = false
+  }
+}
+
+async function terminateSelectedModelTask(): Promise<void> {
+  const task = selectedModelTask.value
+  if (task === null || !canTerminateModelTask(task) || handlingModelTask.value) return
+  if (!window.confirm(`确定终止模型任务 #${task.id} 吗？`)) return
+  handlingModelTask.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+  try {
+    const saved = await terminateSellerModelTask(
+      task.id,
+      modelTaskReason.value.trim() || null,
+    )
+    await loadModelTasks(saved.id)
+    await Promise.all([
+      loadApprovals(selectedApproval.value?.id, true),
+      loadNegotiations(task.session_id),
+    ])
+    successMessage.value = '任务已终止，相关业务状态已安全收口。'
+  } catch (error) {
+    errorMessage.value = readableError(error)
+    await loadModelTasks(task.id, true)
+  } finally {
+    handlingModelTask.value = false
+  }
 }
 
 function negotiationStatusLabel(status: NegotiationStatus): string {
@@ -414,6 +536,7 @@ async function pollSellerUpdates(): Promise<void> {
     || polling.value
     || saving.value
     || reviewing.value
+    || handlingModelTask.value
   ) return
   polling.value = true
   try {
@@ -421,6 +544,7 @@ async function pollSellerUpdates(): Promise<void> {
       // 后台刷新不能覆盖卖家正在输入但尚未提交的审批意见。
       loadApprovals(selectedApproval.value?.id, true),
       loadNegotiations(selectedNegotiation.value?.negotiation.id),
+      loadModelTasks(selectedModelTask.value?.id, true),
     ])
   } catch {
     // 后台轮询失败时保留当前页面，下一个周期会继续同步。
@@ -439,6 +563,10 @@ watch(activeSection, (section) => {
     })
   } else if (section === 'negotiations') {
     void loadNegotiations().catch((error: unknown) => {
+      errorMessage.value = readableError(error)
+    })
+  } else if (section === 'model-tasks') {
+    void loadModelTasks().catch((error: unknown) => {
       errorMessage.value = readableError(error)
     })
   }
@@ -495,6 +623,13 @@ onUnmounted(() => {
             协商会话
             <span>{{ negotiations.length }}</span>
           </RouterLink>
+          <RouterLink
+            :to="{ name: 'seller-model-tasks' }"
+            :data-active="activeSection === 'model-tasks'"
+          >
+            恢复任务
+            <span>{{ modelTasks.filter((item) => item.status === 'FAILED').length }}</span>
+          </RouterLink>
         </div>
 
         <template v-if="activeSection === 'products'">
@@ -536,7 +671,7 @@ onUnmounted(() => {
           </button>
         </template>
 
-        <template v-else>
+        <template v-else-if="activeSection === 'negotiations'">
           <button class="new-product-button" type="button" @click="showNegotiations()">
             刷新会话列表
           </button>
@@ -554,6 +689,27 @@ onUnmounted(() => {
               {{ item.buyer_display_name }} · #{{ item.id }} ·
               {{ negotiationStatusLabel(item.status) }}
               <template v-if="item.current_offer"> · ¥{{ item.current_offer.price }}</template>
+            </small>
+          </button>
+        </template>
+
+        <template v-else>
+          <button class="new-product-button" type="button" @click="showModelTasks">
+            刷新恢复任务
+          </button>
+          <p v-if="modelTasks.length === 0" class="empty-note">当前没有模型任务。</p>
+          <button
+            v-for="task in modelTasks"
+            :key="task.id"
+            class="model-task-list-item"
+            :data-active="selectedModelTask?.id === task.id"
+            type="button"
+            @click="selectModelTask(task)"
+          >
+            <span>{{ task.product_title }}</span>
+            <small>
+              {{ modelTaskTypeLabel(task) }} · #{{ task.id }} ·
+              {{ modelTaskStatusLabel(task.status) }}
             </small>
           </button>
         </template>
@@ -766,7 +922,7 @@ onUnmounted(() => {
         </template>
       </section>
 
-      <section v-else class="negotiation-editor">
+      <section v-else-if="activeSection === 'negotiations'" class="negotiation-editor">
         <div v-if="!selectedNegotiation" class="approval-empty">
           <p class="eyebrow">NEGOTIATIONS</p>
           <h1>暂无协商会话</h1>
@@ -911,6 +1067,122 @@ onUnmounted(() => {
           </div>
 
           <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
+        </template>
+      </section>
+
+      <section v-else class="model-task-editor">
+        <div v-if="!selectedModelTask" class="approval-empty">
+          <p class="eyebrow">MODEL TASK RECOVERY</p>
+          <h1>暂无模型任务</h1>
+          <p>{{ errorMessage || '模型调用任务会在这里显示执行和恢复状态。' }}</p>
+        </div>
+
+        <template v-else>
+          <div class="editor-heading">
+            <div>
+              <p class="eyebrow">MODEL TASK #{{ selectedModelTask.id }}</p>
+              <h1>{{ selectedModelTask.product_title }}</h1>
+            </div>
+            <span class="model-task-status" :data-status="selectedModelTask.status">
+              {{ modelTaskStatusLabel(selectedModelTask.status) }}
+            </span>
+          </div>
+
+          <button
+            class="inline-link-button"
+            type="button"
+            @click="showNegotiations(selectedModelTask.session_id)"
+          >
+            查看协商会话 #{{ selectedModelTask.session_id }}
+          </button>
+
+          <div class="approval-meta-grid">
+            <div>
+              <span>任务类型</span>
+              <strong>{{ modelTaskTypeLabel(selectedModelTask) }}</strong>
+            </div>
+            <div>
+              <span>买家</span>
+              <strong>{{ selectedModelTask.buyer_display_name }}</strong>
+            </div>
+            <div>
+              <span>自动尝试</span>
+              <strong>
+                {{ selectedModelTask.attempt_count }} / {{ selectedModelTask.max_attempts }}
+              </strong>
+            </div>
+            <div>
+              <span>人工重试</span>
+              <strong>{{ selectedModelTask.manual_retry_count }} 次</strong>
+            </div>
+            <div>
+              <span>下次重试</span>
+              <strong>{{ formatDate(selectedModelTask.next_retry_at) }}</strong>
+            </div>
+            <div>
+              <span>最近更新</span>
+              <strong>{{ formatDate(selectedModelTask.updated_at) }}</strong>
+            </div>
+          </div>
+
+          <div class="approval-reason">
+            <span>最近失败分类</span>
+            <p>
+              {{ selectedModelTask.last_error_category || '无' }}
+              <template v-if="selectedModelTask.last_error_message">
+                · {{ selectedModelTask.last_error_message }}
+              </template>
+            </p>
+          </div>
+
+          <div v-if="selectedModelTask.last_manual_action" class="approval-reason">
+            <span>最近人工操作</span>
+            <p>
+              {{ selectedModelTask.last_manual_action === 'RETRY' ? '授权额外重试' : '终止任务' }}
+              · {{ formatDate(selectedModelTask.last_manual_at) }}
+              <template v-if="selectedModelTask.last_manual_reason">
+                · {{ selectedModelTask.last_manual_reason }}
+              </template>
+            </p>
+          </div>
+
+          <label
+            v-if="selectedModelTask.status === 'FAILED' || canTerminateModelTask(selectedModelTask)"
+            class="approval-comment"
+          >
+            <span>处置说明（可选，会记入审计字段）</span>
+            <textarea
+              v-model="modelTaskReason"
+              maxlength="300"
+              placeholder="例如：模型服务已恢复，授权再试一次。"
+              rows="3"
+            ></textarea>
+          </label>
+
+          <p class="approval-warning">
+            人工重试每次只增加一次尝试额度；终止聊天任务时会写入安全失败回复，避免买家请求一直悬空。
+          </p>
+          <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
+          <p v-else-if="successMessage" class="outcome-banner">{{ successMessage }}</p>
+          <div class="approval-actions">
+            <button
+              v-if="canTerminateModelTask(selectedModelTask)"
+              class="reject-button"
+              type="button"
+              :disabled="handlingModelTask"
+              @click="terminateSelectedModelTask"
+            >
+              终止任务
+            </button>
+            <button
+              v-if="selectedModelTask.status === 'FAILED'"
+              type="button"
+              :disabled="handlingModelTask"
+              @click="retrySelectedModelTask"
+            >
+              {{ handlingModelTask ? '处理中…' : '授权额外重试' }}
+            </button>
+          </div>
         </template>
       </section>
     </div>

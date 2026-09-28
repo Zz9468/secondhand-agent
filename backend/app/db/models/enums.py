@@ -70,6 +70,7 @@ class ApprovalFollowupStatus(StrEnum):
     PENDING = "PENDING"
     SENT = "SENT"
     FAILED = "FAILED"
+    MANUAL_REQUIRED = "MANUAL_REQUIRED"
 
 
 class ModelTaskType(StrEnum):

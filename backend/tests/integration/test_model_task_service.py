@@ -404,6 +404,51 @@ def test_terminal_failure_clears_lease_and_cannot_be_completed_again(
         )
 
 
+def test_lease_refuses_attempt_beyond_persisted_limit(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, _ = create_negotiation(service_session_factory)
+    service = ModelTaskService(service_session_factory)
+    created = service.create_task(
+        task_type=ModelTaskType.CHAT_DECISION,
+        business_key=f"chat:{session_id}:bounded-attempts",
+        session_id=session_id,
+        input_snapshot={"buyer_message": "超时重试上限测试"},
+        max_attempts=1,
+    )
+    started_at = datetime(2026, 9, 28, 14, 0, tzinfo=UTC)
+    first = service.lease_task(
+        task_id=created.task.id,
+        worker_id="bounded-worker-a",
+        now=started_at,
+    )
+    assert first is not None and first.lease_token is not None
+    service.defer_retry(
+        task_id=first.id,
+        lease_token=first.lease_token,
+        error_category=ModelTaskErrorCategory.MODEL_TIMEOUT,
+        error_message="模型调用超时",
+        next_retry_at=started_at + timedelta(seconds=2),
+        now=started_at + timedelta(seconds=1),
+    )
+
+    exhausted = service.lease_task(
+        task_id=created.task.id,
+        worker_id="bounded-worker-b",
+        now=started_at + timedelta(seconds=3),
+    )
+
+    assert exhausted is not None
+    assert exhausted.status is ModelTaskStatus.FAILED
+    assert exhausted.attempt_count == 1
+    assert exhausted.lease_token is None
+    assert exhausted.completed_at is not None
+    assert service.lease_next(
+        worker_id="bounded-worker-c",
+        now=started_at + timedelta(seconds=4),
+    ) is None
+
+
 def _delete_committed_negotiation(
     session_factory: sessionmaker[Session],
     *,

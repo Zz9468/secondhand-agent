@@ -1,7 +1,11 @@
 import { requestJson } from './client'
 
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED'
-export type ApprovalFollowupStatus = 'PENDING' | 'SENT' | 'FAILED'
+export type ApprovalFollowupStatus =
+  | 'PENDING'
+  | 'SENT'
+  | 'FAILED'
+  | 'MANUAL_REQUIRED'
 
 export interface SellerApprovalOffer {
   id: number

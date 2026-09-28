@@ -1,7 +1,7 @@
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -20,6 +20,7 @@ from app.agent.seller_agent import (
     SellerAgent,
 )
 from app.agent.tools import AgentToolContext, build_seller_tools
+from app.core.config import get_settings
 from app.db.models import (
     Message,
     MessageRole,
@@ -39,8 +40,10 @@ from app.services.errors import (
     MessageConflictError,
     ModelDecisionError,
     ModelExecutionTaskLeaseError,
+    ModelTaskRecoveryRequiredError,
     NegotiationNotFoundError,
 )
+from app.services.model_retry_policy import ModelRetryPolicy
 from app.services.model_task_service import (
     ModelExecutionTaskSnapshot,
     ModelTaskService,
@@ -90,6 +93,13 @@ class ChatTurnSnapshot:
 
 
 @dataclass(frozen=True, slots=True)
+class ChatTaskProcessingResult:
+    task_id: int
+    status: ModelTaskStatus
+    turn: ChatTurnSnapshot | None
+
+
+@dataclass(frozen=True, slots=True)
 class _PendingChatTurn:
     session_id: int
     buyer_snapshot: MessageSnapshot
@@ -101,19 +111,21 @@ class ChatService:
     """用持久化任务把聊天模型调用隔离在数据库事务之外。"""
 
     _history_limit = 20
-    _lease_seconds = 300
-    _retry_delay = timedelta(seconds=1)
 
     def __init__(
         self,
         session_factory: sessionmaker[Session],
         decision_provider: DecisionProvider | None = None,
+        retry_policy: ModelRetryPolicy | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._decision_provider = decision_provider
         self._negotiation_service = NegotiationService(session_factory)
         self._approval_service = ApprovalService(session_factory)
         self._task_service = ModelTaskService(session_factory)
+        self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(
+            get_settings()
+        )
 
     def send_buyer_message(
         self,
@@ -270,6 +282,7 @@ class ChatService:
                     reply_request_id=reply_request_id,
                     decision_request=decision_request,
                 ),
+                max_attempts=self._retry_policy.max_attempts,
             )
             return _PendingChatTurn(
                 session_id=session_id,
@@ -282,7 +295,7 @@ class ChatService:
         leased = self._task_service.lease_task(
             task_id=pending.task_id,
             worker_id=f"chat-sync:{pending.task_id}",
-            lease_seconds=self._lease_seconds,
+            lease_seconds=self._retry_policy.lease_seconds,
         )
         if leased is None:
             replay = self._load_reply(
@@ -297,26 +310,151 @@ class ChatService:
                 raise IncompleteRequestError("该请求正在处理中，请稍后查询消息记录")
             if task.status is ModelTaskStatus.RETRY_WAIT:
                 raise ModelDecisionError("模型暂时无法完成本轮决策，请稍后重试")
+            if task.status in {ModelTaskStatus.FAILED, ModelTaskStatus.CANCELLED}:
+                raise ModelTaskRecoveryRequiredError(
+                    "该模型任务已停止自动执行，需要卖家人工重试或终止"
+                )
             raise IncompleteRequestError("该请求尚未形成完整回复，请稍后查询消息记录")
 
-        lease_token = leased.lease_token
-        if lease_token is None:  # pragma: no cover - 数据库约束已保证
-            raise RuntimeError("已领取模型任务缺少租约令牌")
-        request = self._deserialize_decision_request(leased.input_snapshot)
+        if leased.status is ModelTaskStatus.FAILED:
+            raise ModelTaskRecoveryRequiredError(
+                "该模型任务已达到最大尝试次数，需要卖家人工处理"
+            )
+        return self._execute_leased_turn(pending=pending, leased=leased)
+
+    def process_next_pending_task(
+        self,
+        *,
+        worker_id: str,
+    ) -> ChatTaskProcessingResult | None:
+        """由恢复 Worker 处理一个到期聊天任务，包括过期租约接管。"""
+
+        leased = self._task_service.lease_next(
+            worker_id=worker_id,
+            task_types=(ModelTaskType.CHAT_DECISION,),
+            lease_seconds=self._retry_policy.lease_seconds,
+        )
+        if leased is None:
+            return None
+        if leased.status is ModelTaskStatus.FAILED:
+            return ChatTaskProcessingResult(
+                task_id=leased.id,
+                status=leased.status,
+                turn=None,
+            )
+        try:
+            pending = self._pending_from_task(leased)
+        except IncompleteRequestError:
+            self._task_service.fail_task(
+                task_id=leased.id,
+                lease_token=self._required_lease_token(leased),
+                error_category=ModelTaskErrorCategory.INVALID_OUTPUT,
+                error_message="聊天模型任务输入快照无效",
+            )
+            return ChatTaskProcessingResult(
+                task_id=leased.id,
+                status=ModelTaskStatus.FAILED,
+                turn=None,
+            )
+        try:
+            turn = self._execute_leased_turn(pending=pending, leased=leased)
+        except (
+            IncompleteRequestError,
+            ModelDecisionError,
+            ModelTaskRecoveryRequiredError,
+        ):
+            task = self._task_service.get_task(task_id=leased.id)
+            return ChatTaskProcessingResult(
+                task_id=task.id,
+                status=task.status,
+                turn=None,
+            )
+        current = self._task_service.get_task(task_id=leased.id)
+        return ChatTaskProcessingResult(
+            task_id=leased.id,
+            status=current.status,
+            turn=turn,
+        )
+
+    def _execute_leased_turn(
+        self,
+        *,
+        pending: _PendingChatTurn,
+        leased: ModelExecutionTaskSnapshot,
+    ) -> ChatTurnSnapshot:
+        lease_token = self._required_lease_token(leased)
+        try:
+            replay = self._reconcile_existing_reply(
+                pending=pending,
+                leased=leased,
+                lease_token=lease_token,
+            )
+            if replay is not None:
+                return replay
+            request = self._deserialize_decision_request(leased.input_snapshot)
+        except ModelExecutionTaskLeaseError as exc:
+            replay = self._load_reply(
+                session_id=pending.session_id,
+                buyer_snapshot=pending.buyer_snapshot,
+                idempotent_replay=True,
+            )
+            if replay is not None:
+                return replay
+            raise IncompleteRequestError(
+                "模型任务租约已变化，请稍后查询消息记录"
+            ) from exc
+        except IncompleteRequestError as exc:
+            self._task_service.fail_task(
+                task_id=leased.id,
+                lease_token=lease_token,
+                error_category=ModelTaskErrorCategory.INVALID_OUTPUT,
+                error_message=str(exc),
+            )
+            raise ModelTaskRecoveryRequiredError(
+                "模型任务持久化输入无效，需要卖家人工处理"
+            ) from exc
+        except MessageConflictError as exc:
+            self._task_service.fail_task(
+                task_id=leased.id,
+                lease_token=lease_token,
+                error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
+                error_message=str(exc),
+            )
+            raise ModelTaskRecoveryRequiredError(
+                "模型任务幂等结果冲突，需要卖家人工处理"
+            ) from exc
         try:
             provider = self._decision_provider
             if provider is None:  # pragma: no cover - 入口已校验
                 raise RuntimeError("发送消息前必须配置决策模型")
             decision = provider.decide(request)
         except Exception as exc:
-            self._task_service.defer_retry(
+            plan = self._retry_policy.plan_failure(
+                task_id=leased.id,
+                attempt_count=leased.attempt_count,
+                max_attempts=leased.max_attempts,
+                error=exc,
+            )
+            if plan.should_retry and plan.next_retry_at is not None:
+                self._task_service.defer_retry(
+                    task_id=leased.id,
+                    lease_token=lease_token,
+                    error_category=plan.category,
+                    error_message=plan.safe_message,
+                    next_retry_at=plan.next_retry_at,
+                )
+                raise ModelDecisionError(
+                    "模型暂时无法完成本轮决策，任务已按退避策略等待重试"
+                ) from exc
+            self._task_service.fail_task(
                 task_id=leased.id,
                 lease_token=lease_token,
-                error_category=ModelTaskErrorCategory.UNKNOWN,
-                error_message=type(exc).__name__,
-                next_retry_at=datetime.now(UTC) + self._retry_delay,
+                error_category=plan.category,
+                error_message=plan.safe_message,
             )
-            raise ModelDecisionError("模型暂时无法完成本轮决策，请稍后重试") from exc
+            raise ModelTaskRecoveryRequiredError(
+                "模型任务已停止自动重试，需要卖家人工处理"
+            ) from exc
 
         try:
             return self._finalize_model_turn(
@@ -335,6 +473,53 @@ class ChatService:
             raise IncompleteRequestError(
                 "模型任务租约已变化，本次迟到结果未写入，请稍后重试"
             ) from exc
+        except MessageConflictError as exc:
+            self._task_service.fail_task(
+                task_id=leased.id,
+                lease_token=lease_token,
+                error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
+                error_message=str(exc),
+            )
+            raise ModelTaskRecoveryRequiredError(
+                "模型任务幂等结果冲突，需要卖家人工处理"
+            ) from exc
+
+    def _reconcile_existing_reply(
+        self,
+        *,
+        pending: _PendingChatTurn,
+        leased: ModelExecutionTaskSnapshot,
+        lease_token: str,
+    ) -> ChatTurnSnapshot | None:
+        """恢复“回复已落库、任务未收口”的部分成功，且不再调用模型。"""
+
+        reply_request_id = self._task_reply_request_id(leased.input_snapshot)
+        with self._session_factory() as db, db.begin():
+            current_task = self._task_service.require_active_lease_in_transaction(
+                db=db,
+                task_id=leased.id,
+                lease_token=lease_token,
+            )
+            existing_reply = self._message_by_request_id(
+                db,
+                session_id=current_task.session_id,
+                request_id=reply_request_id,
+            )
+            if existing_reply is None:
+                return None
+            if existing_reply.role is not MessageRole.AGENT:
+                raise MessageConflictError("模型任务回复幂等键已被其他消息占用")
+            self._task_service.cancel_with_lease_in_transaction(
+                db=db,
+                task_id=current_task.id,
+                lease_token=lease_token,
+                error_message="等价 Agent 回复已经存在，恢复任务不再调用模型",
+            )
+            return self._turn_snapshot(
+                buyer_snapshot=pending.buyer_snapshot,
+                agent_message=existing_reply,
+                idempotent_replay=True,
+            )
 
     def _finalize_model_turn(
         self,
@@ -370,7 +555,19 @@ class ChatService:
                 request_id=reply_request_id,
             )
             if existing_reply is not None:
-                raise MessageConflictError("模型任务回复幂等键已被占用")
+                if existing_reply.role is not MessageRole.AGENT:
+                    raise MessageConflictError("模型任务回复幂等键已被其他消息占用")
+                self._task_service.cancel_with_lease_in_transaction(
+                    db=db,
+                    task_id=current_task.id,
+                    lease_token=lease_token,
+                    error_message="等价 Agent 回复已经存在",
+                )
+                return self._turn_snapshot(
+                    buyer_snapshot=pending.buyer_snapshot,
+                    agent_message=existing_reply,
+                    idempotent_replay=True,
+                )
 
             if stale_reason is not None:
                 result = AgentTurnResult(
@@ -516,6 +713,28 @@ class ChatService:
                 buyer_snapshot=buyer_snapshot,
                 agent_message=reply,
                 idempotent_replay=idempotent_replay,
+            )
+
+    def _pending_from_task(
+        self,
+        task: ModelExecutionTaskSnapshot,
+    ) -> _PendingChatTurn:
+        buyer_message_id = task.input_snapshot.get("buyer_message_id")
+        if type(buyer_message_id) is not int:
+            raise IncompleteRequestError("聊天模型任务缺少买家消息引用")
+        with self._session_factory() as db:
+            buyer_message = db.get(Message, buyer_message_id)
+            if (
+                buyer_message is None
+                or buyer_message.session_id != task.session_id
+                or buyer_message.role is not MessageRole.BUYER
+            ):
+                raise IncompleteRequestError("聊天模型任务关联的买家消息不存在")
+            return _PendingChatTurn(
+                session_id=task.session_id,
+                buyer_snapshot=self._snapshot(buyer_message),
+                task_id=task.id,
+                idempotent_replay=True,
             )
 
     def _build_agent(
@@ -674,6 +893,12 @@ class ChatService:
         if not isinstance(value, str) or not value:
             raise IncompleteRequestError("模型任务回复幂等键无效")
         return value
+
+    @staticmethod
+    def _required_lease_token(task: ModelExecutionTaskSnapshot) -> str:
+        if task.lease_token is None:  # pragma: no cover - 数据库约束已保证
+            raise RuntimeError("已领取模型任务缺少租约令牌")
+        return task.lease_token
 
     @staticmethod
     def _required_buyer_id(negotiation: NegotiationSession | None) -> str:

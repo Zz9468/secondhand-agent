@@ -84,6 +84,10 @@ class ModelDecisionError(ServiceError):
     code = "MODEL_DECISION_ERROR"
 
 
+class ModelTaskRecoveryRequiredError(ServiceError):
+    code = "MODEL_TASK_RECOVERY_REQUIRED"
+
+
 class ModelExecutionTaskNotFoundError(ServiceError):
     code = "MODEL_EXECUTION_TASK_NOT_FOUND"
 

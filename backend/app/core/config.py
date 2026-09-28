@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     model_enable_thinking: bool = False
     model_timeout_seconds: float = Field(default=30.0, gt=0.0)
     model_max_retries: int = Field(default=2, ge=0, le=10)
+    model_task_max_attempts: int = Field(default=3, ge=1, le=20)
+    model_task_retry_base_seconds: float = Field(default=2.0, gt=0.0, le=3600.0)
+    model_task_retry_max_seconds: float = Field(default=300.0, gt=0.0, le=86400.0)
+    model_task_retry_jitter_ratio: float = Field(default=0.2, ge=0.0, le=0.5)
+    model_task_lease_seconds: int = Field(default=300, ge=1, le=3600)
 
     @property
     def model_is_configured(self) -> bool:

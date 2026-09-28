@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from threading import Event, Thread
 
@@ -36,6 +37,7 @@ from app.services.errors import (
     ModelDecisionError,
     NegotiationNotFoundError,
 )
+from app.services.model_retry_policy import ModelRetryPolicy
 from app.services.pricing_service import ShippingPayer
 from tests.fakes import RoutingDecisionProvider, demo_negotiation_decision
 from tests.integration.factories import create_negotiation
@@ -305,6 +307,124 @@ def test_model_failure_persists_input_and_retryable_task_without_partial_reply(
         assert task is not None
         assert task.status is ModelTaskStatus.RETRY_WAIT
         assert task.attempt_count == 1
+
+
+def test_recovery_worker_takes_over_expired_lease_after_process_exit(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    policy = ModelRetryPolicy(
+        max_attempts=3,
+        base_delay_seconds=1,
+        max_delay_seconds=5,
+        jitter_ratio=0,
+        lease_seconds=1,
+    )
+
+    def exit_worker(_: DecisionRequest) -> NegotiationDecision:
+        raise SystemExit(19)
+
+    with pytest.raises(SystemExit, match="19"):
+        ChatService(
+            service_session_factory,
+            RoutingDecisionProvider(exit_worker),
+            retry_policy=policy,
+        ).send_buyer_message(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            request_id="request-worker-exit-001",
+            content="进程退出后请恢复这条消息",
+        )
+
+    with service_session_factory() as db, db.begin():
+        task = db.scalar(
+            select(ModelExecutionTask).where(
+                ModelExecutionTask.session_id == session_id
+            )
+        )
+        assert task is not None
+        assert task.status is ModelTaskStatus.RUNNING
+        task.lease_expires_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(
+            seconds=1
+        )
+
+    provider = RoutingDecisionProvider(demo_negotiation_decision)
+    recovered = ChatService(
+        service_session_factory,
+        provider,
+        retry_policy=policy,
+    ).process_next_pending_task(worker_id="restarted-worker")
+
+    assert recovered is not None
+    assert recovered.status is ModelTaskStatus.SUCCEEDED
+    assert recovered.turn is not None
+    assert len(provider.requests) == 1
+    with service_session_factory() as db:
+        task = db.scalar(
+            select(ModelExecutionTask).where(
+                ModelExecutionTask.session_id == session_id
+            )
+        )
+        messages = tuple(
+            db.scalars(
+                select(Message)
+                .where(Message.session_id == session_id)
+                .order_by(Message.id)
+            )
+        )
+        assert task is not None
+        assert task.attempt_count == 2
+        assert [message.role.value for message in messages] == ["BUYER", "AGENT"]
+
+
+def test_recovery_worker_reconciles_written_reply_without_second_model_call(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    first = ChatService(
+        service_session_factory,
+        RoutingDecisionProvider(demo_negotiation_decision),
+    ).send_buyer_message(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        request_id="request-partial-success-001",
+        content="这件商品成色怎么样？",
+    )
+
+    with service_session_factory() as db, db.begin():
+        task = db.scalar(
+            select(ModelExecutionTask).where(
+                ModelExecutionTask.session_id == session_id
+            )
+        )
+        assert task is not None
+        task.status = ModelTaskStatus.RUNNING
+        task.completed_at = None
+        task.lease_owner = "exited-after-message-write"
+        task.lease_token = "partial-success-dead-lease"
+        task.lease_expires_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(
+            seconds=1
+        )
+
+    def unexpected_model_call(_: DecisionRequest) -> NegotiationDecision:
+        raise AssertionError("已存在回复时不应再调用模型")
+
+    provider = RoutingDecisionProvider(unexpected_model_call)
+    recovered = ChatService(
+        service_session_factory,
+        provider,
+    ).process_next_pending_task(worker_id="partial-success-reconciler")
+
+    assert recovered is not None
+    assert recovered.status is ModelTaskStatus.CANCELLED
+    assert recovered.turn is not None
+    assert recovered.turn.agent_message.id == first.agent_message.id
+    assert provider.requests == []
+    with service_session_factory() as db:
+        messages = tuple(
+            db.scalars(select(Message).where(Message.session_id == session_id))
+        )
+        assert len(messages) == 2
 
 
 def test_new_approval_zone_offer_replaces_pending_request_atomically(

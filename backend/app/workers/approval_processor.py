@@ -2,7 +2,7 @@ import argparse
 import logging
 import time
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import case, select
 from sqlalchemy.orm import Session, sessionmaker
@@ -26,7 +26,6 @@ from app.db.models import (
     ApprovalStatus,
     Message,
     MessageRole,
-    ModelTaskErrorCategory,
     ModelTaskStatus,
     ModelTaskType,
     NegotiationSession,
@@ -40,6 +39,7 @@ from app.db.models import (
 )
 from app.db.session import get_session_factory
 from app.services.errors import ModelExecutionTaskLeaseError
+from app.services.model_retry_policy import ModelRetryPolicy
 from app.services.model_task_service import (
     ModelExecutionTaskSnapshot,
     ModelTaskService,
@@ -74,19 +74,20 @@ class _FollowupContext:
 class ApprovalProcessor:
     """以短事务领取和完成审批通知，模型调用期间不持有业务行锁。"""
 
-    _lease_seconds = 300
-    _retry_delay = timedelta(seconds=1)
-
     def __init__(
         self,
         session_factory: sessionmaker[Session],
         provider: ApprovalFollowupProvider,
+        retry_policy: ModelRetryPolicy | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._agent = SellerApprovalFollowupAgent(provider=provider)
         self._provider = provider
         self._negotiation_service = NegotiationService(session_factory)
         self._task_service = ModelTaskService(session_factory)
+        self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(
+            get_settings()
+        )
 
     def process_batch(self, *, limit: int = 20) -> tuple[ApprovalProcessingResult, ...]:
         """每轮最多尝试一次同一审批，避免失败任务在单轮内热重试。"""
@@ -115,15 +116,15 @@ class ApprovalProcessor:
         lease_token = leased.lease_token
         if lease_token is None:  # pragma: no cover - 数据库约束已保证
             raise RuntimeError("已领取审批通知任务缺少租约令牌")
-        request, _ = self._task_input(leased.input_snapshot)
         try:
+            request, _ = self._task_input(leased.input_snapshot)
             draft = self._agent.draft_followup(request)
-        except ApprovalFollowupAgentError as exc:
+        except (ApprovalFollowupAgentError, KeyError, TypeError, ValueError) as exc:
             try:
-                return self._defer_failed_task(
+                return self._handle_failed_task(
                     task=leased,
                     lease_token=lease_token,
-                    error_message=type(exc.__cause__ or exc).__name__,
+                    error=exc,
                 )
             except ModelExecutionTaskLeaseError:
                 return self._lease_lost_result(leased)
@@ -178,7 +179,7 @@ class ApprovalProcessor:
 
             request_id = approval.followup_request_id
             if not request_id or len(request_id) > 64:
-                return self._mark_failed(db, approval=approval)
+                return self._mark_manual_required(db, approval=approval)
             existing = self._existing_message(
                 db,
                 session_id=approval.session_id,
@@ -187,7 +188,7 @@ class ApprovalProcessor:
             if existing is not None:
                 stored_outcome = self._stored_outcome(existing.agent_outcome)
                 if existing.role is not MessageRole.AGENT or stored_outcome is None:
-                    return self._mark_failed(db, approval=approval)
+                    return self._mark_manual_required(db, approval=approval)
                 approval.followup_status = ApprovalFollowupStatus.SENT
                 db.flush()
                 return ApprovalProcessingResult(
@@ -213,20 +214,29 @@ class ApprovalProcessor:
                         request=request,
                         offer_result=offer_result,
                     ),
+                    max_attempts=self._retry_policy.max_attempts,
                 )
             except ApprovalFollowupProcessingError:
-                return self._mark_failed(db, approval=approval)
+                return self._mark_manual_required(db, approval=approval)
 
             leased = self._task_service.lease_task_in_transaction(
                 db=db,
                 task_id=creation.task.id,
                 worker_id=f"approval:{approval.id}",
-                lease_seconds=self._lease_seconds,
+                lease_seconds=self._retry_policy.lease_seconds,
             )
             if leased is not None:
+                if leased.status is ModelTaskStatus.FAILED:
+                    return self._mark_manual_required(db, approval=approval)
                 return leased
             if creation.task.status is ModelTaskStatus.RETRY_WAIT:
                 return self._mark_failed(db, approval=approval)
+            if creation.task.status in {
+                ModelTaskStatus.FAILED,
+                ModelTaskStatus.CANCELLED,
+                ModelTaskStatus.SUCCEEDED,
+            }:
+                return self._mark_manual_required(db, approval=approval)
             return None
 
     def _finalize_followup(
@@ -270,7 +280,7 @@ class ApprovalProcessor:
                     lease_token=lease_token,
                     error_message="审批通知幂等键已不存在",
                 )
-                return self._mark_failed(db, approval=approval)
+                return self._mark_manual_required(db, approval=approval)
             existing = self._existing_message(
                 db,
                 session_id=approval.session_id,
@@ -285,7 +295,7 @@ class ApprovalProcessor:
                         lease_token=lease_token,
                         error_message="审批通知幂等键已被其他消息占用",
                     )
-                    return self._mark_failed(db, approval=approval)
+                    return self._mark_manual_required(db, approval=approval)
                 approval.followup_status = ApprovalFollowupStatus.SENT
                 self._task_service.mark_stale_in_transaction(
                     db=db,
@@ -310,7 +320,7 @@ class ApprovalProcessor:
                     lease_token=lease_token,
                     error_message=str(exc),
                 )
-                return self._mark_failed(db, approval=approval)
+                return self._mark_manual_required(db, approval=approval)
 
             original_request, original_offer_result = self._task_input(
                 current_task.input_snapshot
@@ -332,18 +342,16 @@ class ApprovalProcessor:
                         draft=draft,
                     )
                 except ApprovalFollowupAgentError as exc:
-                    approval.followup_status = ApprovalFollowupStatus.FAILED
-                    self._task_service.defer_retry_in_transaction(
+                    status = self._apply_failure_in_transaction(
                         db=db,
-                        task_id=current_task.id,
+                        approval=approval,
+                        task=current_task,
                         lease_token=lease_token,
-                        error_category=ModelTaskErrorCategory.INVALID_OUTPUT,
-                        error_message=str(exc),
-                        next_retry_at=datetime.now(UTC) + self._retry_delay,
+                        error=ValueError(str(exc)),
                     )
                     return ApprovalProcessingResult(
                         approval_id=approval.id,
-                        status=ApprovalFollowupStatus.FAILED,
+                        status=status,
                         message_id=None,
                         outcome=None,
                     )
@@ -422,12 +430,12 @@ class ApprovalProcessor:
             outcome=ApprovalFollowupOutcome.APPROVAL_INVALIDATED,
         )
 
-    def _defer_failed_task(
+    def _handle_failed_task(
         self,
         *,
         task: ModelExecutionTaskSnapshot,
         lease_token: str,
-        error_message: str,
+        error: BaseException,
     ) -> ApprovalProcessingResult:
         with self._session_factory() as db, db.begin():
             approval = db.get(
@@ -435,23 +443,58 @@ class ApprovalProcessor:
                 task.approval_id,
                 with_for_update=True,
             )
+            status = self._apply_failure_in_transaction(
+                db=db,
+                approval=approval,
+                task=task,
+                lease_token=lease_token,
+                error=error,
+            )
+            return ApprovalProcessingResult(
+                approval_id=task.approval_id or 0,
+                status=status,
+                message_id=None,
+                outcome=None,
+            )
+
+    def _apply_failure_in_transaction(
+        self,
+        *,
+        db: Session,
+        approval: ApprovalRequest | None,
+        task: ModelExecutionTaskSnapshot,
+        lease_token: str,
+        error: BaseException,
+    ) -> ApprovalFollowupStatus:
+        plan = self._retry_policy.plan_failure(
+            task_id=task.id,
+            attempt_count=task.attempt_count,
+            max_attempts=task.max_attempts,
+            error=error,
+        )
+        if plan.should_retry and plan.next_retry_at is not None:
             self._task_service.defer_retry_in_transaction(
                 db=db,
                 task_id=task.id,
                 lease_token=lease_token,
-                error_category=ModelTaskErrorCategory.UNKNOWN,
-                error_message=error_message,
-                next_retry_at=datetime.now(UTC) + self._retry_delay,
+                error_category=plan.category,
+                error_message=plan.safe_message,
+                next_retry_at=plan.next_retry_at,
             )
-            if approval is not None:
-                approval.followup_status = ApprovalFollowupStatus.FAILED
-                db.flush()
-            return ApprovalProcessingResult(
-                approval_id=task.approval_id or 0,
-                status=ApprovalFollowupStatus.FAILED,
-                message_id=None,
-                outcome=None,
+            status = ApprovalFollowupStatus.FAILED
+        else:
+            self._task_service.fail_task_in_transaction(
+                db=db,
+                task_id=task.id,
+                lease_token=lease_token,
+                error_category=plan.category,
+                error_message=plan.safe_message,
             )
+            status = ApprovalFollowupStatus.MANUAL_REQUIRED
+        if approval is not None:
+            approval.followup_status = status
+            db.flush()
+        return status
 
     def _lease_lost_result(
         self,
@@ -754,6 +797,21 @@ class ApprovalProcessor:
         return ApprovalProcessingResult(
             approval_id=approval.id,
             status=ApprovalFollowupStatus.FAILED,
+            message_id=None,
+            outcome=None,
+        )
+
+    @staticmethod
+    def _mark_manual_required(
+        db: Session,
+        *,
+        approval: ApprovalRequest,
+    ) -> ApprovalProcessingResult:
+        approval.followup_status = ApprovalFollowupStatus.MANUAL_REQUIRED
+        db.flush()
+        return ApprovalProcessingResult(
+            approval_id=approval.id,
+            status=ApprovalFollowupStatus.MANUAL_REQUIRED,
             message_id=None,
             outcome=None,
         )

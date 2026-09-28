@@ -28,6 +28,7 @@ from app.services.errors import (
     IncompleteRequestError,
     MessageConflictError,
     ModelDecisionError,
+    ModelTaskRecoveryRequiredError,
     NegotiationLifecycleConflictError,
     NegotiationNotFoundError,
     ServiceError,
@@ -208,6 +209,7 @@ def _raise_http_error(error: ServiceError | PricingError) -> Never:
         (
             MessageConflictError,
             IncompleteRequestError,
+            ModelTaskRecoveryRequiredError,
             NegotiationLifecycleConflictError,
         ),
     ):

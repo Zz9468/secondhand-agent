@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.models import (
+    ApprovalFollowupStatus,
     ApprovalRequest,
     ApprovalStatus,
     ModelExecutionTask,
@@ -57,6 +58,8 @@ class ModelExecutionTaskSnapshot:
     input_snapshot_hash: str
     status: ModelTaskStatus
     attempt_count: int
+    max_attempts: int
+    manual_retry_count: int
     next_retry_at: datetime | None
     lease_owner: str | None
     lease_token: str | None
@@ -72,6 +75,10 @@ class ModelExecutionTaskSnapshot:
     result_snapshot: dict[str, object] | None
     started_at: datetime | None
     completed_at: datetime | None
+    last_manual_action: str | None
+    last_manual_actor_id: str | None
+    last_manual_reason: str | None
+    last_manual_at: datetime | None
     created_at: datetime
     updated_at: datetime
 
@@ -98,6 +105,7 @@ class ModelTaskService:
         offer_id: int | None = None,
         approval_id: int | None = None,
         snapshot_schema_version: int = 1,
+        max_attempts: int = 3,
     ) -> ModelTaskCreationResult:
         """按业务键幂等创建任务，并从数据库事实捕获版本。"""
 
@@ -110,6 +118,7 @@ class ModelTaskService:
             raise InvalidModelExecutionTaskError("模型任务类型无效")
         if snapshot_schema_version <= 0:
             raise InvalidModelExecutionTaskError("输入快照版本必须大于零")
+        self._validate_max_attempts(max_attempts)
         stored_input, input_hash = self._validated_json_object(input_snapshot)
 
         try:
@@ -124,6 +133,7 @@ class ModelTaskService:
                     offer_id=offer_id,
                     approval_id=approval_id,
                     snapshot_schema_version=snapshot_schema_version,
+                    max_attempts=max_attempts,
                 )
         except IntegrityError as exc:
             # 唯一约束是并发创建时的最终判定；相同请求返回已有任务。
@@ -155,6 +165,7 @@ class ModelTaskService:
         offer_id: int | None = None,
         approval_id: int | None = None,
         snapshot_schema_version: int = 1,
+        max_attempts: int = 3,
     ) -> ModelTaskCreationResult:
         """在调用方事务内原子创建业务事实和模型任务。"""
 
@@ -167,6 +178,7 @@ class ModelTaskService:
             raise InvalidModelExecutionTaskError("模型任务类型无效")
         if snapshot_schema_version <= 0:
             raise InvalidModelExecutionTaskError("输入快照版本必须大于零")
+        self._validate_max_attempts(max_attempts)
         stored_input, input_hash = self._validated_json_object(input_snapshot)
         return self._create_validated_task_in_transaction(
             db=db,
@@ -178,6 +190,7 @@ class ModelTaskService:
             offer_id=offer_id,
             approval_id=approval_id,
             snapshot_schema_version=snapshot_schema_version,
+            max_attempts=max_attempts,
         )
 
     def _create_validated_task_in_transaction(
@@ -192,6 +205,7 @@ class ModelTaskService:
         offer_id: int | None,
         approval_id: int | None,
         snapshot_schema_version: int,
+        max_attempts: int,
     ) -> ModelTaskCreationResult:
         existing = self._by_business_key(
             db,
@@ -228,6 +242,8 @@ class ModelTaskService:
             input_snapshot_hash=input_hash,
             status=ModelTaskStatus.PENDING,
             attempt_count=0,
+            max_attempts=max_attempts,
+            manual_retry_count=0,
         )
         db.add(task)
         db.flush()
@@ -280,6 +296,9 @@ class ModelTaskService:
         task = self._locked_task(db, task_id=task_id)
         if not self._is_lease_eligible(task, now=leased_at):
             return None
+        if task.attempt_count >= task.max_attempts:
+            self._mark_attempts_exhausted(db, task=task, now=leased_at)
+            return self._snapshot(task)
         self._apply_lease(
             task,
             worker_id=stored_worker_id,
@@ -344,6 +363,10 @@ class ModelTaskService:
             task = db.scalar(statement)
             if task is None:
                 return None
+
+            if task.attempt_count >= task.max_attempts:
+                self._mark_attempts_exhausted(db, task=task, now=leased_at)
+                return self._snapshot(task)
 
             self._apply_lease(
                 task,
@@ -421,7 +444,7 @@ class ModelTaskService:
         error_message: str | None = None,
         now: datetime | None = None,
     ) -> ModelExecutionTaskSnapshot:
-        """记录一次可重试失败；退避算法和最大次数在阶段四接入。"""
+        """记录一次可重试失败；下次领取由到期时间和次数上限约束。"""
 
         with self._session_factory() as db, db.begin():
             return self.defer_retry_in_transaction(
@@ -487,6 +510,28 @@ class ModelTaskService:
             now=now,
         )
 
+    def fail_task_in_transaction(
+        self,
+        *,
+        db: Session,
+        task_id: int,
+        lease_token: str,
+        error_category: ModelTaskErrorCategory,
+        error_message: str | None = None,
+        now: datetime | None = None,
+    ) -> ModelExecutionTaskSnapshot:
+        """在调用方事务内将持有租约的任务置为人工恢复终态。"""
+
+        return self._complete_error_in_transaction(
+            db=db,
+            task_id=task_id,
+            lease_token=lease_token,
+            target_status=ModelTaskStatus.FAILED,
+            error_category=error_category,
+            error_message=error_message,
+            now=now,
+        )
+
     def mark_stale(
         self,
         *,
@@ -520,6 +565,27 @@ class ModelTaskService:
             task_id=task_id,
             lease_token=lease_token,
             target_status=ModelTaskStatus.STALE,
+            error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
+            error_message=error_message,
+            now=now,
+        )
+
+    def cancel_with_lease_in_transaction(
+        self,
+        *,
+        db: Session,
+        task_id: int,
+        lease_token: str,
+        error_message: str,
+        now: datetime | None = None,
+    ) -> ModelExecutionTaskSnapshot:
+        """在已存在等价业务结果时取消持有租约的重复执行。"""
+
+        return self._complete_error_in_transaction(
+            db=db,
+            task_id=task_id,
+            lease_token=lease_token,
+            target_status=ModelTaskStatus.CANCELLED,
             error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
             error_message=error_message,
             now=now,
@@ -588,6 +654,8 @@ class ModelTaskService:
         task.last_error_message = stored_message
         task.completed_at = completed_at
         self._clear_lease(task)
+        if target_status is ModelTaskStatus.FAILED:
+            self._mark_approval_manual_required(db, task=task)
         db.flush()
         db.refresh(task)
         return self._snapshot(task)
@@ -696,6 +764,43 @@ class ModelTaskService:
         if not 1 <= lease_seconds <= 3600:
             raise InvalidModelExecutionTaskError("租约时长必须在 1 到 3600 秒之间")
         return stored_worker_id, self._database_datetime(now or datetime.now(UTC))
+
+    @staticmethod
+    def _validate_max_attempts(value: int) -> None:
+        if type(value) is not int or not 1 <= value <= 20:
+            raise InvalidModelExecutionTaskError("模型任务最大尝试次数必须在 1 到 20 之间")
+
+    def _mark_attempts_exhausted(
+        self,
+        db: Session,
+        *,
+        task: ModelExecutionTask,
+        now: datetime,
+    ) -> None:
+        task.status = ModelTaskStatus.FAILED
+        task.last_error_category = (
+            task.last_error_category or ModelTaskErrorCategory.UNKNOWN
+        )
+        task.last_error_message = "模型任务已达到最大尝试次数"
+        task.completed_at = now
+        self._clear_lease(task)
+        self._mark_approval_manual_required(db, task=task)
+        db.flush()
+
+    @staticmethod
+    def _mark_approval_manual_required(
+        db: Session,
+        *,
+        task: ModelExecutionTask,
+    ) -> None:
+        if task.approval_id is None:
+            return
+        approval = db.get(ApprovalRequest, task.approval_id, with_for_update=True)
+        if (
+            approval is not None
+            and approval.followup_status is not ApprovalFollowupStatus.SENT
+        ):
+            approval.followup_status = ApprovalFollowupStatus.MANUAL_REQUIRED
 
     @staticmethod
     def _is_lease_eligible(
@@ -866,6 +971,8 @@ class ModelTaskService:
             input_snapshot_hash=task.input_snapshot_hash,
             status=task.status,
             attempt_count=task.attempt_count,
+            max_attempts=task.max_attempts,
+            manual_retry_count=task.manual_retry_count,
             next_retry_at=task.next_retry_at,
             lease_owner=task.lease_owner,
             lease_token=task.lease_token,
@@ -881,6 +988,10 @@ class ModelTaskService:
             result_snapshot=deepcopy(task.result_snapshot),
             started_at=task.started_at,
             completed_at=task.completed_at,
+            last_manual_action=task.last_manual_action,
+            last_manual_actor_id=task.last_manual_actor_id,
+            last_manual_reason=task.last_manual_reason,
+            last_manual_at=task.last_manual_at,
             created_at=task.created_at,
             updated_at=task.updated_at,
         )

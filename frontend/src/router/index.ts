@@ -80,6 +80,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/seller/model-tasks',
+      name: 'seller-model-tasks',
+      component: SellerView,
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },
