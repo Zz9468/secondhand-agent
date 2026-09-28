@@ -196,7 +196,7 @@ def test_accept_reply_ignores_false_approval_claim_and_matches_database(
         assert negotiation.status is NegotiationStatus.ACTIVE
 
 
-def test_current_offer_authorization_is_available_to_decision_provider(
+def test_auto_authorized_offer_is_accepted_without_model_decision(
     service_session_factory: sessionmaker[Session],
 ) -> None:
     session_id, buyer_id = create_negotiation(service_session_factory)
@@ -232,13 +232,7 @@ def test_current_offer_authorization_is_available_to_decision_provider(
         current_turn_offer_id=buyer_offer.id,
     )
 
-    authorization = provider.requests[0].negotiation_context[
-        "current_offer_authorization"
-    ]
-    assert isinstance(authorization, dict)
-    assert authorization["can_accept_automatically"] is True
-    assert authorization["can_request_approval"] is False
-    assert authorization["is_acceptance_prohibited"] is False
+    assert provider.requests == []
     assert result.outcome is AgentTurnOutcome.OFFER_ACCEPTED
 
 
@@ -289,6 +283,103 @@ def test_approval_zone_persists_request_before_returning_safe_reply(
         assert approval is not None
         assert approval.offer_id == buyer_offer.id
         assert approval.status is ApprovalStatus.PENDING
+
+
+def test_complete_approval_zone_offer_cannot_be_downgraded_to_clarification(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    negotiation_service = NegotiationService(service_session_factory)
+    buyer_offer = negotiation_service.record_buyer_offer(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        terms=OfferTerms(
+            buyer_payment=Decimal("2800.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+        additional_terms={"delivery_method": "shipping"},
+    )
+    provider = ScriptedDecisionProvider(
+        [
+            NegotiationDecision(
+                action=NegotiationAction.CLARIFY,
+                reason="错误地要求买家补充条件",
+                reply="请补充报价。",
+            )
+        ]
+    )
+    tools = build_seller_tools(
+        context=AgentToolContext(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            current_turn_offer_id=buyer_offer.id,
+        ),
+        product_service=ProductService(service_session_factory),
+        negotiation_service=negotiation_service,
+        approval_service=ApprovalService(service_session_factory),
+    )
+    agent = SellerAgent(decision_provider=provider, tools=tools)
+
+    result = agent.handle_turn(
+        "这个价格可以吗？",
+        current_turn_offer_id=buyer_offer.id,
+    )
+
+    assert provider.requests == []
+    assert result.outcome is AgentTurnOutcome.NEEDS_SELLER_CONFIRMATION
+    assert "已将这份报价提交卖家确认" in result.reply
+    with service_session_factory() as db:
+        approval = db.scalar(
+            select(ApprovalRequest).where(ApprovalRequest.session_id == session_id)
+        )
+        assert approval is not None
+        assert approval.offer_id == buyer_offer.id
+        assert approval.status is ApprovalStatus.PENDING
+
+
+def test_prohibited_formal_offer_cannot_be_downgraded_to_clarification(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    negotiation_service = NegotiationService(service_session_factory)
+    buyer_offer = negotiation_service.record_buyer_offer(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        terms=OfferTerms(
+            buyer_payment=Decimal("2600.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+    )
+    provider = ScriptedDecisionProvider(
+        [
+            NegotiationDecision(
+                action=NegotiationAction.CLARIFY,
+                reason="错误地要求买家补充条件",
+                reply="请补充报价。",
+            )
+        ]
+    )
+    tools = build_seller_tools(
+        context=AgentToolContext(
+            session_id=session_id,
+            buyer_id=buyer_id,
+            current_turn_offer_id=buyer_offer.id,
+        ),
+        product_service=ProductService(service_session_factory),
+        negotiation_service=negotiation_service,
+        approval_service=ApprovalService(service_session_factory),
+    )
+    agent = SellerAgent(decision_provider=provider, tools=tools)
+
+    result = agent.handle_turn(
+        "这个价格可以吗？",
+        current_turn_offer_id=buyer_offer.id,
+    )
+
+    assert len(provider.requests) == 1
+    assert result.outcome is AgentTurnOutcome.REJECTED
+    assert "补充" not in result.reply
+    assert result.formal_offer_id is None
 
 
 def test_inquiry_cannot_leak_private_price_and_model_error_is_safe(

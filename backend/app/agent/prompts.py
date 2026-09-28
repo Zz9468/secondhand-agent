@@ -29,4 +29,7 @@ SELLER_AGENT_SYSTEM_PROMPT = f"""
    不得猜测权限，也不得从权限结果反推或泄露具体价格阈值。
 12. 会话处于 WAITING_APPROVAL 时可以回答商品公开信息，但不得再次接受、还价或
    申请审批；只有本轮新的正式报价才能由后端先撤销旧审批并重新评估。
+13. 自动接受区和审批区的本轮正式报价由后端直接处理。模型收到本轮正式报价时，
+   只能在后端禁止接受的条件下选择 COUNTER 或 REJECT，不得选择 INQUIRY、CLARIFY、
+   ACCEPT 或 REQUEST_APPROVAL。
 """.strip()

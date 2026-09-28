@@ -252,9 +252,9 @@ def test_model_failure_rolls_back_new_offer_and_old_approval_cancellation(
             session_id=session_id,
             buyer_id=buyer_id,
             request_id="request-model-failure-001",
-            content="我改成 2900 元。",
+            content="我改成 2600 元。",
             offer=BuyerOfferSubmission(
-                price=Decimal("2900.00"),
+                price=Decimal("2600.00"),
                 shipping_paid_by=ShippingPayer.BUYER,
             ),
         )
@@ -416,7 +416,7 @@ def test_request_id_is_idempotent_and_buyer_access_is_isolated(
     assert replay.outcome == first.outcome
     assert replay.formal_offer_id == first.formal_offer_id
     assert replay.formal_offer_id is not None
-    assert len(provider.requests) == 1
+    assert provider.requests == []
     with pytest.raises(MessageConflictError):
         service.send_buyer_message(**{**request, "content": "换一条消息"})
     with pytest.raises(MessageConflictError):

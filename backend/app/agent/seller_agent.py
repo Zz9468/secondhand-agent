@@ -100,6 +100,13 @@ class SellerAgent:
                 decision=None,
             )
 
+        deterministic_result = self._resolve_authorized_current_offer(
+            decision_negotiation_context,
+            current_turn_offer_id=current_turn_offer_id,
+        )
+        if deterministic_result is not None:
+            return deterministic_result
+
         try:
             decision = self._decision_provider.decide(
                 DecisionRequest(
@@ -118,11 +125,72 @@ class SellerAgent:
                 decision=None,
             )
 
+        decision = self._constrain_current_offer_decision(
+            decision,
+            current_turn_offer_id=current_turn_offer_id,
+        )
         return self._execute_decision(
             decision=decision,
             product_result=product_result,
             negotiation_result=decision_negotiation_context,
             current_turn_offer_id=current_turn_offer_id,
+        )
+
+    def _resolve_authorized_current_offer(
+        self,
+        negotiation_result: dict[str, object],
+        *,
+        current_turn_offer_id: int | None,
+    ) -> AgentTurnResult | None:
+        """对完整正式报价执行后端已能确定的接受或审批动作。"""
+
+        if current_turn_offer_id is None:
+            return None
+        authorization = negotiation_result.get("current_offer_authorization")
+        if not isinstance(authorization, dict):
+            return AgentTurnResult(
+                reply=self._generic_failure_reply,
+                outcome=AgentTurnOutcome.SAFE_FAILURE,
+                decision=None,
+            )
+
+        if authorization.get("can_accept_automatically") is True:
+            decision = NegotiationDecision(
+                action=NegotiationAction.ACCEPT,
+                offer_id=current_turn_offer_id,
+                reason="后端规则授权自动接受本轮正式报价",
+                reply="由正式回复安全层生成接受结果。",
+            )
+            return self._execute_accept(decision, current_turn_offer_id)
+
+        if authorization.get("can_request_approval") is True:
+            decision = NegotiationDecision(
+                action=NegotiationAction.REQUEST_APPROVAL,
+                offer_id=current_turn_offer_id,
+                reason="后端规则要求卖家确认本轮正式报价",
+                reply="由正式回复安全层生成审批结果。",
+            )
+            return self._execute_approval(decision, current_turn_offer_id)
+
+        return None
+
+    @staticmethod
+    def _constrain_current_offer_decision(
+        decision: NegotiationDecision,
+        *,
+        current_turn_offer_id: int | None,
+    ) -> NegotiationDecision:
+        """禁止完整正式报价被模型降级为咨询、澄清或越权动作。"""
+
+        if current_turn_offer_id is None or decision.action in {
+            NegotiationAction.COUNTER,
+            NegotiationAction.REJECT,
+        }:
+            return decision
+        return NegotiationDecision(
+            action=NegotiationAction.REJECT,
+            reason="本轮正式报价未获得自动接受或卖家审批授权",
+            reply="由正式回复安全层生成拒绝结果。",
         )
 
     def _execute_decision(
