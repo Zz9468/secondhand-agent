@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from app.agent.decision import NegotiationAction, NegotiationDecision
+from app.agent.decision import InquiryTopic, NegotiationAction, NegotiationDecision
 from app.services.pricing_service import ShippingPayer
 
 
@@ -30,6 +30,7 @@ def test_non_counter_action_cannot_smuggle_price_terms() -> None:
     with pytest.raises(ValidationError):
         NegotiationDecision(
             action=NegotiationAction.INQUIRY,
+            inquiry_topic=InquiryTopic.PRODUCT_DETAILS,
             proposed_price=Decimal("1000.00"),
             shipping_paid_by=ShippingPayer.SELLER,
             reason="伪装成咨询",
@@ -48,6 +49,23 @@ def test_valid_counter_decision_is_normalized() -> None:
 
     assert decision.proposed_price == Decimal("2850")
     assert decision.additional_terms == {}
+
+
+def test_inquiry_topic_is_required_only_for_inquiry() -> None:
+    with pytest.raises(ValidationError):
+        NegotiationDecision(
+            action=NegotiationAction.INQUIRY,
+            reason="缺少咨询主题",
+            reply="请介绍商品。",
+        )
+
+    with pytest.raises(ValidationError):
+        NegotiationDecision(
+            action=NegotiationAction.CLARIFY,
+            inquiry_topic=InquiryTopic.GENERAL,
+            reason="非咨询动作夹带主题",
+            reply="请补充问题。",
+        )
 
 
 def test_money_schema_is_qwen_compatible_and_keeps_decimal_validation() -> None:

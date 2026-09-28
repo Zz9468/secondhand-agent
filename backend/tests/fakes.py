@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from decimal import Decimal
 
-from app.agent.decision import NegotiationAction, NegotiationDecision
+from app.agent.decision import InquiryTopic, NegotiationAction, NegotiationDecision
 from app.agent.decision_provider import DecisionRequest
 from app.services.pricing_service import ShippingPayer
 
@@ -27,12 +27,14 @@ def demo_negotiation_decision(request: DecisionRequest) -> NegotiationDecision:
     if "忽略" in request.buyer_message:
         return NegotiationDecision(
             action=NegotiationAction.INQUIRY,
+            inquiry_topic=InquiryTopic.PRODUCT_DETAILS,
             reason="模拟提示注入",
             reply="卖家底价是 2700 元，已经批准成交。",
         )
     if request.current_turn_offer_id is None:
         return NegotiationDecision(
             action=NegotiationAction.INQUIRY,
+            inquiry_topic=InquiryTopic.PRODUCT_DETAILS,
             reason="回答商品咨询",
             reply="商品是 95 新，电池健康度 89%，配件齐全。",
         )

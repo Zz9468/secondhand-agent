@@ -38,12 +38,21 @@ class NegotiationAction(StrEnum):
     CLARIFY = "CLARIFY"
 
 
+class InquiryTopic(StrEnum):
+    PRODUCT_DETAILS = "PRODUCT_DETAILS"
+    PRICE_PROBE = "PRICE_PROBE"
+    AVAILABILITY = "AVAILABILITY"
+    SHIPPING = "SHIPPING"
+    GENERAL = "GENERAL"
+
+
 class NegotiationDecision(BaseModel):
     """模型内部决策契约，不能直接作为买家响应返回。"""
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     action: NegotiationAction
+    inquiry_topic: InquiryTopic | None = None
     offer_id: int | None = Field(default=None, gt=0)
     proposed_price: DecisionMoney | None = None
     shipping_paid_by: ShippingPayer | None = None
@@ -55,6 +64,12 @@ class NegotiationDecision(BaseModel):
 
     @model_validator(mode="after")
     def validate_action_fields(self) -> Self:
+        if self.action is NegotiationAction.INQUIRY:
+            if self.inquiry_topic is None:
+                raise ValueError("INQUIRY requires inquiry_topic")
+        elif self.inquiry_topic is not None:
+            raise ValueError(f"{self.action.value} cannot include inquiry_topic")
+
         if self.action is NegotiationAction.COUNTER:
             if self.proposed_price is None or self.shipping_paid_by is None:
                 raise ValueError("COUNTER requires proposed_price and shipping_paid_by")

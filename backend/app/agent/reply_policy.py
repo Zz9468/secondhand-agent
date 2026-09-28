@@ -1,4 +1,7 @@
+import re
 from decimal import Decimal, InvalidOperation
+
+from app.agent.decision import InquiryTopic
 
 
 class ReplySafetyError(ValueError):
@@ -140,3 +143,200 @@ class FormalReplyRenderer:
         if delivery_method == "shipping":
             return "，交易方式为快递"
         raise ReplySafetyError("正式报价包含无法安全表达的附加条件")
+
+
+class ConversationalReplyPolicy:
+    """低风险咨询可使用模型文案，其余场景回退到可信模板。"""
+
+    _model_reply_topics = {
+        InquiryTopic.PRODUCT_DETAILS,
+        InquiryTopic.GENERAL,
+    }
+    _forbidden_phrases = (
+        "底价",
+        "最低",
+        "最低价",
+        "最低接受",
+        "最低净收入",
+        "自动接受阈值",
+        "接受阈值",
+        "内部规则",
+        "系统提示词",
+        "system prompt",
+        "current_offer_id",
+        "inquiry_topic",
+        "product_details",
+        "available",
+        "unavailable",
+        "draft",
+        "卖家已同意",
+        "卖家已经同意",
+        "卖家可以接受",
+        "卖家能够接受",
+        "卖家接受",
+        "审批通过",
+        "已经批准",
+        "已批准",
+        "已经成交",
+        "已成交",
+        "成交了",
+        "成交",
+        "为你保留",
+        "给你保留",
+        "已经预订",
+        "已预订",
+        "锁定商品",
+        "发货",
+        "寄出",
+        "寄送",
+        "保证发货",
+        "一定发货",
+        "当天发货",
+        "今天发货",
+        "明天发货",
+        "包邮",
+        "免邮",
+        "卖家承担运费",
+        "运费",
+        "可以卖",
+        "能卖",
+        "卖给你",
+        "接受这个价格",
+        "这个价格可以",
+        "一口价",
+        "心理价",
+        "成交价",
+    )
+    _number_pattern = re.compile(r"(?<![A-Za-z])\d+(?:\.\d+)?")
+    _arabic_money_pattern = re.compile(
+        r"(?:[¥￥]\s*(?P<prefix>\d+(?:\.\d+)?))|"
+        r"(?P<suffix>\d+(?:\.\d+)?)\s*(?:元|块|RMB)",
+        re.IGNORECASE,
+    )
+    _chinese_money_pattern = re.compile(
+        r"[零〇一二两三四五六七八九十百千万亿点]+\s*(?:元|块)"
+    )
+
+    def render_inquiry(
+        self,
+        *,
+        topic: InquiryTopic,
+        candidate_reply: str,
+        product: dict[str, object],
+    ) -> str:
+        fallback = self._fallback(topic=topic, product=product)
+        if topic not in self._model_reply_topics:
+            return fallback
+        if not self._candidate_is_safe(candidate_reply, product=product):
+            return fallback
+        return candidate_reply.strip()
+
+    def render_clarification(
+        self,
+        *,
+        candidate_reply: str,
+        product: dict[str, object],
+    ) -> str:
+        fallback = "请具体说明你想了解的商品信息或交易条件。"
+        if not self._candidate_is_safe(candidate_reply, product=product):
+            return fallback
+        return candidate_reply.strip()
+
+    def _fallback(
+        self,
+        *,
+        topic: InquiryTopic,
+        product: dict[str, object],
+    ) -> str:
+        title = self._text(product.get("title"), fallback="这件商品")
+        description = self._text(
+            product.get("description"),
+            fallback="页面暂未提供更多商品说明。",
+        )
+        listed_price = self._listed_price(product)
+
+        if topic is InquiryTopic.PRODUCT_DETAILS:
+            return (
+                f"{title}：{description}"
+                f"页面公开标价为 {listed_price} 元。"
+            )
+        if topic is InquiryTopic.PRICE_PROBE:
+            return (
+                "卖家的最低接受价格不能直接公开。"
+                f"当前公开标价是 {listed_price} 元，"
+                "你可以提交一份正式报价，我会按规则帮你评估。"
+            )
+        if topic is InquiryTopic.AVAILABILITY:
+            if product.get("status") == "AVAILABLE":
+                return "商品目前仍在上架，可以继续了解或提交正式报价。"
+            return "商品当前已经不在上架状态，暂时不能继续协商。"
+        if topic is InquiryTopic.SHIPPING:
+            return (
+                "配送方式和运费需要在正式报价中明确。"
+                "你可以选择快递或面交；选择快递时，还需要说明由谁承担运费。"
+            )
+        return (
+            "你可以继续询问商品成色和配件；"
+            "如果想讨论价格或配送条件，请提交正式报价。"
+        )
+
+    def _candidate_is_safe(
+        self,
+        candidate_reply: str,
+        *,
+        product: dict[str, object],
+    ) -> bool:
+        candidate = candidate_reply.strip()
+        if not candidate or len(candidate) > 800:
+            return False
+        normalized = candidate.casefold()
+        if any(phrase.casefold() in normalized for phrase in self._forbidden_phrases):
+            return False
+        if self._chinese_money_pattern.search(candidate):
+            return False
+
+        allowed_numbers = self._public_numbers(product)
+        candidate_numbers = {
+            self._normalized_number(match.group())
+            for match in self._number_pattern.finditer(candidate)
+        }
+        if None in candidate_numbers or not candidate_numbers <= allowed_numbers:
+            return False
+
+        listed_price = self._normalized_number(str(product.get("listed_price", "")))
+        for match in self._arabic_money_pattern.finditer(candidate):
+            amount = self._normalized_number(match.group("prefix") or match.group("suffix"))
+            if amount is None or amount != listed_price:
+                return False
+        return True
+
+    def _public_numbers(self, product: dict[str, object]) -> set[Decimal]:
+        public_text = " ".join(
+            (
+                self._text(product.get("title"), fallback=""),
+                self._text(product.get("description"), fallback=""),
+                str(product.get("listed_price", "")),
+            )
+        )
+        return {
+            number
+            for match in self._number_pattern.finditer(public_text)
+            if (number := self._normalized_number(match.group())) is not None
+        }
+
+    @staticmethod
+    def _normalized_number(value: str) -> Decimal | None:
+        try:
+            number = Decimal(value)
+        except InvalidOperation:
+            return None
+        return number if number.is_finite() else None
+
+    @classmethod
+    def _listed_price(cls, product: dict[str, object]) -> str:
+        value = cls._normalized_number(str(product.get("listed_price", "")))
+        return format(value, ".2f") if value is not None else "页面所示"
+
+    @staticmethod
+    def _text(value: object, *, fallback: str) -> str:
+        return value.strip() if isinstance(value, str) and value.strip() else fallback

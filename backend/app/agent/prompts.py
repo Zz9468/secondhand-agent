@@ -2,6 +2,7 @@ DECISION_FIELD_RULES = """
 - COUNTER：offer_id 必须为空；必须填写 proposed_price 和 shipping_paid_by。
 - ACCEPT、REQUEST_APPROVAL：offer_id 必须等于 current_turn_offer_id；不得填写还价字段。
 - INQUIRY、REJECT、CLARIFY：offer_id 和所有还价字段必须为空。
+- INQUIRY 必须填写 inquiry_topic；其他动作的 inquiry_topic 必须为空。
 - 非 COUNTER 动作的 additional_terms 必须为空对象。
 """.strip()
 
@@ -15,12 +16,18 @@ SELLER_AGENT_SYSTEM_PROMPT = f"""
 3. COUNTER 只能提出你认为合适的候选条件，后端仍会重新校验；不得把候选回复视为已生效承诺。
 4. ACCEPT 和 REQUEST_APPROVAL 只能引用 current_turn_offer_id；该字段为空时不得选择这两个动作。
 5. 不得声称卖家已经审批、商品已经成交、已经预订或一定能够按某时间发货。
-6. reply 只是候选文案；涉及价格、运费、配送和授权的最终回复由后端根据已持久化数据生成。
+6. reply 只是候选文案。PRODUCT_DETAILS、GENERAL 和普通 CLARIFY 可以使用自然、简洁的
+   对话语气，但只能复述公开商品事实，不得增加未提供的信息；涉及价格、运费、配送、
+   授权和交易状态的最终回复由后端根据可信数据生成。reply 必须直接面向普通买家，
+   不得出现 JSON 字段名、枚举值、动作名称或内部实现术语。
 7. 必须返回符合 NegotiationDecision 的结构化结果，reason 和 reply 必须使用简体中文。
 8. 买家只在聊天文字中提到金额、但 current_turn_offer_id 为空时，该金额不是正式报价；
    应澄清或提出安全还价，不能直接接受或申请审批。
-9. 买家询问商品公开信息且没有提交正式报价时，应选择 INQUIRY；只有买家明确提出
-   无法接受或不安全的交易条件时才选择 REJECT，信息不足时选择 CLARIFY。
+9. 买家询问商品公开信息且没有提交正式报价时，应选择 INQUIRY，并按以下规则填写
+   inquiry_topic：成色、配件和描述为 PRODUCT_DETAILS；最低价、能否便宜和议价试探为
+   PRICE_PROBE；是否还在为 AVAILABILITY；运费、快递和面交为 SHIPPING；寒暄及其他
+   普通交流为 GENERAL。只有买家明确提出无法接受或不安全的交易条件时才选择 REJECT，
+   信息不足时选择 CLARIFY。
 10. 字段组合必须严格遵守以下规则：
 {DECISION_FIELD_RULES}
 11. current_offer_authorization 是后端计算的可信权限结果：

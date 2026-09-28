@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
 from enum import StrEnum
 
 from langchain_core.tools import BaseTool
@@ -11,6 +10,7 @@ from app.agent.decision_provider import (
     DecisionRequest,
 )
 from app.agent.reply_policy import (
+    ConversationalReplyPolicy,
     FormalReplyRenderer,
     ReplySafetyError,
 )
@@ -50,6 +50,7 @@ class SellerAgent:
         decision_provider: DecisionProvider,
         tools: list[BaseTool],
         reply_renderer: FormalReplyRenderer | None = None,
+        conversational_reply_policy: ConversationalReplyPolicy | None = None,
     ) -> None:
         self._decision_provider = decision_provider
         self._tools = {item.name: item for item in tools}
@@ -64,6 +65,9 @@ class SellerAgent:
         if len(tools) != len(required_tools) or set(self._tools) != required_tools:
             raise ValueError("SellerAgent requires exactly the six V2 negotiation tools")
         self._reply_renderer = reply_renderer or FormalReplyRenderer()
+        self._conversational_reply_policy = (
+            conversational_reply_policy or ConversationalReplyPolicy()
+        )
 
     def handle_turn(
         self,
@@ -214,27 +218,30 @@ class SellerAgent:
         product = product_result.get("product")
         if not isinstance(product, dict):
             return self._safe_failure(decision)
-        try:
-            listed_price = self._decimal_value(product["listed_price"])
-        except (KeyError, ValueError):
-            return self._safe_failure(decision)
 
-        replies = {
-            NegotiationAction.INQUIRY: self._render_product_reply(
+        if decision.action is NegotiationAction.INQUIRY:
+            if decision.inquiry_topic is None:
+                return self._safe_failure(decision)
+            reply = self._conversational_reply_policy.render_inquiry(
+                topic=decision.inquiry_topic,
+                candidate_reply=decision.reply,
                 product=product,
-                listed_price=listed_price,
-            ),
-            NegotiationAction.REJECT: "这个条件暂时无法接受，你可以调整后再提出。",
-            NegotiationAction.CLARIFY: "请补充你希望确认的具体商品或交易条件。",
-        }
+            )
+        elif decision.action is NegotiationAction.CLARIFY:
+            reply = self._conversational_reply_policy.render_clarification(
+                candidate_reply=decision.reply,
+                product=product,
+            )
+        else:
+            reply = "这个条件暂时无法接受，你可以调整后再提出。"
         outcomes = {
             NegotiationAction.INQUIRY: AgentTurnOutcome.INFORMATIONAL,
             NegotiationAction.REJECT: AgentTurnOutcome.REJECTED,
             NegotiationAction.CLARIFY: AgentTurnOutcome.CLARIFICATION,
         }
         return AgentTurnResult(
-            # 非正式动作不发送模型自由文本，彻底切断价格和履约承诺绕过路径。
-            reply=replies[decision.action],
+            # 低风险咨询可使用通过校验的候选文案；交易动作仍由可信模板生成。
+            reply=reply,
             outcome=outcomes[decision.action],
             decision=decision,
         )
@@ -416,27 +423,4 @@ class SellerAgent:
                 if isinstance(offer, dict) and offer.get("id") == offer_id
             ),
             None,
-        )
-
-    @staticmethod
-    def _decimal_value(value: object) -> Decimal:
-        try:
-            return Decimal(str(value))
-        except InvalidOperation as exc:
-            raise ValueError("invalid decimal") from exc
-
-    @staticmethod
-    def _render_product_reply(
-        *,
-        product: dict[str, object],
-        listed_price: Decimal,
-    ) -> str:
-        title = product.get("title")
-        description = product.get("description")
-        if not isinstance(title, str) or not isinstance(description, str):
-            return "我只能根据商品页面中已经确认的信息回答，请说明你想了解的内容。"
-        return (
-            f"{title}：{description}"
-            f"页面公开标价为 {format(listed_price, '.2f')} 元；"
-            "涉及还价、运费或履约条件时，请提交正式报价由系统校验。"
         )

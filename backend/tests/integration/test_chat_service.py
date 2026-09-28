@@ -6,7 +6,7 @@ from sqlalchemy import Engine, delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.agent.decision import NegotiationAction, NegotiationDecision
+from app.agent.decision import InquiryTopic, NegotiationAction, NegotiationDecision
 from app.agent.decision_provider import DecisionRequest
 from app.db.models import (
     ApprovalRequest,
@@ -530,6 +530,7 @@ def test_same_session_chat_turns_are_serialized_across_connections(
     def inquiry_decision(reply: str) -> NegotiationDecision:
         return NegotiationDecision(
             action=NegotiationAction.INQUIRY,
+            inquiry_topic=InquiryTopic.GENERAL,
             reason="并发串行测试",
             reply=reply,
         )
