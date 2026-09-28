@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from enum import StrEnum
@@ -199,8 +200,10 @@ class DialoguePolicyService:
     }
     _forbidden_phrases = (
         "底价",
+        "底價",
         "最低",
         "最低价",
+        "最低價",
         "最低接受",
         "最低净收入",
         "自动接受阈值",
@@ -208,6 +211,11 @@ class DialoguePolicyService:
         "内部规则",
         "系统提示词",
         "system prompt",
+        "internal rule",
+        "floor price",
+        "minimum price",
+        "lowest price",
+        "precio mínimo",
         "current_offer_id",
         "dialogue_acts",
         "requested_value",
@@ -221,8 +229,15 @@ class DialoguePolicyService:
         "卖家能够接受",
         "卖家接受",
         "审批通过",
+        "審批通過",
         "已经批准",
         "已批准",
+        "seller approved",
+        "seller has approved",
+        "approved by seller",
+        "approval granted",
+        "seller agreed",
+        "seller accepts",
         "已经成交",
         "已成交",
         "成交了",
@@ -252,6 +267,20 @@ class DialoguePolicyService:
         "一口价",
         "心理价",
         "成交价",
+        "deal confirmed",
+        "deal is done",
+        "sold to you",
+        "reserved for you",
+        "hold it for you",
+        "free shipping",
+        "shipping is free",
+        "seller pays shipping",
+        "ship today",
+        "ship tomorrow",
+        "dispatch today",
+        "guaranteed shipping",
+        "guarantee delivery",
+        "envío gratis",
     )
     _number_pattern = re.compile(r"(?<![A-Za-z])\d+(?:\.\d+)?")
     _arabic_money_pattern = re.compile(
@@ -420,8 +449,9 @@ class DialoguePolicyService:
             return "你可以继续询问商品信息，或通过正式报价讨论价格和配送条件"
         return "我还不能确定你想了解商品信息、价格条件还是配送安排，请明确其中一项"
 
+    @classmethod
     def _candidate_is_safe(
-        self,
+        cls,
         candidate_reply: str,
         *,
         product: dict[str, object],
@@ -429,39 +459,54 @@ class DialoguePolicyService:
         candidate = candidate_reply.strip()
         if not candidate or len(candidate) > 800:
             return False
-        normalized = candidate.casefold()
-        if any(phrase.casefold() in normalized for phrase in self._forbidden_phrases):
+        normalized = unicodedata.normalize("NFKC", candidate).casefold()
+        compact = cls._compact_for_safety(normalized)
+        if any(
+            unicodedata.normalize("NFKC", phrase).casefold() in normalized
+            or cls._compact_for_safety(phrase) in compact
+            for phrase in cls._forbidden_phrases
+        ):
             return False
-        if self._chinese_money_pattern.search(candidate):
+        if cls._chinese_money_pattern.search(normalized) or cls._chinese_money_pattern.search(
+            compact
+        ):
             return False
 
-        allowed_numbers = self._public_numbers(product)
+        allowed_numbers = cls._public_numbers(product)
         candidate_numbers = {
-            self._normalized_number(match.group())
-            for match in self._number_pattern.finditer(candidate)
+            cls._normalized_number(match.group())
+            for match in cls._number_pattern.finditer(candidate)
         }
         if None in candidate_numbers or not candidate_numbers <= allowed_numbers:
             return False
 
-        listed_price = self._normalized_number(str(product.get("listed_price", "")))
-        for match in self._arabic_money_pattern.finditer(candidate):
-            amount = self._normalized_number(match.group("prefix") or match.group("suffix"))
+        listed_price = cls._normalized_number(str(product.get("listed_price", "")))
+        for match in cls._arabic_money_pattern.finditer(candidate):
+            amount = cls._normalized_number(match.group("prefix") or match.group("suffix"))
             if amount is None or amount != listed_price:
                 return False
         return True
 
-    def _public_numbers(self, product: dict[str, object]) -> set[Decimal]:
+    @staticmethod
+    def _compact_for_safety(value: str) -> str:
+        """折叠空白和标点，避免用全角字符或拆词绕过敏感承诺检查。"""
+
+        normalized = unicodedata.normalize("NFKC", value).casefold()
+        return "".join(character for character in normalized if character.isalnum())
+
+    @classmethod
+    def _public_numbers(cls, product: dict[str, object]) -> set[Decimal]:
         public_text = " ".join(
             (
-                self._text(product.get("title"), fallback=""),
-                self._text(product.get("description"), fallback=""),
+                cls._text(product.get("title"), fallback=""),
+                cls._text(product.get("description"), fallback=""),
                 str(product.get("listed_price", "")),
             )
         )
         return {
             number
-            for match in self._number_pattern.finditer(public_text)
-            if (number := self._normalized_number(match.group())) is not None
+            for match in cls._number_pattern.finditer(public_text)
+            if (number := cls._normalized_number(match.group())) is not None
         }
 
     @staticmethod

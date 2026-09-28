@@ -127,15 +127,29 @@ def test_other_seller_cannot_see_or_recover_task(
     )
     outsider = _test_client(service_session_factory)
     authenticate_user(outsider, user_id=outsider_id, settings=TEST_SETTINGS)
+    anonymous = _test_client(service_session_factory)
 
     listed = outsider.get("/api/seller/model-tasks")
     retried = outsider.post(
         f"/api/seller/model-tasks/{task_id}/retry",
         json={"reason": None},
     )
+    terminated = outsider.post(
+        f"/api/seller/model-tasks/{task_id}/terminate",
+        json={"reason": "尝试处置其他卖家的任务"},
+    )
 
     assert listed.status_code == 200
     assert listed.json()["tasks"] == []
     assert retried.status_code == 404
+    assert terminated.status_code == 404
+    assert anonymous.get("/api/seller/model-tasks").status_code == 401
+    assert (
+        anonymous.post(
+            f"/api/seller/model-tasks/{task_id}/retry",
+            json={"reason": None},
+        ).status_code
+        == 401
+    )
     task = ModelTaskService(service_session_factory).get_task(task_id=task_id)
     assert task.status is ModelTaskStatus.FAILED
