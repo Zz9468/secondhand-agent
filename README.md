@@ -148,7 +148,7 @@ V2.1 七个阶段已完成统一账号与商品大厅升级：
 - V2 原有的价格规则、Agent 安全边界、审批 Worker、幂等处理和交易意向确认语义保持不变；
 - V2.1 人工验收步骤见 [`docs/V2.1_验收清单.md`](docs/V2.1_验收清单.md)。
 
-V3 阶段一至六已完成回归基线、持久化模型任务、短事务执行、有界恢复、安全事务加固和结构化可观测性：
+V3 阶段一至七已完成回归基线、持久化模型任务、短事务执行、有界恢复、安全事务加固、结构化可观测性和离线三组对比框架：
 
 - 将验证分为无外部依赖快速回归、MySQL 业务集成、专用数据库迁移和真实模型冒烟四层，真实模型不会被普通 Pytest 或构建命令隐式调用；
 - 盘点正式还价权限、Prompt Injection、虚假审批、履约越权、重复请求、跨账号访问、事务回滚和 Worker 恢复的现有测试证据及后续缺口；
@@ -169,9 +169,11 @@ V3 阶段一至六已完成回归基线、持久化模型任务、短事务执�
 - HTTP 响应统一返回 `X-Request-ID` 与 `X-Correlation-ID`；聊天、模型任务、受约束写工具、审批通知、人工恢复和最终确认使用脱敏事件贯通；
 - `observability_events` 是不依赖外部平台的本地事实源，可按会话、关联 ID 或模型任务导出 JSONL/聚合摘要；模型任务和事件同时保存 Token、缓存 Token、运行时单价快照、币种及估算成本；
 - LangSmith 是显式开启的可选元数据镜像，只发送脱敏字段，不启用会上传 Prompt/回复的自动追踪；未配置或发送失败不影响核心交易路径；
-- 阶段一至六的设计与验收记录分别见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)、[`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)、[`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)、[`docs/V3_阶段4_有界重试与人工恢复.md`](docs/V3_阶段4_有界重试与人工恢复.md)、[`docs/V3_阶段5_安全与事务回归加固.md`](docs/V3_阶段5_安全与事务回归加固.md) 和 [`docs/V3_阶段6_结构化可观测性与成本采集.md`](docs/V3_阶段6_结构化可观测性与成本采集.md)。
+- 独立 `backend/evaluation/` 以八类版本化合成场景和相同输入对比 A 纯 Prompt、B 模型加规则、C 模型加规则与状态/人工审批，三组均只使用隔离内存适配器，不读写业务数据库；
+- 每次评测保存清单、逐轮事件、运行明细和指标汇总；单样本故障不会中断批次，真实模型必须显式开启并受样本、调用、Token、费用和超时预算约束；
+- 阶段一至七的设计与验收记录分别见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)、[`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)、[`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)、[`docs/V3_阶段4_有界重试与人工恢复.md`](docs/V3_阶段4_有界重试与人工恢复.md)、[`docs/V3_阶段5_安全与事务回归加固.md`](docs/V3_阶段5_安全与事务回归加固.md)、[`docs/V3_阶段6_结构化可观测性与成本采集.md`](docs/V3_阶段6_结构化可观测性与成本采集.md) 和 [`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md)。
 
-V2.1 的完整设计、迁移原则和七阶段实施记录见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。V3 后续阶段将聚焦离线模拟买家、对比评测和可复现报告，V4 将聚焦云服务器部署与运维。
+V2.1 的完整设计、迁移原则和七阶段实施记录见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。V3 下一阶段将聚焦评测报告、回归门禁和可复现交付，V4 将聚焦云服务器部署与运维。
 
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
@@ -361,6 +363,13 @@ cd backend
 python scripts/smoke_model.py
 ```
 
+阶段七的离线 A/B/C 评测默认使用确定性候选模型，不访问网络或业务数据库；结果写入被 Git 忽略的 `backend/evaluation/results/`。真实模型对比必须额外传入 `--model qwen --allow-real-model` 并显式设置预算，完整说明见 [`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md)：
+
+```powershell
+cd backend
+python -m evaluation.cli --batch-id stage7-local
+```
+
 ## 验证
 
 完整的双账号 V2.1 人工验收流程与异常场景见 [`docs/V2.1_验收清单.md`](docs/V2.1_验收清单.md)；V2 历史验收记录保留在 [`docs/V2_验收清单.md`](docs/V2_验收清单.md)。
@@ -368,7 +377,7 @@ python scripts/smoke_model.py
 ```powershell
 cd backend
 python -m pytest
-python -m ruff check app tests scripts migrations
+python -m ruff check app evaluation tests scripts migrations
 python -m pip_audit -r requirements.lock
 
 # MySQL 运行且已迁移时，额外执行集成测试

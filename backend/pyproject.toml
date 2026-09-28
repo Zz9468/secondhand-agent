@@ -29,7 +29,10 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["app*"]
+include = ["app*", "evaluation*"]
+
+[tool.setuptools.package-data]
+evaluation = ["scenarios/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
