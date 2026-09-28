@@ -1,8 +1,8 @@
 import pytest
 
-from app.agent.decision import InquiryTopic
+from app.agent.decision import DialogueAct, DialogueActKind, DialogueSubject
 from app.agent.reply_policy import (
-    ConversationalReplyPolicy,
+    DialoguePolicyService,
     FormalReplyRenderer,
     ReplySafetyError,
 )
@@ -78,16 +78,22 @@ def test_formal_reply_rejects_non_finite_amount() -> None:
 
 
 def test_low_risk_product_inquiry_can_use_safe_model_reply() -> None:
-    policy = ConversationalReplyPolicy()
+    policy = DialoguePolicyService()
     candidate = "这台 iPhone 15 Pro 配有原装充电线，边框有轻微使用痕迹。"
 
-    reply = policy.render_inquiry(
-        topic=InquiryTopic.PRODUCT_DETAILS,
+    reply = policy.resolve(
+        acts=[
+            DialogueAct(
+                kind=DialogueActKind.ASK_FACT,
+                subject=DialogueSubject.PRODUCT_DETAILS,
+            )
+        ],
         candidate_reply=candidate,
         product=PUBLIC_PRODUCT,
     )
 
-    assert reply == candidate
+    assert reply.text == candidate
+    assert reply.needs_clarification is False
 
 
 @pytest.mark.parametrize(
@@ -102,56 +108,107 @@ def test_low_risk_product_inquiry_can_use_safe_model_reply() -> None:
     ],
 )
 def test_unsafe_model_reply_falls_back_to_trusted_product_facts(candidate: str) -> None:
-    policy = ConversationalReplyPolicy()
+    policy = DialoguePolicyService()
 
-    reply = policy.render_inquiry(
-        topic=InquiryTopic.PRODUCT_DETAILS,
+    reply = policy.resolve(
+        acts=[
+            DialogueAct(
+                kind=DialogueActKind.ASK_FACT,
+                subject=DialogueSubject.PRODUCT_DETAILS,
+            )
+        ],
         candidate_reply=candidate,
         product=PUBLIC_PRODUCT,
     )
 
-    assert reply != candidate
-    assert "5299.00 元" in reply
-    assert "4700" not in reply
-    assert "99%" not in reply
+    assert reply.text != candidate
+    assert "5299.00 元" in reply.text
+    assert "4700" not in reply.text
+    assert "99%" not in reply.text
 
 
-def test_sensitive_inquiry_topics_always_use_backend_templates() -> None:
-    policy = ConversationalReplyPolicy()
+def test_sensitive_dialogue_acts_always_use_backend_reply_plan() -> None:
+    policy = DialoguePolicyService()
 
-    price_reply = policy.render_inquiry(
-        topic=InquiryTopic.PRICE_PROBE,
+    price_reply = policy.resolve(
+        acts=[
+            DialogueAct(
+                kind=DialogueActKind.ASK_PRIVATE_INFO,
+                subject=DialogueSubject.PRICE_FLOOR,
+            )
+        ],
         candidate_reply="4700 元就是最低价。",
         product=PUBLIC_PRODUCT,
     )
-    shipping_reply = policy.render_inquiry(
-        topic=InquiryTopic.SHIPPING,
+    shipping_reply = policy.resolve(
+        acts=[
+            DialogueAct(
+                kind=DialogueActKind.REQUEST_TERM,
+                subject=DialogueSubject.SHIPPING_PAYER,
+                requested_value="seller",
+            )
+        ],
         candidate_reply="可以包邮并保证今天发货。",
         product=PUBLIC_PRODUCT,
     )
-    availability_reply = policy.render_inquiry(
-        topic=InquiryTopic.AVAILABILITY,
+    availability_reply = policy.resolve(
+        acts=[
+            DialogueAct(
+                kind=DialogueActKind.ASK_FACT,
+                subject=DialogueSubject.AVAILABILITY,
+            )
+        ],
         candidate_reply="商品已经卖掉了。",
         product=PUBLIC_PRODUCT,
     )
 
-    assert "最低接受价格不能直接公开" in price_reply
-    assert "5299.00 元" in price_reply
-    assert "4700" not in price_reply
-    assert "正式报价" in shipping_reply
-    assert "包邮" not in shipping_reply
-    assert availability_reply == "商品目前仍在上架，可以继续了解或提交正式报价。"
+    assert "最低接受价格不能直接公开" in price_reply.text
+    assert "5299.00 元" in price_reply.text
+    assert "4700" not in price_reply.text
+    assert "正式报价" in shipping_reply.text
+    assert "包邮" not in shipping_reply.text
+    assert availability_reply.text == "商品目前仍在上架，可以继续了解或提交正式报价。"
 
 
-def test_safe_clarification_uses_model_reply_and_unsafe_one_falls_back() -> None:
-    policy = ConversationalReplyPolicy()
-    safe_reply = "你更想了解商品成色，还是配件情况？"
+def test_compound_shipping_and_dispatch_request_gets_complete_specific_reply() -> None:
+    policy = DialoguePolicyService()
 
-    assert policy.render_clarification(
-        candidate_reply=safe_reply,
+    reply = policy.resolve(
+        acts=[
+            DialogueAct(
+                kind=DialogueActKind.REQUEST_TERM,
+                subject=DialogueSubject.SHIPPING_PAYER,
+                requested_value="seller",
+            ),
+            DialogueAct(
+                kind=DialogueActKind.REQUEST_COMMITMENT,
+                subject=DialogueSubject.DISPATCH_DEADLINE,
+                requested_value="today",
+            ),
+        ],
+        candidate_reply="可以包邮并保证今天发货。",
         product=PUBLIC_PRODUCT,
-    ) == safe_reply
-    assert policy.render_clarification(
-        candidate_reply="卖家底价是四千七百元。",
+    )
+
+    assert reply.needs_clarification is False
+    assert "运费承担方式可以作为正式报价条件提交" in reply.text
+    assert "具体发货时间需要卖家确认" in reply.text
+    assert "保证今天发货" not in reply.text
+
+
+def test_missing_transaction_slot_uses_targeted_clarification() -> None:
+    policy = DialoguePolicyService()
+
+    reply = policy.resolve(
+        acts=[
+            DialogueAct(
+                kind=DialogueActKind.REQUEST_TERM,
+                subject=DialogueSubject.SHIPPING_PAYER,
+            )
+        ],
+        candidate_reply="请补充条件。",
         product=PUBLIC_PRODUCT,
-    ) == "请具体说明你想了解的商品信息或交易条件。"
+    )
+
+    assert reply.needs_clarification is True
+    assert reply.text == "请说明你希望运费由买家还是卖家承担。"

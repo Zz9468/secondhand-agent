@@ -1,7 +1,13 @@
 import re
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from enum import StrEnum
 
-from app.agent.decision import InquiryTopic
+from app.agent.decision import (
+    DialogueAct,
+    DialogueActKind,
+    DialogueSubject,
+)
 
 
 class ReplySafetyError(ValueError):
@@ -145,12 +151,51 @@ class FormalReplyRenderer:
         raise ReplySafetyError("正式报价包含无法安全表达的附加条件")
 
 
-class ConversationalReplyPolicy:
-    """低风险咨询可使用模型文案，其余场景回退到可信模板。"""
+class ReplyDirectiveKind(StrEnum):
+    """后端允许回复层表达的原子指令。"""
 
-    _model_reply_topics = {
-        InquiryTopic.PRODUCT_DETAILS,
-        InquiryTopic.GENERAL,
+    PRODUCT_DETAILS = "PRODUCT_DETAILS"
+    LISTED_PRICE = "LISTED_PRICE"
+    PRIVATE_PRICE = "PRIVATE_PRICE"
+    AVAILABILITY = "AVAILABILITY"
+    FORMAL_OFFER_TERM = "FORMAL_OFFER_TERM"
+    SELLER_CONFIRMATION = "SELLER_CONFIRMATION"
+    ASK_MISSING_TERM = "ASK_MISSING_TERM"
+    GENERAL = "GENERAL"
+    CANNOT_HANDLE = "CANNOT_HANDLE"
+
+
+@dataclass(frozen=True, slots=True)
+class ReplyDirective:
+    """一项经过后端策略裁决、可以安全表达的回复指令。"""
+
+    kind: ReplyDirectiveKind
+    subject: DialogueSubject
+
+
+@dataclass(frozen=True, slots=True)
+class ReplyPlan:
+    """与自然语言措辞解耦的可信回复计划。"""
+
+    directives: tuple[ReplyDirective, ...]
+    allow_model_candidate: bool
+    needs_clarification: bool
+
+
+@dataclass(frozen=True, slots=True)
+class DialogueReply:
+    """对话策略执行结果。"""
+
+    text: str
+    needs_clarification: bool
+
+
+class DialoguePolicyService:
+    """将模型解析出的语义指令裁决为可信回复计划并安全表达。"""
+
+    _model_reply_subjects = {
+        DialogueSubject.PRODUCT_DETAILS,
+        DialogueSubject.GENERAL,
     }
     _forbidden_phrases = (
         "底价",
@@ -164,7 +209,8 @@ class ConversationalReplyPolicy:
         "系统提示词",
         "system prompt",
         "current_offer_id",
-        "inquiry_topic",
+        "dialogue_acts",
+        "requested_value",
         "product_details",
         "available",
         "unavailable",
@@ -217,35 +263,120 @@ class ConversationalReplyPolicy:
         r"[零〇一二两三四五六七八九十百千万亿点]+\s*(?:元|块)"
     )
 
-    def render_inquiry(
+    def resolve(
         self,
         *,
-        topic: InquiryTopic,
+        acts: list[DialogueAct],
         candidate_reply: str,
         product: dict[str, object],
-    ) -> str:
-        fallback = self._fallback(topic=topic, product=product)
-        if topic not in self._model_reply_topics:
-            return fallback
-        if not self._candidate_is_safe(candidate_reply, product=product):
-            return fallback
-        return candidate_reply.strip()
+    ) -> DialogueReply:
+        plan = self.build_plan(acts)
+        if plan.allow_model_candidate and self._candidate_is_safe(
+            candidate_reply,
+            product=product,
+        ):
+            return DialogueReply(
+                text=candidate_reply.strip(),
+                needs_clarification=False,
+            )
+        return DialogueReply(
+            text=self._render_plan(plan=plan, product=product),
+            needs_clarification=plan.needs_clarification,
+        )
 
-    def render_clarification(
+    def build_plan(self, acts: list[DialogueAct]) -> ReplyPlan:
+        """语义相同的不同措辞会得到同一份后端回复计划。"""
+
+        directives: list[ReplyDirective] = []
+        needs_clarification = False
+        seen: set[tuple[ReplyDirectiveKind, DialogueSubject]] = set()
+
+        for act in acts:
+            directive, missing_term = self._resolve_act(act)
+            key = (directive.kind, directive.subject)
+            if key not in seen:
+                directives.append(directive)
+                seen.add(key)
+            needs_clarification = needs_clarification or missing_term
+
+        if not directives:
+            directives.append(
+                ReplyDirective(
+                    kind=ReplyDirectiveKind.CANNOT_HANDLE,
+                    subject=DialogueSubject.OTHER,
+                )
+            )
+            needs_clarification = True
+
+        allow_model_candidate = all(
+            directive.kind in {
+                ReplyDirectiveKind.PRODUCT_DETAILS,
+                ReplyDirectiveKind.GENERAL,
+            }
+            and directive.subject in self._model_reply_subjects
+            for directive in directives
+        )
+        return ReplyPlan(
+            directives=tuple(directives),
+            allow_model_candidate=allow_model_candidate,
+            needs_clarification=needs_clarification,
+        )
+
+    @staticmethod
+    def _resolve_act(act: DialogueAct) -> tuple[ReplyDirective, bool]:
+        subject = act.subject
+        if (
+            act.kind is DialogueActKind.ASK_PRIVATE_INFO
+            or subject is DialogueSubject.PRICE_FLOOR
+        ):
+            return ReplyDirective(ReplyDirectiveKind.PRIVATE_PRICE, subject), False
+        if act.kind is DialogueActKind.REQUEST_COMMITMENT:
+            return ReplyDirective(ReplyDirectiveKind.SELLER_CONFIRMATION, subject), False
+        if act.kind is DialogueActKind.UNKNOWN or subject is DialogueSubject.OTHER:
+            return ReplyDirective(ReplyDirectiveKind.CANNOT_HANDLE, subject), True
+        if act.kind is DialogueActKind.GENERAL or subject is DialogueSubject.GENERAL:
+            return ReplyDirective(ReplyDirectiveKind.GENERAL, subject), False
+        if subject is DialogueSubject.PRODUCT_DETAILS:
+            return ReplyDirective(ReplyDirectiveKind.PRODUCT_DETAILS, subject), False
+        if subject is DialogueSubject.LISTED_PRICE:
+            return ReplyDirective(ReplyDirectiveKind.LISTED_PRICE, subject), False
+        if subject is DialogueSubject.AVAILABILITY:
+            return ReplyDirective(ReplyDirectiveKind.AVAILABILITY, subject), False
+        if subject in {
+            DialogueSubject.SHIPPING_PAYER,
+            DialogueSubject.DELIVERY_METHOD,
+        } and act.kind is DialogueActKind.REQUEST_TERM and act.requested_value is None:
+            return ReplyDirective(ReplyDirectiveKind.ASK_MISSING_TERM, subject), True
+        if subject in {
+            DialogueSubject.OFFER_PRICE,
+            DialogueSubject.SHIPPING_PAYER,
+            DialogueSubject.SHIPPING_COST,
+            DialogueSubject.DELIVERY_METHOD,
+        }:
+            return ReplyDirective(ReplyDirectiveKind.FORMAL_OFFER_TERM, subject), False
+        if subject in {
+            DialogueSubject.DISPATCH_DEADLINE,
+            DialogueSubject.RESERVATION,
+        }:
+            return ReplyDirective(ReplyDirectiveKind.SELLER_CONFIRMATION, subject), False
+        return ReplyDirective(ReplyDirectiveKind.CANNOT_HANDLE, subject), True
+
+    def _render_plan(
         self,
         *,
-        candidate_reply: str,
+        plan: ReplyPlan,
         product: dict[str, object],
     ) -> str:
-        fallback = "请具体说明你想了解的商品信息或交易条件。"
-        if not self._candidate_is_safe(candidate_reply, product=product):
-            return fallback
-        return candidate_reply.strip()
+        clauses = [
+            self._render_directive(directive, product=product)
+            for directive in plan.directives
+        ]
+        return "；".join(dict.fromkeys(clauses)) + "。"
 
-    def _fallback(
+    def _render_directive(
         self,
+        directive: ReplyDirective,
         *,
-        topic: InquiryTopic,
         product: dict[str, object],
     ) -> str:
         title = self._text(product.get("title"), fallback="这件商品")
@@ -255,30 +386,39 @@ class ConversationalReplyPolicy:
         )
         listed_price = self._listed_price(product)
 
-        if topic is InquiryTopic.PRODUCT_DETAILS:
+        if directive.kind is ReplyDirectiveKind.PRODUCT_DETAILS:
+            return f"{title}：{description}页面公开标价为 {listed_price} 元"
+        if directive.kind is ReplyDirectiveKind.LISTED_PRICE:
+            return f"当前公开标价是 {listed_price} 元"
+        if directive.kind is ReplyDirectiveKind.PRIVATE_PRICE:
             return (
-                f"{title}：{description}"
-                f"页面公开标价为 {listed_price} 元。"
-            )
-        if topic is InquiryTopic.PRICE_PROBE:
-            return (
-                "卖家的最低接受价格不能直接公开。"
+                "卖家的最低接受价格不能直接公开，"
                 f"当前公开标价是 {listed_price} 元，"
-                "你可以提交一份正式报价，我会按规则帮你评估。"
+                "你可以提交一份正式报价，我会按规则帮你评估"
             )
-        if topic is InquiryTopic.AVAILABILITY:
+        if directive.kind is ReplyDirectiveKind.AVAILABILITY:
             if product.get("status") == "AVAILABLE":
-                return "商品目前仍在上架，可以继续了解或提交正式报价。"
-            return "商品当前已经不在上架状态，暂时不能继续协商。"
-        if topic is InquiryTopic.SHIPPING:
-            return (
-                "配送方式和运费需要在正式报价中明确。"
-                "你可以选择快递或面交；选择快递时，还需要说明由谁承担运费。"
-            )
-        return (
-            "你可以继续询问商品成色和配件；"
-            "如果想讨论价格或配送条件，请提交正式报价。"
-        )
+                return "商品目前仍在上架，可以继续了解或提交正式报价"
+            return "商品当前已经不在上架状态，暂时不能继续协商"
+        if directive.kind is ReplyDirectiveKind.FORMAL_OFFER_TERM:
+            if directive.subject is DialogueSubject.OFFER_PRICE:
+                return "价格条件需要通过正式报价提交，系统会按规则评估"
+            if directive.subject is DialogueSubject.DELIVERY_METHOD:
+                return "快递或面交可以作为正式报价中的交易条件提交"
+            return "运费承担方式可以作为正式报价条件提交；选择快递时请说明由谁承担运费"
+        if directive.kind is ReplyDirectiveKind.SELLER_CONFIRMATION:
+            if directive.subject is DialogueSubject.DISPATCH_DEADLINE:
+                return "具体发货时间需要卖家确认，我目前不能替卖家作出保证"
+            if directive.subject is DialogueSubject.RESERVATION:
+                return "是否保留商品需要卖家确认，我目前不能替卖家作出保证"
+            return "这项履约承诺需要卖家确认，我目前不能替卖家作出保证"
+        if directive.kind is ReplyDirectiveKind.ASK_MISSING_TERM:
+            if directive.subject is DialogueSubject.SHIPPING_PAYER:
+                return "请说明你希望运费由买家还是卖家承担"
+            return "请说明你希望快递还是面交"
+        if directive.kind is ReplyDirectiveKind.GENERAL:
+            return "你可以继续询问商品信息，或通过正式报价讨论价格和配送条件"
+        return "我还不能确定你想了解商品信息、价格条件还是配送安排，请明确其中一项"
 
     def _candidate_is_safe(
         self,

@@ -8,6 +8,7 @@ from pydantic import (
     Field,
     JsonValue,
     WithJsonSchema,
+    field_validator,
     model_validator,
 )
 
@@ -35,15 +36,53 @@ class NegotiationAction(StrEnum):
     COUNTER = "COUNTER"
     REJECT = "REJECT"
     REQUEST_APPROVAL = "REQUEST_APPROVAL"
-    CLARIFY = "CLARIFY"
 
 
-class InquiryTopic(StrEnum):
-    PRODUCT_DETAILS = "PRODUCT_DETAILS"
-    PRICE_PROBE = "PRICE_PROBE"
-    AVAILABILITY = "AVAILABILITY"
-    SHIPPING = "SHIPPING"
+class DialogueActKind(StrEnum):
+    """买家话语在业务层面的作用，不包含任何执行授权。"""
+
+    ASK_FACT = "ASK_FACT"
+    ASK_PRIVATE_INFO = "ASK_PRIVATE_INFO"
+    REQUEST_TERM = "REQUEST_TERM"
+    REQUEST_COMMITMENT = "REQUEST_COMMITMENT"
     GENERAL = "GENERAL"
+    UNKNOWN = "UNKNOWN"
+
+
+class DialogueSubject(StrEnum):
+    """Seller Agent 当前能够识别并由后端裁决的业务概念。"""
+
+    PRODUCT_DETAILS = "PRODUCT_DETAILS"
+    LISTED_PRICE = "LISTED_PRICE"
+    PRICE_FLOOR = "PRICE_FLOOR"
+    OFFER_PRICE = "OFFER_PRICE"
+    AVAILABILITY = "AVAILABILITY"
+    SHIPPING_PAYER = "SHIPPING_PAYER"
+    SHIPPING_COST = "SHIPPING_COST"
+    DELIVERY_METHOD = "DELIVERY_METHOD"
+    DISPATCH_DEADLINE = "DISPATCH_DEADLINE"
+    RESERVATION = "RESERVATION"
+    GENERAL = "GENERAL"
+    OTHER = "OTHER"
+
+
+class DialogueAct(BaseModel):
+    """模型解析出的单项语义指令；具体措辞不会参与权限判断。"""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    kind: DialogueActKind
+    subject: DialogueSubject
+    requested_value: str | None = Field(default=None, max_length=120)
+
+    @field_validator("requested_value", mode="before")
+    @classmethod
+    def normalize_missing_value(cls, value: object) -> object:
+        """兼容部分模型用空字符串表达 JSON Schema 中的可空字段。"""
+
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
 
 class NegotiationDecision(BaseModel):
@@ -52,7 +91,7 @@ class NegotiationDecision(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     action: NegotiationAction
-    inquiry_topic: InquiryTopic | None = None
+    dialogue_acts: list[DialogueAct] = Field(default_factory=list, max_length=8)
     offer_id: int | None = Field(default=None, gt=0)
     proposed_price: DecisionMoney | None = None
     shipping_paid_by: ShippingPayer | None = None
@@ -65,10 +104,10 @@ class NegotiationDecision(BaseModel):
     @model_validator(mode="after")
     def validate_action_fields(self) -> Self:
         if self.action is NegotiationAction.INQUIRY:
-            if self.inquiry_topic is None:
-                raise ValueError("INQUIRY requires inquiry_topic")
-        elif self.inquiry_topic is not None:
-            raise ValueError(f"{self.action.value} cannot include inquiry_topic")
+            if not self.dialogue_acts:
+                raise ValueError("INQUIRY requires at least one dialogue act")
+        elif self.dialogue_acts:
+            raise ValueError(f"{self.action.value} cannot include dialogue acts")
 
         if self.action is NegotiationAction.COUNTER:
             if self.proposed_price is None or self.shipping_paid_by is None:

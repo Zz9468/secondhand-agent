@@ -7,7 +7,13 @@ from langchain.agents.structured_output import (
 from langchain_core.messages import AIMessage
 
 from app.agent import decision_provider as provider_module
-from app.agent.decision import InquiryTopic, NegotiationAction, NegotiationDecision
+from app.agent.decision import (
+    DialogueAct,
+    DialogueActKind,
+    DialogueSubject,
+    NegotiationAction,
+    NegotiationDecision,
+)
 from app.agent.decision_provider import (
     ConversationMessage,
     DecisionRequest,
@@ -24,7 +30,12 @@ class StubAgent:
         return {
             "structured_response": NegotiationDecision(
                 action=NegotiationAction.INQUIRY,
-                inquiry_topic=InquiryTopic.AVAILABILITY,
+                dialogue_acts=[
+                    DialogueAct(
+                        kind=DialogueActKind.ASK_FACT,
+                        subject=DialogueSubject.AVAILABILITY,
+                    )
+                ],
                 reason="回答公开信息",
                 reply="商品仍然可以咨询。",
             )
@@ -75,7 +86,12 @@ def test_langchain_provider_wraps_untrusted_message_and_validates_result(
 
     assert decision == NegotiationDecision(
         action=NegotiationAction.INQUIRY,
-        inquiry_topic=InquiryTopic.AVAILABILITY,
+        dialogue_acts=[
+            DialogueAct(
+                kind=DialogueActKind.ASK_FACT,
+                subject=DialogueSubject.AVAILABILITY,
+            )
+        ],
         reason="回答公开信息",
         reply="商品仍然可以咨询。",
     )

@@ -10,7 +10,7 @@ from app.agent.decision_provider import (
     DecisionRequest,
 )
 from app.agent.reply_policy import (
-    ConversationalReplyPolicy,
+    DialoguePolicyService,
     FormalReplyRenderer,
     ReplySafetyError,
 )
@@ -50,7 +50,7 @@ class SellerAgent:
         decision_provider: DecisionProvider,
         tools: list[BaseTool],
         reply_renderer: FormalReplyRenderer | None = None,
-        conversational_reply_policy: ConversationalReplyPolicy | None = None,
+        dialogue_policy: DialoguePolicyService | None = None,
     ) -> None:
         self._decision_provider = decision_provider
         self._tools = {item.name: item for item in tools}
@@ -65,9 +65,7 @@ class SellerAgent:
         if len(tools) != len(required_tools) or set(self._tools) != required_tools:
             raise ValueError("SellerAgent requires exactly the six V2 negotiation tools")
         self._reply_renderer = reply_renderer or FormalReplyRenderer()
-        self._conversational_reply_policy = (
-            conversational_reply_policy or ConversationalReplyPolicy()
-        )
+        self._dialogue_policy = dialogue_policy or DialoguePolicyService()
 
     def handle_turn(
         self,
@@ -220,29 +218,26 @@ class SellerAgent:
             return self._safe_failure(decision)
 
         if decision.action is NegotiationAction.INQUIRY:
-            if decision.inquiry_topic is None:
+            if not decision.dialogue_acts:
                 return self._safe_failure(decision)
-            reply = self._conversational_reply_policy.render_inquiry(
-                topic=decision.inquiry_topic,
+            dialogue_reply = self._dialogue_policy.resolve(
+                acts=decision.dialogue_acts,
                 candidate_reply=decision.reply,
                 product=product,
             )
-        elif decision.action is NegotiationAction.CLARIFY:
-            reply = self._conversational_reply_policy.render_clarification(
-                candidate_reply=decision.reply,
-                product=product,
+            outcome = (
+                AgentTurnOutcome.CLARIFICATION
+                if dialogue_reply.needs_clarification
+                else AgentTurnOutcome.INFORMATIONAL
             )
+            reply = dialogue_reply.text
         else:
+            outcome = AgentTurnOutcome.REJECTED
             reply = "这个条件暂时无法接受，你可以调整后再提出。"
-        outcomes = {
-            NegotiationAction.INQUIRY: AgentTurnOutcome.INFORMATIONAL,
-            NegotiationAction.REJECT: AgentTurnOutcome.REJECTED,
-            NegotiationAction.CLARIFY: AgentTurnOutcome.CLARIFICATION,
-        }
         return AgentTurnResult(
-            # 低风险咨询可使用通过校验的候选文案；交易动作仍由可信模板生成。
+            # 低风险咨询可使用通过校验的候选文案；业务条件由回复计划生成。
             reply=reply,
-            outcome=outcomes[decision.action],
+            outcome=outcome,
             decision=decision,
         )
 

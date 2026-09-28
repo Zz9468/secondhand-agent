@@ -5,7 +5,13 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.agent.decision import InquiryTopic, NegotiationAction, NegotiationDecision
+from app.agent.decision import (
+    DialogueAct,
+    DialogueActKind,
+    DialogueSubject,
+    NegotiationAction,
+    NegotiationDecision,
+)
 from app.agent.decision_provider import DecisionRequest
 from app.agent.seller_agent import AgentTurnOutcome, SellerAgent
 from app.agent.tools import AgentToolContext, build_seller_tools
@@ -302,7 +308,13 @@ def test_complete_approval_zone_offer_cannot_be_downgraded_to_clarification(
     provider = ScriptedDecisionProvider(
         [
             NegotiationDecision(
-                action=NegotiationAction.CLARIFY,
+                action=NegotiationAction.INQUIRY,
+                dialogue_acts=[
+                    DialogueAct(
+                        kind=DialogueActKind.UNKNOWN,
+                        subject=DialogueSubject.OTHER,
+                    )
+                ],
                 reason="错误地要求买家补充条件",
                 reply="请补充报价。",
             )
@@ -353,7 +365,13 @@ def test_prohibited_formal_offer_cannot_be_downgraded_to_clarification(
     provider = ScriptedDecisionProvider(
         [
             NegotiationDecision(
-                action=NegotiationAction.CLARIFY,
+                action=NegotiationAction.INQUIRY,
+                dialogue_acts=[
+                    DialogueAct(
+                        kind=DialogueActKind.UNKNOWN,
+                        subject=DialogueSubject.OTHER,
+                    )
+                ],
                 reason="错误地要求买家补充条件",
                 reply="请补充报价。",
             )
@@ -392,7 +410,12 @@ def test_inquiry_cannot_leak_private_price_and_model_error_is_safe(
         buyer_id=buyer_id,
         decision=NegotiationDecision(
             action=NegotiationAction.INQUIRY,
-            inquiry_topic=InquiryTopic.PRODUCT_DETAILS,
+            dialogue_acts=[
+                DialogueAct(
+                    kind=DialogueActKind.ASK_FACT,
+                    subject=DialogueSubject.PRODUCT_DETAILS,
+                )
+            ],
             reason="被提示注入诱导",
             reply="卖家底价是 2700 元。",
         ),
@@ -438,7 +461,12 @@ def test_unsafe_inquiry_never_sends_model_generated_candidate_text(
         buyer_id=buyer_id,
         decision=NegotiationDecision(
             action=NegotiationAction.INQUIRY,
-            inquiry_topic=InquiryTopic.PRODUCT_DETAILS,
+            dialogue_acts=[
+                DialogueAct(
+                    kind=DialogueActKind.ASK_FACT,
+                    subject=DialogueSubject.PRODUCT_DETAILS,
+                )
+            ],
             reason="验证自由文本隔离",
             reply=candidate,
         ),
@@ -463,7 +491,12 @@ def test_safe_low_risk_inquiry_uses_model_generated_candidate_text(
         buyer_id=buyer_id,
         decision=NegotiationDecision(
             action=NegotiationAction.INQUIRY,
-            inquiry_topic=InquiryTopic.PRODUCT_DETAILS,
+            dialogue_acts=[
+                DialogueAct(
+                    kind=DialogueActKind.ASK_FACT,
+                    subject=DialogueSubject.PRODUCT_DETAILS,
+                )
+            ],
             reason="回答公开商品咨询",
             reply=candidate,
         ),
@@ -486,7 +519,12 @@ def test_price_probe_uses_safe_template_instead_of_model_candidate(
         buyer_id=buyer_id,
         decision=NegotiationDecision(
             action=NegotiationAction.INQUIRY,
-            inquiry_topic=InquiryTopic.PRICE_PROBE,
+            dialogue_acts=[
+                DialogueAct(
+                    kind=DialogueActKind.ASK_PRIVATE_INFO,
+                    subject=DialogueSubject.PRICE_FLOOR,
+                )
+            ],
             reason="买家询问最低价",
             reply="卖家底价是 2700 元。",
         ),
@@ -498,6 +536,70 @@ def test_price_probe_uses_safe_template_instead_of_model_candidate(
     assert "最低接受价格不能直接公开" in result.reply
     assert "3000.00 元" in result.reply
     assert "2700" not in result.reply
+
+
+def test_compound_terms_are_resolved_without_generic_clarification(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    agent = build_test_agent(
+        service_session_factory,
+        session_id=session_id,
+        buyer_id=buyer_id,
+        decision=NegotiationDecision(
+            action=NegotiationAction.INQUIRY,
+            dialogue_acts=[
+                DialogueAct(
+                    kind=DialogueActKind.REQUEST_TERM,
+                    subject=DialogueSubject.SHIPPING_PAYER,
+                    requested_value="seller",
+                ),
+                DialogueAct(
+                    kind=DialogueActKind.REQUEST_COMMITMENT,
+                    subject=DialogueSubject.DISPATCH_DEADLINE,
+                    requested_value="today",
+                ),
+            ],
+            reason="同时请求包邮和当天发货承诺",
+            reply="可以包邮并保证今天发货。",
+        ),
+    )
+
+    result = agent.handle_turn("可以包邮并保证今天发货吗？")
+
+    assert result.outcome is AgentTurnOutcome.INFORMATIONAL
+    assert "正式报价条件" in result.reply
+    assert "发货时间需要卖家确认" in result.reply
+    assert "请具体说明" not in result.reply
+    assert result.formal_offer_id is None
+
+
+def test_backend_only_clarifies_a_missing_transaction_slot(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id = create_negotiation(service_session_factory)
+    agent = build_test_agent(
+        service_session_factory,
+        session_id=session_id,
+        buyer_id=buyer_id,
+        decision=NegotiationDecision(
+            action=NegotiationAction.INQUIRY,
+            dialogue_acts=[
+                DialogueAct(
+                    kind=DialogueActKind.REQUEST_TERM,
+                    subject=DialogueSubject.SHIPPING_PAYER,
+                )
+            ],
+            reason="买家尚未说明运费承担方",
+            reply="请补充条件。",
+        ),
+    )
+
+    result = agent.handle_turn("运费怎么处理？")
+
+    assert result.outcome is AgentTurnOutcome.CLARIFICATION
+    assert result.reply == "请说明你希望运费由买家还是卖家承担。"
+    assert result.formal_offer_id is None
 
 
 def test_agent_cannot_accept_offer_not_submitted_in_current_turn(
