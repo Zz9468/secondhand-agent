@@ -18,6 +18,8 @@ from app.db.models import (
     ApprovalRequest,
     ApprovalStatus,
     Message,
+    ModelExecutionTask,
+    ModelTaskStatus,
     NegotiationSession,
     NegotiationStatus,
     Offer,
@@ -29,6 +31,7 @@ from app.db.models import (
 )
 from app.services.chat_service import BuyerOfferSubmission, ChatService
 from app.services.errors import (
+    IncompleteRequestError,
     MessageConflictError,
     ModelDecisionError,
     NegotiationNotFoundError,
@@ -228,7 +231,7 @@ def test_waiting_approval_allows_inquiry_and_new_offer_cancels_old_request(
         assert negotiation.status is NegotiationStatus.ACTIVE
 
 
-def test_model_failure_rolls_back_new_offer_and_old_approval_cancellation(
+def test_model_failure_persists_input_and_retryable_task_without_partial_reply(
     service_session_factory: sessionmaker[Session],
 ) -> None:
     session_id, buyer_id = create_negotiation(service_session_factory)
@@ -280,14 +283,28 @@ def test_model_failure_rolls_back_new_offer_and_old_approval_cancellation(
             db.scalars(select(Message).where(Message.session_id == session_id))
         )
         negotiation = db.get(NegotiationSession, session_id)
+        task = db.scalar(
+            select(ModelExecutionTask).where(
+                ModelExecutionTask.session_id == session_id,
+                ModelExecutionTask.business_key.like("chat:%"),
+            ).order_by(ModelExecutionTask.id.desc())
+        )
         assert len(approvals) == 1
-        assert approvals[0].status is ApprovalStatus.PENDING
-        assert len(offers) == 1
-        assert offers[0].price == Decimal("2800.00")
-        assert offers[0].status is OfferStatus.PROPOSED
-        assert len(messages) == 2
+        assert approvals[0].status is ApprovalStatus.CANCELLED
+        assert len(offers) == 2
+        assert [offer.status for offer in offers] == [
+            OfferStatus.WITHDRAWN,
+            OfferStatus.PROPOSED,
+        ]
+        assert offers[1].price == Decimal("2600.00")
+        assert len(messages) == 3
+        assert messages[-1].role.value == "BUYER"
         assert negotiation is not None
-        assert negotiation.status is NegotiationStatus.WAITING_APPROVAL
+        assert negotiation.status is NegotiationStatus.ACTIVE
+        assert negotiation.current_offer_id == offers[1].id
+        assert task is not None
+        assert task.status is ModelTaskStatus.RETRY_WAIT
+        assert task.attempt_count == 1
 
 
 def test_new_approval_zone_offer_replaces_pending_request_atomically(
@@ -522,16 +539,16 @@ def test_agent_cannot_create_more_counters_after_max_rounds(
         assert len(offers) == 2
 
 
-def test_same_session_chat_turns_are_serialized_across_connections(
+def test_model_call_releases_locks_and_discards_result_after_policy_change(
     mysql_engine: Engine,
 ) -> None:
     session_factory = sessionmaker(bind=mysql_engine, expire_on_commit=False)
     session_id, buyer_id = create_negotiation(session_factory)
     first_entered = Event()
     release_first = Event()
-    second_started = Event()
-    second_entered = Event()
+    policy_changed = Event()
     failures: list[BaseException] = []
+    results = []
 
     def inquiry_decision(reply: str) -> NegotiationDecision:
         return NegotiationDecision(
@@ -542,7 +559,7 @@ def test_same_session_chat_turns_are_serialized_across_connections(
                     subject=DialogueSubject.GENERAL,
                 )
             ],
-            reason="并发串行测试",
+            reason="事务外模型调用测试",
             reply=reply,
         )
 
@@ -552,59 +569,89 @@ def test_same_session_chat_turns_are_serialized_across_connections(
             raise TimeoutError("等待释放首个会话轮次超时")
         return inquiry_decision("第一条候选回复")
 
-    def second_route(_: object) -> NegotiationDecision:
-        second_entered.set()
-        return inquiry_decision("第二条候选回复")
-
     def run_first() -> None:
         try:
-            ChatService(
-                session_factory,
-                RoutingDecisionProvider(first_route),
-            ).send_buyer_message(
-                session_id=session_id,
-                buyer_id=buyer_id,
-                request_id="request-concurrent-first-001",
-                content="第一条消息",
+            results.append(
+                ChatService(
+                    session_factory,
+                    RoutingDecisionProvider(first_route),
+                ).send_buyer_message(
+                    session_id=session_id,
+                    buyer_id=buyer_id,
+                    request_id="request-concurrent-first-001",
+                    content="第一条消息",
+                )
             )
         except BaseException as exc:  # pragma: no cover - 仅用于跨线程回传失败
             failures.append(exc)
 
-    def run_second() -> None:
-        second_started.set()
+    def change_policy() -> None:
         try:
+            with session_factory() as db, db.begin():
+                negotiation = db.get(NegotiationSession, session_id)
+                assert negotiation is not None
+                policy = db.scalar(
+                    select(SellerPolicy)
+                    .where(SellerPolicy.product_id == negotiation.product_id)
+                    .with_for_update()
+                )
+                assert policy is not None
+                policy.version += 1
+            policy_changed.set()
+        except BaseException as exc:  # pragma: no cover - 仅用于跨线程回传失败
+            failures.append(exc)
+
+    first_thread = Thread(target=run_first)
+    policy_thread = Thread(target=change_policy)
+    try:
+        first_thread.start()
+        assert first_entered.wait(timeout=3)
+
+        with pytest.raises(IncompleteRequestError):
             ChatService(
                 session_factory,
-                RoutingDecisionProvider(second_route),
+                RoutingDecisionProvider(lambda _: inquiry_decision("不会调用")),
             ).send_buyer_message(
                 session_id=session_id,
                 buyer_id=buyer_id,
                 request_id="request-concurrent-second-001",
                 content="第二条消息",
             )
-        except BaseException as exc:  # pragma: no cover - 仅用于跨线程回传失败
-            failures.append(exc)
 
-    first_thread = Thread(target=run_first)
-    second_thread = Thread(target=run_second)
-    try:
-        first_thread.start()
-        assert first_entered.wait(timeout=3)
-        second_thread.start()
-        assert second_started.wait(timeout=1)
-        assert not second_entered.wait(timeout=1)
+        policy_thread.start()
+        assert policy_changed.wait(timeout=3)
 
         release_first.set()
-        assert second_entered.wait(timeout=3)
         first_thread.join(timeout=3)
-        second_thread.join(timeout=3)
+        policy_thread.join(timeout=3)
         assert not first_thread.is_alive()
-        assert not second_thread.is_alive()
+        assert not policy_thread.is_alive()
         assert failures == []
+        assert len(results) == 1
+        assert results[0].outcome == "SAFE_FAILURE"
+        assert "未生效" in results[0].agent_message.content
+
+        with session_factory() as db:
+            task = db.scalar(
+                select(ModelExecutionTask).where(
+                    ModelExecutionTask.session_id == session_id
+                )
+            )
+            messages = tuple(
+                db.scalars(
+                    select(Message)
+                    .where(Message.session_id == session_id)
+                    .order_by(Message.id)
+                )
+            )
+            assert task is not None
+            assert task.status is ModelTaskStatus.STALE
+            assert len(messages) == 2
+            assert "第一条候选回复" not in messages[-1].content
     finally:
         release_first.set()
         first_thread.join(timeout=1)
-        second_thread.join(timeout=1)
+        policy_thread.join(timeout=1)
         with session_factory() as db, db.begin():
             negotiation = db.get(NegotiationSession, session_id)
             if negotiation is not None:

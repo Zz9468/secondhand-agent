@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from threading import Barrier, Lock
+from threading import Barrier, Event, Lock, Thread
 
 import pytest
 from sqlalchemy import delete, select
@@ -18,6 +18,8 @@ from app.db.models import (
     ApprovalRequest,
     Message,
     MessageRole,
+    ModelExecutionTask,
+    ModelTaskStatus,
     NegotiationSession,
     NegotiationStatus,
     Offer,
@@ -153,6 +155,18 @@ def test_worker_sends_rejection_and_retries_failed_model_call(
     processor = ApprovalProcessor(service_session_factory, provider)
 
     failed = processor.process_next()
+    with service_session_factory() as db, db.begin():
+        waiting_task = db.scalar(
+            select(ModelExecutionTask).where(
+                ModelExecutionTask.approval_id == approval_id
+            )
+        )
+        assert waiting_task is not None
+        assert waiting_task.status is ModelTaskStatus.RETRY_WAIT
+        waiting_task.next_retry_at = datetime.now(UTC).replace(tzinfo=None) - timedelta(
+            seconds=1
+        )
+
     retried = processor.process_next()
 
     assert failed is not None
@@ -178,6 +192,14 @@ def test_worker_sends_rejection_and_retries_failed_model_call(
         assert len(messages) == 1
         assert messages[0].formal_offer_id is None
         assert "未同意" in messages[0].content
+        task = db.scalar(
+            select(ModelExecutionTask).where(
+                ModelExecutionTask.approval_id == approval_id
+            )
+        )
+        assert task is not None
+        assert task.status is ModelTaskStatus.SUCCEEDED
+        assert task.attempt_count == 2
 
 
 def test_worker_invalidates_approval_when_policy_changes_after_review(
@@ -252,6 +274,100 @@ def test_concurrent_workers_send_only_one_followup(mysql_engine: Engine) -> None
             assert approval.followup_status is ApprovalFollowupStatus.SENT
             assert message_count == 1
     finally:
+        _delete_committed_negotiation(committed_factory, session_id=session_id)
+
+
+def test_model_call_releases_locks_and_stales_approved_result_on_policy_change(
+    mysql_engine: Engine,
+) -> None:
+    committed_factory = sessionmaker(bind=mysql_engine, expire_on_commit=False)
+    session_id, offer_id, approval_id = _create_reviewed_approval(
+        committed_factory,
+        approved=True,
+        request_id="worker-policy-race-001",
+    )
+    entered = Event()
+    release = Event()
+    policy_changed = Event()
+    failures: list[BaseException] = []
+    results = []
+
+    class BlockingProvider:
+        def draft(self, request: ApprovalFollowupRequest) -> ApprovalFollowupDraft:
+            entered.set()
+            if not release.wait(timeout=5):
+                raise TimeoutError("等待释放审批模型调用超时")
+            return ApprovalFollowupDraft(
+                acknowledged_event=request.event,
+                reason="返回调用前的审批事件",
+                reply="旧候选文案不得直接发送。",
+            )
+
+    def process() -> None:
+        try:
+            results.append(
+                ApprovalProcessor(committed_factory, BlockingProvider()).process_next()
+            )
+        except BaseException as exc:  # pragma: no cover - 仅用于跨线程回传失败
+            failures.append(exc)
+
+    def change_policy() -> None:
+        try:
+            with committed_factory() as db, db.begin():
+                negotiation = db.get(NegotiationSession, session_id)
+                assert negotiation is not None
+                policy = db.scalar(
+                    select(SellerPolicy)
+                    .where(SellerPolicy.product_id == negotiation.product_id)
+                    .with_for_update()
+                )
+                assert policy is not None
+                policy.version += 1
+            policy_changed.set()
+        except BaseException as exc:  # pragma: no cover - 仅用于跨线程回传失败
+            failures.append(exc)
+
+    worker = Thread(target=process)
+    mutation = Thread(target=change_policy)
+    try:
+        worker.start()
+        assert entered.wait(timeout=3)
+        mutation.start()
+        assert policy_changed.wait(timeout=3)
+        release.set()
+        worker.join(timeout=3)
+        mutation.join(timeout=3)
+        assert not worker.is_alive()
+        assert not mutation.is_alive()
+        assert failures == []
+        assert len(results) == 1
+        result = results[0]
+        assert result is not None
+        assert result.status is ApprovalFollowupStatus.SENT
+        assert result.outcome is not None
+        assert result.outcome.value == "APPROVAL_INVALIDATED"
+
+        with committed_factory() as db:
+            task = db.scalar(
+                select(ModelExecutionTask).where(
+                    ModelExecutionTask.approval_id == approval_id
+                )
+            )
+            offer = db.get(Offer, offer_id)
+            message = db.scalar(
+                select(Message).where(Message.session_id == session_id)
+            )
+            assert task is not None
+            assert task.status is ModelTaskStatus.STALE
+            assert offer is not None
+            assert offer.status is OfferStatus.WITHDRAWN
+            assert message is not None
+            assert "旧候选文案" not in message.content
+            assert "不再有效" in message.content
+    finally:
+        release.set()
+        worker.join(timeout=1)
+        mutation.join(timeout=1)
         _delete_committed_negotiation(committed_factory, session_id=session_id)
 
 

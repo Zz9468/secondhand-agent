@@ -39,6 +39,23 @@ class AgentTurnResult:
         return self.formal_offer_id is not None
 
 
+@dataclass(frozen=True, slots=True)
+class AgentTurnPreparation:
+    """模型调用前冻结的可信上下文或无需模型的确定性结果。"""
+
+    decision_request: DecisionRequest | None = None
+    deterministic_decision: NegotiationDecision | None = None
+    immediate_result: AgentTurnResult | None = None
+
+    @property
+    def requires_model(self) -> bool:
+        return (
+            self.immediate_result is None
+            and self.deterministic_decision is None
+            and self.decision_request is not None
+        )
+
+
 class SellerAgent:
     """将模型候选决策、受约束工具和正式回复通路串联起来。"""
 
@@ -74,51 +91,18 @@ class SellerAgent:
         conversation_history: tuple[ConversationMessage, ...] = (),
         current_turn_offer_id: int | None = None,
     ) -> AgentTurnResult:
-        normalized_message = buyer_message.strip()
-        if not normalized_message or len(normalized_message) > 4000:
-            return AgentTurnResult(
-                reply="请输入有效且不过长的咨询内容。",
-                outcome=AgentTurnOutcome.SAFE_FAILURE,
-                decision=None,
-            )
-
-        product_result = self._invoke("get_product_info", {})
-        negotiation_result = self._invoke("get_negotiation_state", {})
-        if not self._is_success(product_result) or not self._is_success(negotiation_result):
-            return AgentTurnResult(
-                reply=self._generic_failure_reply,
-                outcome=AgentTurnOutcome.SAFE_FAILURE,
-                decision=None,
-            )
-
-        decision_negotiation_context = self._with_current_offer_authorization(
-            negotiation_result,
+        preparation = self.prepare_turn(
+            buyer_message,
+            conversation_history=conversation_history,
             current_turn_offer_id=current_turn_offer_id,
         )
-        if decision_negotiation_context is None:
-            return AgentTurnResult(
-                reply=self._generic_failure_reply,
-                outcome=AgentTurnOutcome.SAFE_FAILURE,
-                decision=None,
-            )
-
-        deterministic_result = self._resolve_authorized_current_offer(
-            decision_negotiation_context,
-            current_turn_offer_id=current_turn_offer_id,
-        )
-        if deterministic_result is not None:
-            return deterministic_result
+        if not preparation.requires_model:
+            return self.apply_prepared(preparation)
 
         try:
-            decision = self._decision_provider.decide(
-                DecisionRequest(
-                    buyer_message=normalized_message,
-                    product_context=product_result,
-                    negotiation_context=decision_negotiation_context,
-                    conversation_history=conversation_history,
-                    current_turn_offer_id=current_turn_offer_id,
-                )
-            )
+            if preparation.decision_request is None:  # pragma: no cover - 防御分支
+                raise RuntimeError("模型决策缺少输入快照")
+            decision = self._decision_provider.decide(preparation.decision_request)
         except Exception:
             # 模型或结构化解析错误不得向买家泄漏内部异常，也不得触发正式承诺。
             return AgentTurnResult(
@@ -126,25 +110,104 @@ class SellerAgent:
                 outcome=AgentTurnOutcome.MODEL_ERROR,
                 decision=None,
             )
+        return self.apply_prepared(preparation, decision=decision)
 
-        decision = self._constrain_current_offer_decision(
-            decision,
+    def prepare_turn(
+        self,
+        buyer_message: str,
+        *,
+        conversation_history: tuple[ConversationMessage, ...] = (),
+        current_turn_offer_id: int | None = None,
+    ) -> AgentTurnPreparation:
+        """只读取可信上下文和规则授权，不调用模型或执行变更工具。"""
+
+        normalized_message = buyer_message.strip()
+        if not normalized_message or len(normalized_message) > 4000:
+            return AgentTurnPreparation(
+                immediate_result=AgentTurnResult(
+                    reply="请输入有效且不过长的咨询内容。",
+                    outcome=AgentTurnOutcome.SAFE_FAILURE,
+                    decision=None,
+                )
+            )
+
+        product_result = self._invoke("get_product_info", {})
+        negotiation_result = self._invoke("get_negotiation_state", {})
+        if not self._is_success(product_result) or not self._is_success(negotiation_result):
+            return AgentTurnPreparation(
+                immediate_result=AgentTurnResult(
+                    reply=self._generic_failure_reply,
+                    outcome=AgentTurnOutcome.SAFE_FAILURE,
+                    decision=None,
+                )
+            )
+
+        decision_negotiation_context = self._with_current_offer_authorization(
+            negotiation_result,
             current_turn_offer_id=current_turn_offer_id,
         )
+        if decision_negotiation_context is None:
+            return AgentTurnPreparation(
+                immediate_result=AgentTurnResult(
+                    reply=self._generic_failure_reply,
+                    outcome=AgentTurnOutcome.SAFE_FAILURE,
+                    decision=None,
+                )
+            )
+
+        decision_request = DecisionRequest(
+            buyer_message=normalized_message,
+            product_context=product_result,
+            negotiation_context=decision_negotiation_context,
+            conversation_history=conversation_history,
+            current_turn_offer_id=current_turn_offer_id,
+        )
+        deterministic_result = self._authorized_current_offer_decision(
+            decision_negotiation_context,
+            current_turn_offer_id=current_turn_offer_id,
+        )
+        if isinstance(deterministic_result, AgentTurnResult):
+            return AgentTurnPreparation(immediate_result=deterministic_result)
+        return AgentTurnPreparation(
+            decision_request=decision_request,
+            deterministic_decision=deterministic_result,
+        )
+
+    def apply_prepared(
+        self,
+        preparation: AgentTurnPreparation,
+        *,
+        decision: NegotiationDecision | None = None,
+    ) -> AgentTurnResult:
+        """把已冻结的决策交给受约束工具；调用方负责先复核数据库版本。"""
+
+        if preparation.immediate_result is not None:
+            return preparation.immediate_result
+        request = preparation.decision_request
+        if request is None:
+            raise ValueError("AgentTurnPreparation 缺少决策上下文")
+        resolved_decision = preparation.deterministic_decision
+        if resolved_decision is None:
+            if decision is None:
+                raise ValueError("模型决策尚未提供")
+            resolved_decision = self._constrain_current_offer_decision(
+                decision,
+                current_turn_offer_id=request.current_turn_offer_id,
+            )
         return self._execute_decision(
-            decision=decision,
-            product_result=product_result,
-            negotiation_result=decision_negotiation_context,
-            current_turn_offer_id=current_turn_offer_id,
+            decision=resolved_decision,
+            product_result=request.product_context,
+            negotiation_result=request.negotiation_context,
+            current_turn_offer_id=request.current_turn_offer_id,
         )
 
-    def _resolve_authorized_current_offer(
+    def _authorized_current_offer_decision(
         self,
         negotiation_result: dict[str, object],
         *,
         current_turn_offer_id: int | None,
-    ) -> AgentTurnResult | None:
-        """对完整正式报价执行后端已能确定的接受或审批动作。"""
+    ) -> NegotiationDecision | AgentTurnResult | None:
+        """为完整正式报价生成后端已能确定的接受或审批决策。"""
 
         if current_turn_offer_id is None:
             return None
@@ -157,22 +220,20 @@ class SellerAgent:
             )
 
         if authorization.get("can_accept_automatically") is True:
-            decision = NegotiationDecision(
+            return NegotiationDecision(
                 action=NegotiationAction.ACCEPT,
                 offer_id=current_turn_offer_id,
                 reason="后端规则授权自动接受本轮正式报价",
                 reply="由正式回复安全层生成接受结果。",
             )
-            return self._execute_accept(decision, current_turn_offer_id)
 
         if authorization.get("can_request_approval") is True:
-            decision = NegotiationDecision(
+            return NegotiationDecision(
                 action=NegotiationAction.REQUEST_APPROVAL,
                 offer_id=current_turn_offer_id,
                 reason="后端规则要求卖家确认本轮正式报价",
                 reply="由正式回复安全层生成审批结果。",
             )
-            return self._execute_approval(decision, current_turn_offer_id)
 
         return None
 

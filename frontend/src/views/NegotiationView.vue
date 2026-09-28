@@ -13,6 +13,7 @@ import {
   type BuyerOfferPayload,
   type ChatMessage,
   type NegotiationDetail,
+  type SendMessagePayload,
   type ShippingPayer,
 } from '../api/negotiations'
 
@@ -42,6 +43,7 @@ let pendingConfirmation: {
   requestId: string
 } | null = null
 let pendingClosure: { sessionId: number; requestId: string } | null = null
+let pendingMessage: { sessionId: number; payload: SendMessagePayload } | null = null
 
 const MESSAGE_POLL_INTERVAL_MS = 2000
 let messagePollTimer: number | undefined
@@ -126,14 +128,30 @@ async function submitMessage(): Promise<void> {
   errorMessage.value = ''
 
   const offer = buildOfferPayload()
+  const draft = {
+    content: messageText.value.trim(),
+    ...(offer ? { offer } : {}),
+  }
+  const canReusePending = (
+    pendingMessage?.sessionId === activeSessionId
+    && JSON.stringify({
+      content: pendingMessage.payload.content,
+      ...(pendingMessage.payload.offer ? { offer: pendingMessage.payload.offer } : {}),
+    }) === JSON.stringify(draft)
+  )
+  const payload: SendMessagePayload = canReusePending && pendingMessage
+    ? pendingMessage.payload
+    : {
+        request_id: crypto.randomUUID().replaceAll('-', ''),
+        ...draft,
+      }
+  pendingMessage = { sessionId: activeSessionId, payload }
   try {
-    const response = await sendMessage(activeSessionId, {
-      request_id: crypto.randomUUID().replaceAll('-', ''),
-      content: messageText.value.trim(),
-      ...(offer ? { offer } : {}),
-    })
-    messages.value.push(response.buyer_message, response.agent_message)
+    const response = await sendMessage(activeSessionId, payload)
+    appendMessage(response.buyer_message)
+    appendMessage(response.agent_message)
     lastOutcome.value = response.outcome
+    pendingMessage = null
     messageText.value = ''
     submittingOffer.value = false
     offerPrice.value = ''
@@ -141,6 +159,9 @@ async function submitMessage(): Promise<void> {
     negotiation.value = await getNegotiation(activeSessionId)
     await scrollToLatest()
   } catch (error) {
+    if (!(error instanceof ApiError) || ![409, 503].includes(error.status)) {
+      pendingMessage = null
+    }
     errorMessage.value = readableError(error)
   } finally {
     sending.value = false
@@ -281,7 +302,10 @@ function buildOfferPayload(): BuyerOfferPayload | undefined {
 
 function readableError(error: unknown): string {
   if (error instanceof ApiError && error.status === 503) {
-    return '模型服务尚未配置，请在本地 .env 填写模型服务配置。'
+    return '模型服务暂时不可用，本次输入已保留，可稍后再次点击发送安全重试。'
+  }
+  if (error instanceof ApiError && error.status === 409) {
+    return '当前请求仍在处理中，请稍后再次点击发送或等待消息自动刷新。'
   }
   if (error instanceof Error) return error.message
   return '请求失败，请检查后端与数据库状态。'
@@ -336,6 +360,7 @@ async function scrollToLatest(): Promise<void> {
 }
 
 watch(sessionId, () => {
+  pendingMessage = null
   pendingConfirmation = null
   pendingClosure = null
   void loadPage()

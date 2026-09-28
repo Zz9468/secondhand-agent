@@ -2,17 +2,19 @@ import argparse
 import logging
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import case, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.approval_followup import (
     ApprovalFollowupAgentError,
+    ApprovalFollowupDraft,
     ApprovalFollowupEvent,
     ApprovalFollowupOutcome,
     ApprovalFollowupProvider,
     ApprovalFollowupRequest,
+    ApprovalFollowupResult,
     LangChainApprovalFollowupProvider,
     SellerApprovalFollowupAgent,
 )
@@ -24,6 +26,9 @@ from app.db.models import (
     ApprovalStatus,
     Message,
     MessageRole,
+    ModelTaskErrorCategory,
+    ModelTaskStatus,
+    ModelTaskType,
     NegotiationSession,
     NegotiationStatus,
     Offer,
@@ -34,6 +39,12 @@ from app.db.models import (
     SellerPolicy,
 )
 from app.db.session import get_session_factory
+from app.services.errors import ModelExecutionTaskLeaseError
+from app.services.model_task_service import (
+    ModelExecutionTaskSnapshot,
+    ModelTaskService,
+    ModelUsage,
+)
 from app.services.negotiation_service import NegotiationService
 
 logger = logging.getLogger(__name__)
@@ -61,7 +72,10 @@ class _FollowupContext:
 
 
 class ApprovalProcessor:
-    """使用数据库行锁领取审批后续任务，并原子写入通知与完成状态。"""
+    """以短事务领取和完成审批通知，模型调用期间不持有业务行锁。"""
+
+    _lease_seconds = 300
+    _retry_delay = timedelta(seconds=1)
 
     def __init__(
         self,
@@ -70,10 +84,12 @@ class ApprovalProcessor:
     ) -> None:
         self._session_factory = session_factory
         self._agent = SellerApprovalFollowupAgent(provider=provider)
+        self._provider = provider
         self._negotiation_service = NegotiationService(session_factory)
+        self._task_service = ModelTaskService(session_factory)
 
     def process_batch(self, *, limit: int = 20) -> tuple[ApprovalProcessingResult, ...]:
-        """每轮最多尝试一次同一任务，避免失败任务在单轮内立即热重试。"""
+        """每轮最多尝试一次同一审批，避免失败任务在单轮内热重试。"""
 
         if not 1 <= limit <= 200:
             raise ValueError("单轮审批后续任务数量必须在 1 到 200 之间")
@@ -92,8 +108,39 @@ class ApprovalProcessor:
         *,
         excluded_approval_ids: set[int] | None = None,
     ) -> ApprovalProcessingResult | None:
-        """领取并处理一个任务；事务中断时数据库会自动释放行锁并保留任务。"""
+        leased = self._claim_next(excluded_approval_ids=excluded_approval_ids)
+        if leased is None or isinstance(leased, ApprovalProcessingResult):
+            return leased
 
+        lease_token = leased.lease_token
+        if lease_token is None:  # pragma: no cover - 数据库约束已保证
+            raise RuntimeError("已领取审批通知任务缺少租约令牌")
+        request, _ = self._task_input(leased.input_snapshot)
+        try:
+            draft = self._agent.draft_followup(request)
+        except ApprovalFollowupAgentError as exc:
+            try:
+                return self._defer_failed_task(
+                    task=leased,
+                    lease_token=lease_token,
+                    error_message=type(exc.__cause__ or exc).__name__,
+                )
+            except ModelExecutionTaskLeaseError:
+                return self._lease_lost_result(leased)
+        try:
+            return self._finalize_followup(
+                task=leased,
+                lease_token=lease_token,
+                draft=draft,
+            )
+        except ModelExecutionTaskLeaseError:
+            return self._lease_lost_result(leased)
+
+    def _claim_next(
+        self,
+        *,
+        excluded_approval_ids: set[int] | None,
+    ) -> ModelExecutionTaskSnapshot | ApprovalProcessingResult | None:
         with self._session_factory() as db, db.begin():
             statement = (
                 select(ApprovalRequest)
@@ -128,73 +175,320 @@ class ApprovalProcessor:
             approval = db.scalar(statement.limit(1))
             if approval is None:
                 return None
-            return self._process_locked(db, approval=approval)
 
-    def _process_locked(
-        self,
-        db: Session,
-        *,
-        approval: ApprovalRequest,
-    ) -> ApprovalProcessingResult:
-        request_id = approval.followup_request_id
-        if not request_id or len(request_id) > 64:
-            return self._mark_failed(db, approval=approval)
-
-        existing_message = db.scalar(
-            select(Message).where(
-                Message.session_id == approval.session_id,
-                Message.request_id == request_id,
-            )
-        )
-        if existing_message is not None:
-            stored_outcome = self._stored_outcome(existing_message.agent_outcome)
-            if (
-                existing_message.role is not MessageRole.AGENT
-                or stored_outcome is None
-            ):
+            request_id = approval.followup_request_id
+            if not request_id or len(request_id) > 64:
                 return self._mark_failed(db, approval=approval)
-            approval.followup_status = ApprovalFollowupStatus.SENT
-            db.flush()
+            existing = self._existing_message(
+                db,
+                session_id=approval.session_id,
+                request_id=request_id,
+            )
+            if existing is not None:
+                stored_outcome = self._stored_outcome(existing.agent_outcome)
+                if existing.role is not MessageRole.AGENT or stored_outcome is None:
+                    return self._mark_failed(db, approval=approval)
+                approval.followup_status = ApprovalFollowupStatus.SENT
+                db.flush()
+                return ApprovalProcessingResult(
+                    approval_id=approval.id,
+                    status=ApprovalFollowupStatus.SENT,
+                    message_id=existing.id,
+                    outcome=stored_outcome,
+                )
+
+            try:
+                context = self._load_context(db, approval=approval)
+                event = self._resolve_event(context)
+                request = self._agent_request(context, event=event)
+                offer_result = self._offer_result(context.offer)
+                creation = self._task_service.create_task_in_transaction(
+                    db=db,
+                    task_type=ModelTaskType.APPROVAL_FOLLOWUP,
+                    business_key=f"approval:{approval.id}",
+                    session_id=approval.session_id,
+                    offer_id=approval.offer_id,
+                    approval_id=approval.id,
+                    input_snapshot=self._serialize_task_input(
+                        request=request,
+                        offer_result=offer_result,
+                    ),
+                )
+            except ApprovalFollowupProcessingError:
+                return self._mark_failed(db, approval=approval)
+
+            leased = self._task_service.lease_task_in_transaction(
+                db=db,
+                task_id=creation.task.id,
+                worker_id=f"approval:{approval.id}",
+                lease_seconds=self._lease_seconds,
+            )
+            if leased is not None:
+                return leased
+            if creation.task.status is ModelTaskStatus.RETRY_WAIT:
+                return self._mark_failed(db, approval=approval)
+            return None
+
+    def _finalize_followup(
+        self,
+        *,
+        task: ModelExecutionTaskSnapshot,
+        lease_token: str,
+        draft: ApprovalFollowupDraft,
+    ) -> ApprovalProcessingResult:
+        with self._session_factory() as db, db.begin():
+            approval = db.get(
+                ApprovalRequest,
+                task.approval_id,
+                with_for_update=True,
+            )
+            # 与领取事务保持 approval → task 的加锁顺序，避免并发领取和完成互锁。
+            current_task = self._task_service.require_active_lease_in_transaction(
+                db=db,
+                task_id=task.id,
+                lease_token=lease_token,
+            )
+            if approval is None:
+                self._task_service.mark_stale_in_transaction(
+                    db=db,
+                    task_id=current_task.id,
+                    lease_token=lease_token,
+                    error_message="审批记录已不存在",
+                )
+                return ApprovalProcessingResult(
+                    approval_id=task.approval_id or 0,
+                    status=ApprovalFollowupStatus.FAILED,
+                    message_id=None,
+                    outcome=None,
+                )
+
+            request_id = approval.followup_request_id
+            if not request_id:
+                self._task_service.mark_stale_in_transaction(
+                    db=db,
+                    task_id=current_task.id,
+                    lease_token=lease_token,
+                    error_message="审批通知幂等键已不存在",
+                )
+                return self._mark_failed(db, approval=approval)
+            existing = self._existing_message(
+                db,
+                session_id=approval.session_id,
+                request_id=request_id,
+            )
+            if existing is not None:
+                stored_outcome = self._stored_outcome(existing.agent_outcome)
+                if existing.role is not MessageRole.AGENT or stored_outcome is None:
+                    self._task_service.mark_stale_in_transaction(
+                        db=db,
+                        task_id=current_task.id,
+                        lease_token=lease_token,
+                        error_message="审批通知幂等键已被其他消息占用",
+                    )
+                    return self._mark_failed(db, approval=approval)
+                approval.followup_status = ApprovalFollowupStatus.SENT
+                self._task_service.mark_stale_in_transaction(
+                    db=db,
+                    task_id=current_task.id,
+                    lease_token=lease_token,
+                    error_message="审批通知已经由其他执行者写入",
+                )
+                return ApprovalProcessingResult(
+                    approval_id=approval.id,
+                    status=ApprovalFollowupStatus.SENT,
+                    message_id=existing.id,
+                    outcome=stored_outcome,
+                )
+
+            try:
+                context = self._load_context(db, approval=approval)
+                current_event = self._resolve_event(context)
+            except ApprovalFollowupProcessingError as exc:
+                self._task_service.mark_stale_in_transaction(
+                    db=db,
+                    task_id=current_task.id,
+                    lease_token=lease_token,
+                    error_message=str(exc),
+                )
+                return self._mark_failed(db, approval=approval)
+
+            original_request, original_offer_result = self._task_input(
+                current_task.input_snapshot
+            )
+            current_request = self._agent_request(context, event=current_event)
+            current_offer_result = self._offer_result(context.offer)
+            stale_reason = self._stale_reason(
+                task=current_task,
+                context=context,
+                original_request=original_request,
+                current_request=current_request,
+            )
+
+            if stale_reason is None:
+                try:
+                    result = self._agent.apply_draft(
+                        request=original_request,
+                        offer_result=original_offer_result,
+                        draft=draft,
+                    )
+                except ApprovalFollowupAgentError as exc:
+                    approval.followup_status = ApprovalFollowupStatus.FAILED
+                    self._task_service.defer_retry_in_transaction(
+                        db=db,
+                        task_id=current_task.id,
+                        lease_token=lease_token,
+                        error_category=ModelTaskErrorCategory.INVALID_OUTPUT,
+                        error_message=str(exc),
+                        next_retry_at=datetime.now(UTC) + self._retry_delay,
+                    )
+                    return ApprovalProcessingResult(
+                        approval_id=approval.id,
+                        status=ApprovalFollowupStatus.FAILED,
+                        message_id=None,
+                        outcome=None,
+                    )
+                self._apply_successful_event(context, event=current_event)
+                message = self._persist_message(
+                    db,
+                    context=context,
+                    request_id=request_id,
+                    event=current_event,
+                    result=result,
+                )
+                self._task_service.complete_success_in_transaction(
+                    db=db,
+                    task_id=current_task.id,
+                    lease_token=lease_token,
+                    result_snapshot={"draft": draft.model_dump(mode="json")},
+                    usage=self._model_usage(),
+                )
+                return ApprovalProcessingResult(
+                    approval_id=approval.id,
+                    status=ApprovalFollowupStatus.SENT,
+                    message_id=message.id,
+                    outcome=result.outcome,
+                )
+
+            result = self._safe_stale_result(
+                context=context,
+                event=current_event,
+                request=current_request,
+                offer_result=current_offer_result,
+            )
+            message = self._persist_message(
+                db,
+                context=context,
+                request_id=request_id,
+                event=(
+                    current_event
+                    if current_event is ApprovalFollowupEvent.INVALIDATED
+                    and context.negotiation.current_offer_id == context.offer.id
+                    else ApprovalFollowupEvent.INVALIDATED
+                ),
+                result=result,
+            )
+            self._task_service.mark_stale_in_transaction(
+                db=db,
+                task_id=current_task.id,
+                lease_token=lease_token,
+                error_message=stale_reason,
+            )
             return ApprovalProcessingResult(
                 approval_id=approval.id,
                 status=ApprovalFollowupStatus.SENT,
-                message_id=existing_message.id,
-                outcome=stored_outcome,
+                message_id=message.id,
+                outcome=result.outcome,
             )
 
-        try:
-            context = self._load_context(db, approval=approval)
-            event = self._resolve_event(context)
-            result = self._agent.handle_followup(
-                request=self._agent_request(context, event=event),
-                offer_result=self._offer_result(context.offer),
+    def _safe_stale_result(
+        self,
+        *,
+        context: _FollowupContext,
+        event: ApprovalFollowupEvent,
+        request: ApprovalFollowupRequest,
+        offer_result: dict[str, object],
+    ) -> ApprovalFollowupResult:
+        if (
+            event is ApprovalFollowupEvent.INVALIDATED
+            and context.negotiation.current_offer_id == context.offer.id
+        ):
+            self._apply_successful_event(context, event=event)
+            return self._agent.render_trusted_event(
+                request=request,
+                offer_result=offer_result,
             )
-        except (ApprovalFollowupAgentError, ApprovalFollowupProcessingError):
-            return self._mark_failed(db, approval=approval)
+        return ApprovalFollowupResult(
+            reply="审批期间协商条件已经变化，原审批结果未应用，请以当前会话状态为准。",
+            outcome=ApprovalFollowupOutcome.APPROVAL_INVALIDATED,
+        )
 
-        self._apply_successful_event(context, event=event)
-        message = Message(
-            session_id=approval.session_id,
-            role=MessageRole.AGENT,
-            content=result.reply,
-            request_id=request_id,
-            agent_outcome=result.outcome.value,
-            formal_offer_id=(
-                context.offer.id
-                if event is ApprovalFollowupEvent.APPROVED
+    def _defer_failed_task(
+        self,
+        *,
+        task: ModelExecutionTaskSnapshot,
+        lease_token: str,
+        error_message: str,
+    ) -> ApprovalProcessingResult:
+        with self._session_factory() as db, db.begin():
+            approval = db.get(
+                ApprovalRequest,
+                task.approval_id,
+                with_for_update=True,
+            )
+            self._task_service.defer_retry_in_transaction(
+                db=db,
+                task_id=task.id,
+                lease_token=lease_token,
+                error_category=ModelTaskErrorCategory.UNKNOWN,
+                error_message=error_message,
+                next_retry_at=datetime.now(UTC) + self._retry_delay,
+            )
+            if approval is not None:
+                approval.followup_status = ApprovalFollowupStatus.FAILED
+                db.flush()
+            return ApprovalProcessingResult(
+                approval_id=task.approval_id or 0,
+                status=ApprovalFollowupStatus.FAILED,
+                message_id=None,
+                outcome=None,
+            )
+
+    def _lease_lost_result(
+        self,
+        task: ModelExecutionTaskSnapshot,
+    ) -> ApprovalProcessingResult:
+        """旧 Worker 迟到时只读取现状，绝不覆盖新租约或新业务事实。"""
+
+        with self._session_factory() as db:
+            approval = db.get(ApprovalRequest, task.approval_id)
+            if approval is None:
+                return ApprovalProcessingResult(
+                    approval_id=task.approval_id or 0,
+                    status=ApprovalFollowupStatus.FAILED,
+                    message_id=None,
+                    outcome=None,
+                )
+            request_id = approval.followup_request_id
+            message = (
+                self._existing_message(
+                    db,
+                    session_id=approval.session_id,
+                    request_id=request_id,
+                )
+                if request_id
                 else None
-            ),
-        )
-        db.add(message)
-        approval.followup_status = ApprovalFollowupStatus.SENT
-        db.flush()
-        db.refresh(message)
-        return ApprovalProcessingResult(
-            approval_id=approval.id,
-            status=ApprovalFollowupStatus.SENT,
-            message_id=message.id,
-            outcome=result.outcome,
-        )
+            )
+            outcome = (
+                self._stored_outcome(message.agent_outcome)
+                if message is not None
+                else None
+            )
+            return ApprovalProcessingResult(
+                approval_id=approval.id,
+                status=approval.followup_status,
+                message_id=message.id if message is not None else None,
+                outcome=outcome,
+            )
 
     @staticmethod
     def _load_context(
@@ -327,6 +621,129 @@ class ApprovalProcessor:
         }
 
     @staticmethod
+    def _serialize_task_input(
+        *,
+        request: ApprovalFollowupRequest,
+        offer_result: dict[str, object],
+    ) -> dict[str, object]:
+        return {
+            "request": {
+                "approval_id": request.approval_id,
+                "event": request.event.value,
+                "product_title": request.product_title,
+                "offer_id": request.offer_id,
+                "price": request.price,
+                "shipping_paid_by": request.shipping_paid_by,
+                "shipping_cost": request.shipping_cost,
+                "seller_borne_discount": request.seller_borne_discount,
+                "additional_terms": request.additional_terms,
+                "seller_comment": request.seller_comment,
+            },
+            "offer_result": offer_result,
+        }
+
+    @staticmethod
+    def _task_input(
+        input_snapshot: dict[str, object],
+    ) -> tuple[ApprovalFollowupRequest, dict[str, object]]:
+        raw = input_snapshot.get("request")
+        offer_result = input_snapshot.get("offer_result")
+        if not isinstance(raw, dict) or not isinstance(offer_result, dict):
+            raise ApprovalFollowupProcessingError("审批模型任务输入快照无效")
+        try:
+            request = ApprovalFollowupRequest(
+                approval_id=int(raw["approval_id"]),
+                event=ApprovalFollowupEvent(str(raw["event"])),
+                product_title=str(raw["product_title"]),
+                offer_id=int(raw["offer_id"]),
+                price=str(raw["price"]),
+                shipping_paid_by=str(raw["shipping_paid_by"]),
+                shipping_cost=(
+                    str(raw["shipping_cost"])
+                    if raw.get("shipping_cost") is not None
+                    else None
+                ),
+                seller_borne_discount=str(raw["seller_borne_discount"]),
+                additional_terms=dict(raw.get("additional_terms") or {}),
+                seller_comment=(
+                    str(raw["seller_comment"])
+                    if raw.get("seller_comment") is not None
+                    else None
+                ),
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ApprovalFollowupProcessingError(
+                "审批模型任务输入快照无效"
+            ) from exc
+        return request, dict(offer_result)
+
+    @staticmethod
+    def _stale_reason(
+        *,
+        task: ModelExecutionTaskSnapshot,
+        context: _FollowupContext,
+        original_request: ApprovalFollowupRequest,
+        current_request: ApprovalFollowupRequest,
+    ) -> str | None:
+        if task.session_version != context.negotiation.version:
+            return "审批处理期间会话版本已经变化"
+        if context.policy is None or task.policy_version != context.policy.version:
+            return "审批处理期间卖家规则已经变化"
+        if task.offer_id != context.offer.id or task.approval_id != context.approval.id:
+            return "审批任务业务引用已经变化"
+        if original_request != current_request:
+            return "审批处理期间可信输入已经变化"
+        return None
+
+    @staticmethod
+    def _existing_message(
+        db: Session,
+        *,
+        session_id: int,
+        request_id: str,
+    ) -> Message | None:
+        return db.scalar(
+            select(Message).where(
+                Message.session_id == session_id,
+                Message.request_id == request_id,
+            )
+        )
+
+    @staticmethod
+    def _persist_message(
+        db: Session,
+        *,
+        context: _FollowupContext,
+        request_id: str,
+        event: ApprovalFollowupEvent,
+        result: ApprovalFollowupResult,
+    ) -> Message:
+        message = Message(
+            session_id=context.approval.session_id,
+            role=MessageRole.AGENT,
+            content=result.reply,
+            request_id=request_id,
+            agent_outcome=result.outcome.value,
+            formal_offer_id=(
+                context.offer.id
+                if event is ApprovalFollowupEvent.APPROVED
+                else None
+            ),
+        )
+        db.add(message)
+        context.approval.followup_status = ApprovalFollowupStatus.SENT
+        db.flush()
+        db.refresh(message)
+        return message
+
+    def _model_usage(self) -> ModelUsage:
+        provider_name = type(self._provider).__name__[:50]
+        return ModelUsage(
+            provider=provider_name or "unknown",
+            model_name="unreported",
+        )
+
+    @staticmethod
     def _mark_failed(
         db: Session,
         *,
@@ -381,7 +798,13 @@ def main() -> int:
                 result.outcome.value if result.outcome else None,
             )
         if args.once:
-            return 1 if any(item.status is ApprovalFollowupStatus.FAILED for item in results) else 0
+            return (
+                1
+                if any(
+                    item.status is ApprovalFollowupStatus.FAILED for item in results
+                )
+                else 0
+            )
         time.sleep(args.poll_seconds)
 
 

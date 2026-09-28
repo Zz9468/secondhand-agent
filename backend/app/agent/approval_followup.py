@@ -145,11 +145,51 @@ class SellerApprovalFollowupAgent:
         request: ApprovalFollowupRequest,
         offer_result: dict[str, object],
     ) -> ApprovalFollowupResult:
-        try:
-            draft = self._provider.draft(request)
-            if draft.acknowledged_event is not request.event:
-                raise ApprovalFollowupAgentError("模型返回的审批事件与数据库不一致")
+        draft = self.draft_followup(request)
+        return self.apply_draft(
+            request=request,
+            offer_result=offer_result,
+            draft=draft,
+        )
 
+    def draft_followup(
+        self,
+        request: ApprovalFollowupRequest,
+    ) -> ApprovalFollowupDraft:
+        """仅在数据库事务外调用模型，返回尚未获得业务授权的候选稿。"""
+
+        try:
+            return self._provider.draft(request)
+        except ApprovalFollowupAgentError:
+            raise
+        except Exception as exc:
+            raise ApprovalFollowupAgentError("审批结果通知生成失败") from exc
+
+    def apply_draft(
+        self,
+        *,
+        request: ApprovalFollowupRequest,
+        offer_result: dict[str, object],
+        draft: ApprovalFollowupDraft,
+    ) -> ApprovalFollowupResult:
+        """校验候选事件，再使用可信数据库事实生成最终通知。"""
+
+        if draft.acknowledged_event is not request.event:
+            raise ApprovalFollowupAgentError("模型返回的审批事件与数据库不一致")
+        return self.render_trusted_event(
+            request=request,
+            offer_result=offer_result,
+        )
+
+    def render_trusted_event(
+        self,
+        *,
+        request: ApprovalFollowupRequest,
+        offer_result: dict[str, object],
+    ) -> ApprovalFollowupResult:
+        """不依赖模型候选稿，按已复核事件生成确定性正式通知。"""
+
+        try:
             if request.event is ApprovalFollowupEvent.APPROVED:
                 reply = self._reply_renderer.render_approved_followup(offer_result)
                 outcome = ApprovalFollowupOutcome.APPROVAL_APPROVED
@@ -162,7 +202,6 @@ class SellerApprovalFollowupAgent:
         except ApprovalFollowupAgentError:
             raise
         except Exception as exc:
-            # 模型异常和安全渲染异常统一交给 Worker 标记失败并重试。
-            raise ApprovalFollowupAgentError("审批结果通知生成失败") from exc
+            raise ApprovalFollowupAgentError("审批结果通知安全渲染失败") from exc
 
         return ApprovalFollowupResult(reply=reply, outcome=outcome)
