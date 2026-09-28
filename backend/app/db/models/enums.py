@@ -72,6 +72,37 @@ class ApprovalFollowupStatus(StrEnum):
     FAILED = "FAILED"
 
 
+class ModelTaskType(StrEnum):
+    """需要在数据库事务外执行的模型任务类型。"""
+
+    CHAT_DECISION = "CHAT_DECISION"
+    APPROVAL_FOLLOWUP = "APPROVAL_FOLLOWUP"
+
+
+class ModelTaskStatus(StrEnum):
+    """持久化模型任务的生命周期状态。"""
+
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    RETRY_WAIT = "RETRY_WAIT"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    STALE = "STALE"
+    CANCELLED = "CANCELLED"
+
+
+class ModelTaskErrorCategory(StrEnum):
+    """不保存底层异常细节的稳定错误分类。"""
+
+    MODEL_TIMEOUT = "MODEL_TIMEOUT"
+    RATE_LIMITED = "RATE_LIMITED"
+    NETWORK = "NETWORK"
+    INVALID_OUTPUT = "INVALID_OUTPUT"
+    BUSINESS_CONFLICT = "BUSINESS_CONFLICT"
+    INTERNAL = "INTERNAL"
+    UNKNOWN = "UNKNOWN"
+
+
 class ConfirmationSource(StrEnum):
     """买家最终确认时经过后端复核的授权来源。"""
 

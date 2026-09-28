@@ -190,6 +190,7 @@ def _assert_upgraded_v21_data(engine: Engine) -> None:
     tables = set(inspector.get_table_names())
     assert "user_accounts" in tables
     assert "seller_accounts" not in tables
+    assert "model_execution_tasks" in tables
 
     product_foreign_keys = inspector.get_foreign_keys("products")
     buyer_foreign_keys = inspector.get_foreign_keys("negotiation_sessions")
@@ -265,6 +266,7 @@ def _assert_v2_downgrade_boundary(engine: Engine) -> None:
     tables = set(inspector.get_table_names())
     assert "seller_accounts" in tables
     assert "user_accounts" not in tables
+    assert "model_execution_tasks" not in tables
     assert not any(
         item["constrained_columns"] == ["buyer_id"]
         for item in inspector.get_foreign_keys("negotiation_sessions")
@@ -289,6 +291,7 @@ def _assert_empty_database_head_schema(engine: Engine) -> None:
         "seller_policies",
         "negotiation_sessions",
         "messages",
+        "model_execution_tasks",
         "offers",
         "approval_requests",
     } <= tables

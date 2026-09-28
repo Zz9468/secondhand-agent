@@ -6,6 +6,9 @@ from app.db.models.enums import (
     ApprovalStatus,
     ConfirmationSource,
     MessageRole,
+    ModelTaskErrorCategory,
+    ModelTaskStatus,
+    ModelTaskType,
     NegotiationStatus,
     NegotiationStyle,
     OfferProposer,
@@ -14,6 +17,7 @@ from app.db.models.enums import (
     ShippingPayer,
 )
 from app.db.models.message import Message
+from app.db.models.model_task import ModelExecutionTask
 from app.db.models.negotiation import NegotiationSession
 from app.db.models.offer import Offer
 from app.db.models.policy import SellerPolicy
@@ -27,6 +31,10 @@ __all__ = [
     "ConfirmationSource",
     "Message",
     "MessageRole",
+    "ModelExecutionTask",
+    "ModelTaskErrorCategory",
+    "ModelTaskStatus",
+    "ModelTaskType",
     "NegotiationSession",
     "NegotiationStatus",
     "NegotiationStyle",

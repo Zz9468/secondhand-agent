@@ -84,5 +84,21 @@ class ModelDecisionError(ServiceError):
     code = "MODEL_DECISION_ERROR"
 
 
+class ModelExecutionTaskNotFoundError(ServiceError):
+    code = "MODEL_EXECUTION_TASK_NOT_FOUND"
+
+
+class ModelExecutionTaskConflictError(ServiceError):
+    code = "MODEL_EXECUTION_TASK_CONFLICT"
+
+
+class ModelExecutionTaskLeaseError(ServiceError):
+    code = "MODEL_EXECUTION_TASK_LEASE_ERROR"
+
+
+class InvalidModelExecutionTaskError(ServiceError):
+    code = "INVALID_MODEL_EXECUTION_TASK"
+
+
 class NegotiationLifecycleConflictError(ServiceError):
     code = "NEGOTIATION_LIFECYCLE_CONFLICT"
