@@ -1,5 +1,18 @@
 name: secondhand-agent
 
+x-backend-service: &backend-service
+  image: secondhand-agent-backend:local
+  build:
+    context: ./backend
+    args:
+      BASE_REGISTRY: ${DOCKER_REGISTRY:-docker.io}
+  env_file:
+    - .env
+  environment:
+    DATABASE_URL: ${CONTAINER_DATABASE_URL:-mysql+pymysql://secondhand:CHANGE_ME@mysql:3306/secondhand_agent?charset=utf8mb4}
+    EVALUATION_GIT_COMMIT: ${EVALUATION_GIT_COMMIT:-}
+    EVALUATION_GIT_WORKTREE_DIRTY: ${EVALUATION_GIT_WORKTREE_DIRTY:-}
+
 services:
   mysql:
     image: mysql:8.4
@@ -25,6 +38,64 @@ services:
       timeout: 5s
       retries: 20
       start_period: 20s
+
+  migrate:
+    <<: *backend-service
+    restart: "no"
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  seed:
+    <<: *backend-service
+    restart: "no"
+    command: ["python", "scripts/seed_data.py"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    <<: *backend-service
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    volumes:
+      - ./backend/evaluation/results:/app/evaluation/results
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  worker:
+    <<: *backend-service
+    restart: unless-stopped
+    command: ["python", "-m", "app.workers.model_task_worker"]
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+  frontend:
+    image: secondhand-agent-frontend:local
+    build:
+      context: ./frontend
+      args:
+        BASE_REGISTRY: ${DOCKER_REGISTRY:-docker.io}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   mysql_data:

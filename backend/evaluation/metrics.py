@@ -1,5 +1,7 @@
 from collections import Counter
 from decimal import Decimal
+from math import ceil
+from statistics import mean, median
 
 from pydantic import BaseModel, ConfigDict
 
@@ -14,11 +16,23 @@ class RatioMetric(BaseModel):
     value: float | None
 
 
+class DistributionMetric(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    count: int
+    mean: float | None
+    median: float | None
+    p95: float | None
+    minimum: float | None
+    maximum: float | None
+
+
 class GroupMetrics(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     experiment_group: ExperimentGroup
     started_run_count: int
+    completed_run_count: int
     final_state_counts: dict[str, int]
     intent_agreement_rate: RatioMetric
     valid_termination_rate: RatioMetric
@@ -27,6 +41,7 @@ class GroupMetrics(BaseModel):
     approval_run_rate: RatioMetric
     usage_coverage_rate: RatioMetric
     average_negotiation_turns: float | None
+    negotiation_turns_distribution: DistributionMetric
     formal_offer_round_count: int
     model_call_count: int
     input_tokens: int | None
@@ -34,6 +49,9 @@ class GroupMetrics(BaseModel):
     cached_input_tokens: int | None
     total_tokens: int | None
     estimated_cost_by_currency: dict[str, Decimal]
+    model_calls_per_completed_run: DistributionMetric
+    total_tokens_per_completed_run: DistributionMetric
+    estimated_cost_per_completed_run_by_currency: dict[str, DistributionMetric]
     system_failure_model_call_count: int
     system_failure_total_tokens: int | None
 
@@ -42,7 +60,7 @@ class EvaluationSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     contract_version: str = "1.0.0"
-    result_schema_version: str = "1.0.0"
+    result_schema_version: str = "1.1.0"
     groups: list[GroupMetrics]
 
 
@@ -51,6 +69,29 @@ def _ratio(numerator: int, denominator: int) -> RatioMetric:
         numerator=numerator,
         denominator=denominator,
         value=numerator / denominator if denominator else None,
+    )
+
+
+def _distribution(values: list[int | float | Decimal]) -> DistributionMetric:
+    numeric = [float(value) for value in values]
+    if not numeric:
+        return DistributionMetric(
+            count=0,
+            mean=None,
+            median=None,
+            p95=None,
+            minimum=None,
+            maximum=None,
+        )
+    ordered = sorted(numeric)
+    p95_index = max(0, ceil(len(ordered) * 0.95) - 1)
+    return DistributionMetric(
+        count=len(ordered),
+        mean=mean(ordered),
+        median=median(ordered),
+        p95=ordered[p95_index],
+        minimum=ordered[0],
+        maximum=ordered[-1],
     )
 
 
@@ -69,6 +110,12 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
     for group in ExperimentGroup:
         group_runs = [run for run in runs if run.experiment_group is group]
         started = len(group_runs)
+        completed_runs = [
+            run
+            for run in group_runs
+            if run.final_state is not FinalState.SYSTEM_FAILURE
+        ]
+        completed_run_ids = {run.run_id for run in completed_runs}
         final_states = Counter(run.final_state.value for run in group_runs)
         agreements = sum(
             run.final_state is FinalState.AGREED
@@ -89,12 +136,17 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
             run.usage_covered_call_count for run in group_runs
         )
         costs: dict[str, Decimal] = {}
+        costs_per_currency: dict[str, list[Decimal]] = {}
         for run in group_runs:
             if run.estimated_cost is None or run.cost_currency is None:
                 continue
             costs[run.cost_currency] = (
                 costs.get(run.cost_currency, Decimal("0")) + run.estimated_cost
             )
+            if run.run_id in completed_run_ids:
+                costs_per_currency.setdefault(run.cost_currency, []).append(
+                    run.estimated_cost
+                )
         failed_runs = [
             run for run in group_runs if run.final_state is FinalState.SYSTEM_FAILURE
         ]
@@ -102,6 +154,7 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
             GroupMetrics(
                 experiment_group=group,
                 started_run_count=started,
+                completed_run_count=len(completed_runs),
                 final_state_counts=dict(sorted(final_states.items())),
                 intent_agreement_rate=_ratio(agreements, started),
                 valid_termination_rate=_ratio(valid_terminations, started),
@@ -123,6 +176,9 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
                     if started
                     else None
                 ),
+                negotiation_turns_distribution=_distribution(
+                    [run.buyer_turn_count for run in group_runs]
+                ),
                 formal_offer_round_count=sum(
                     run.formal_offer_round_count for run in group_runs
                 ),
@@ -135,6 +191,20 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
                 ),
                 total_tokens=_sum_covered(group_runs, "total_tokens"),
                 estimated_cost_by_currency=costs,
+                model_calls_per_completed_run=_distribution(
+                    [run.model_call_count for run in completed_runs]
+                ),
+                total_tokens_per_completed_run=_distribution(
+                    [
+                        run.total_tokens
+                        for run in completed_runs
+                        if run.total_tokens is not None
+                    ]
+                ),
+                estimated_cost_per_completed_run_by_currency={
+                    currency: _distribution(values)
+                    for currency, values in sorted(costs_per_currency.items())
+                },
                 system_failure_model_call_count=sum(
                     run.model_call_count for run in failed_runs
                 ),

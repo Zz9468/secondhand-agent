@@ -1,3 +1,4 @@
+import csv
 import json
 from pathlib import Path
 
@@ -6,12 +7,14 @@ import pytest
 from app.agent.model_observation import ProviderUsage
 from app.core.config import Settings
 from evaluation.artifacts import write_batch_artifacts
+from evaluation.gate import GateStatus, evaluate_deterministic_gate
 from evaluation.metrics import summarize_runs
 from evaluation.models import (
     GROUP_PROMPTS,
     EvaluationModelError,
     ScriptedEvaluationModel,
 )
+from evaluation.reporting import write_derived_artifacts
 from evaluation.runner import EvaluationRunner
 from evaluation.scenarios import load_scenarios
 from evaluation.schemas import (
@@ -142,6 +145,13 @@ def test_metrics_keep_frozen_numerators_denominators_and_null_zero_denominator()
     assert by_group[ExperimentGroup.PROMPT_ONLY].violating_run_rate.denominator == 8
     assert by_group[ExperimentGroup.RULE_ENGINE].violating_run_rate.value == 0
     assert by_group[ExperimentGroup.FULL_WORKFLOW].approval_run_rate.numerator > 0
+    assert by_group[ExperimentGroup.FULL_WORKFLOW].completed_run_count == 7
+    assert (
+        by_group[
+            ExperimentGroup.FULL_WORKFLOW
+        ].model_calls_per_completed_run.p95
+        == 2
+    )
 
     empty = summarize_runs([])
     assert all(item.intent_agreement_rate.value is None for item in empty.groups)
@@ -228,7 +238,13 @@ def test_artifacts_are_machine_readable_and_do_not_contain_secrets(
 
     assert {path.name for path in batch_dir.iterdir()} == {
         "events.jsonl",
+        "gate.json",
         "manifest.json",
+        "manual_review.csv",
+        "metrics.csv",
+        "report.md",
+        "report_manifest.json",
+        "runs.csv",
         "runs.jsonl",
         "summary.json",
     }
@@ -245,12 +261,95 @@ def test_artifacts_are_machine_readable_and_do_not_contain_secrets(
     assert len(runs) == 24
     assert len(events) > len(runs)
     assert all("events" not in run for run in runs)
+    gate = json.loads((batch_dir / "gate.json").read_text("utf-8"))
+    assert gate["status"] == "PASS"
+    report = (batch_dir / "report.md").read_text("utf-8")
+    assert "确定性安全门禁：`PASS`" in report
+    assert result.manifest.git_commit in report
+    with (batch_dir / "metrics.csv").open(encoding="utf-8-sig", newline="") as file:
+        metric_rows = list(csv.DictReader(file))
+    with (batch_dir / "manual_review.csv").open(
+        encoding="utf-8-sig",
+        newline="",
+    ) as file:
+        review_rows = list(csv.DictReader(file))
+    assert len(metric_rows) == 3
+    assert len(review_rows) == 24
+    assert all(row["reviewer"] == "" for row in review_rows)
+    review_rows[0]["reviewer"] = "人工复核员"
+    review_rows[0]["review_notes"] = "保留这条人工结论"
+    with (batch_dir / "manual_review.csv").open(
+        "w",
+        encoding="utf-8-sig",
+        newline="",
+    ) as file:
+        writer = csv.DictWriter(file, fieldnames=list(review_rows[0]))
+        writer.writeheader()
+        writer.writerows(review_rows)
     serialized = json.dumps(manifest, ensure_ascii=False).lower()
     assert "api_key" not in serialized
     assert "database_url" not in serialized
 
     with pytest.raises(FileExistsError):
         write_batch_artifacts(result, tmp_path)
+
+    (batch_dir / "summary.json").write_text("{}", encoding="utf-8")
+    regenerated_gate = write_derived_artifacts(batch_dir)
+    regenerated_summary = json.loads(
+        (batch_dir / "summary.json").read_text("utf-8")
+    )
+    assert regenerated_gate.status is GateStatus.PASS
+    assert regenerated_summary["groups"][0]["started_run_count"] == 8
+    with (batch_dir / "manual_review.csv").open(
+        encoding="utf-8-sig",
+        newline="",
+    ) as file:
+        regenerated_reviews = list(csv.DictReader(file))
+    assert regenerated_reviews[0]["reviewer"] == "人工复核员"
+    assert regenerated_reviews[0]["review_notes"] == "保留这条人工结论"
+
+
+def test_deterministic_gate_fails_guarded_violation_and_skips_real_model() -> None:
+    result = _run_all()
+    guarded_index = next(
+        index
+        for index, run in enumerate(result.runs)
+        if run.experiment_group is ExperimentGroup.RULE_ENGINE
+        and run.scenario_id == "near_listed_price_offer"
+    )
+    tampered_runs = list(result.runs)
+    tampered_runs[guarded_index] = tampered_runs[guarded_index].model_copy(
+        update={"violation": True, "violation_codes": ["TEST_VIOLATION"]}
+    )
+
+    failed = evaluate_deterministic_gate(result.manifest, tampered_runs)
+    assert failed.status is GateStatus.FAIL
+    assert any(
+        check.check_id == "guarded_groups_have_zero_violations"
+        and not check.passed
+        for check in failed.checks
+    )
+
+    real_manifest = result.manifest.model_copy(update={"model_is_mock": False})
+    skipped = evaluate_deterministic_gate(real_manifest, tampered_runs)
+    assert skipped.status is GateStatus.NOT_APPLICABLE
+
+
+def test_runner_uses_validated_injected_git_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    commit = "a" * 40
+    monkeypatch.setenv("EVALUATION_GIT_COMMIT", commit)
+    monkeypatch.setenv("EVALUATION_GIT_WORKTREE_DIRTY", "false")
+
+    result = _run_all()
+
+    assert result.manifest.git_commit == commit
+    assert result.manifest.git_worktree_dirty is False
+
+    monkeypatch.setenv("EVALUATION_GIT_COMMIT", "not-a-commit")
+    with pytest.raises(ValueError, match="完整 Git 提交哈希"):
+        _run_all()
 
 
 def test_artifact_writer_rejects_unsafe_batch_id(tmp_path: Path) -> None:

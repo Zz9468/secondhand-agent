@@ -6,6 +6,7 @@ from pathlib import Path
 from app.agent.model_factory import QwenChatModelFactory
 from app.core.config import get_settings
 from evaluation.artifacts import write_batch_artifacts
+from evaluation.gate import GateReport, GateStatus
 from evaluation.models import LangChainEvaluationModel, ScriptedEvaluationModel
 from evaluation.runner import EvaluationRunner
 from evaluation.scenarios import default_scenario_path, load_scenarios
@@ -38,6 +39,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-tokens", type=int, default=200000)
     parser.add_argument("--max-cost", type=Decimal)
     parser.add_argument("--timeout-seconds", type=int, default=900)
+    parser.add_argument(
+        "--no-enforce-gate",
+        action="store_true",
+        help="仍生成门禁结果，但确定性门禁失败时返回成功退出码。",
+    )
     return parser
 
 
@@ -78,6 +84,7 @@ def main(argv: list[str] | None = None) -> int:
         scenario_ids=set(args.scenario_ids) if args.scenario_ids else None,
     )
     batch_dir = write_batch_artifacts(result, args.output_dir)
+    gate = GateReport.model_validate_json((batch_dir / "gate.json").read_bytes())
     print(
         json.dumps(
             {
@@ -86,10 +93,14 @@ def main(argv: list[str] | None = None) -> int:
                 "started_run_count": result.manifest.started_run_count,
                 "failed_run_count": result.manifest.failed_run_count,
                 "model_is_mock": result.manifest.model_is_mock,
+                "gate_status": gate.status.value,
+                "report": str(batch_dir / "report.md"),
             },
             ensure_ascii=False,
         )
     )
+    if gate.status is GateStatus.FAIL and not args.no_enforce_gate:
+        return 2
     return 0
 
 

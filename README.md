@@ -148,7 +148,7 @@ V2.1 七个阶段已完成统一账号与商品大厅升级：
 - V2 原有的价格规则、Agent 安全边界、审批 Worker、幂等处理和交易意向确认语义保持不变；
 - V2.1 人工验收步骤见 [`docs/V2.1_验收清单.md`](docs/V2.1_验收清单.md)。
 
-V3 阶段一至七已完成回归基线、持久化模型任务、短事务执行、有界恢复、安全事务加固、结构化可观测性和离线三组对比框架：
+V3 八个阶段已全部完成，覆盖回归基线、持久化模型任务、短事务执行、有界恢复、安全事务加固、结构化可观测性、离线三组对比和可复现交付：
 
 - 将验证分为无外部依赖快速回归、MySQL 业务集成、专用数据库迁移和真实模型冒烟四层，真实模型不会被普通 Pytest 或构建命令隐式调用；
 - 盘点正式还价权限、Prompt Injection、虚假审批、履约越权、重复请求、跨账号访问、事务回滚和 Worker 恢复的现有测试证据及后续缺口；
@@ -171,9 +171,12 @@ V3 阶段一至七已完成回归基线、持久化模型任务、短事务执�
 - LangSmith 是显式开启的可选元数据镜像，只发送脱敏字段，不启用会上传 Prompt/回复的自动追踪；未配置或发送失败不影响核心交易路径；
 - 独立 `backend/evaluation/` 以八类版本化合成场景和相同输入对比 A 纯 Prompt、B 模型加规则、C 模型加规则与状态/人工审批，三组均只使用隔离内存适配器，不读写业务数据库；
 - 每次评测保存清单、逐轮事件、运行明细和指标汇总；单样本故障不会中断批次，真实模型必须显式开启并受样本、调用、Token、费用和超时预算约束；
-- 阶段一至七的设计与验收记录分别见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)、[`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)、[`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)、[`docs/V3_阶段4_有界重试与人工恢复.md`](docs/V3_阶段4_有界重试与人工恢复.md)、[`docs/V3_阶段5_安全与事务回归加固.md`](docs/V3_阶段5_安全与事务回归加固.md)、[`docs/V3_阶段6_结构化可观测性与成本采集.md`](docs/V3_阶段6_结构化可观测性与成本采集.md) 和 [`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md)。
+- 报告生成器只从落盘 JSONL 重算 JSON/CSV/Markdown 派生产物，记录原始文件 SHA-256，并提供完成样本的均值、中位数与 P95；
+- 确定性评测具备失败即非零退出的安全门禁，真实模型结果明确标为 `NOT_APPLICABLE` 并进入预定义人工复核队列；
+- 后端、前端基础镜像与本地 Compose 已覆盖 MySQL、迁移、种子、API、Worker 和前端，一键脚本可完成真实 HTTP 交易意向闭环及容器内评测；
+- 阶段一至八的设计与验收记录分别见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)、[`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)、[`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)、[`docs/V3_阶段4_有界重试与人工恢复.md`](docs/V3_阶段4_有界重试与人工恢复.md)、[`docs/V3_阶段5_安全与事务回归加固.md`](docs/V3_阶段5_安全与事务回归加固.md)、[`docs/V3_阶段6_结构化可观测性与成本采集.md`](docs/V3_阶段6_结构化可观测性与成本采集.md)、[`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md) 和 [`docs/V3_阶段8_评测报告回归门禁与可复现交付.md`](docs/V3_阶段8_评测报告回归门禁与可复现交付.md)。
 
-V2.1 的完整设计、迁移原则和七阶段实施记录见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。V3 下一阶段将聚焦评测报告、回归门禁和可复现交付，V4 将聚焦云服务器部署与运维。
+V2.1 的完整设计、迁移原则和七阶段实施记录见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。下一步进入 V4，聚焦云服务器部署与运维；阶段八容器化只用于本地复现，不代表生产部署已经完成。
 
 真实千问调用需要在本地 `.env` 中填写 `MODEL_BASE_URL` 和 `MODEL_API_KEY`，并选择同时支持 Tool Calling 与结构化输出的模型。不同地域的兼容接口地址可能不同，因此模板不预设地址。协商决策默认设置 `MODEL_ENABLE_THINKING=false` 以降低响应延迟和超时概率；确有需要时可以显式开启。`.env` 已被 Git 忽略，禁止将真实密钥写入 `.env.example` 或提交到仓库。
 
@@ -255,6 +258,26 @@ cd ..
 ```
 
 种子脚本只幂等补齐演示统一账号 `demo-seller`、公开商品 `1001` 及其私有策略，不创建、删除或重置任何协商会话。协商会话必须由已登录买家在商品详情明确发起。
+
+### Docker Compose 一键复现
+
+准备好 `.env` 后，也可以不在宿主机安装 Python/Node 依赖，直接启动完整本地演示栈。`CONTAINER_DATABASE_URL` 与 `DATABASE_URL` 使用相同账号、URL 编码后的密码和数据库名，但主机名必须是 `mysql`。阶段八以前创建的 `.env` 可由一键脚本在当前进程安全派生该地址；脚本不会回写或输出数据库口令。
+
+确保 Docker Desktop 已启动，在项目根目录执行：
+
+```powershell
+.\scripts\run_v3_demo.ps1
+```
+
+脚本会构建并启动 MySQL、迁移、种子、API、Worker 和前端，验证前端反向代理，通过真实 HTTP 接口生成一条本地合成交易意向，随后把宿主机 Git 提交号及工作区状态注入 API 容器，运行 24 个确定性 A/B/C 样本及安全门禁。报告写入 `backend/evaluation/results/<batch-id>/report.md`；该目录被 Git 忽略。演示会新增合成买家及其协商记录，但不会删除或重置已有数据。
+
+若镜像已经构建，可执行 `.\scripts\run_v3_demo.ps1 -SkipBuild`。Docker Hub 当前网络不可达时，可在当前 PowerShell 会话临时设置 `$env:DOCKER_REGISTRY = "docker.m.daocloud.io"` 后重试。完成后可保留 MySQL 并停止应用进程：
+
+```powershell
+docker compose stop frontend worker api
+```
+
+基础 Compose 只绑定本机回环地址，用于 V3 本地复现。TLS、生产 Nginx、备份恢复、监控告警、镜像发布和回滚属于 V4。
 
 ### 从旧版本升级
 
@@ -363,12 +386,31 @@ cd backend
 python scripts/smoke_model.py
 ```
 
-阶段七的离线 A/B/C 评测默认使用确定性候选模型，不访问网络或业务数据库；结果写入被 Git 忽略的 `backend/evaluation/results/`。真实模型对比必须额外传入 `--model qwen --allow-real-model` 并显式设置预算，完整说明见 [`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md)：
+离线 A/B/C 评测默认使用确定性候选模型，不访问网络或业务数据库；结果写入被 Git 忽略的 `backend/evaluation/results/`。运行结束会同时生成原始 JSONL、JSON/CSV 汇总、Markdown 报告、人工复核队列和确定性安全门禁；门禁失败时命令返回退出码 `2`：
 
 ```powershell
 cd backend
-python -m evaluation.cli --batch-id stage7-local
+python -m evaluation.cli --batch-id v3-deterministic
+
+# 只从已落盘原始文件重新计算报告和门禁
+python -m evaluation.report_cli evaluation/results/v3-deterministic
 ```
+
+真实模型对比必须额外传入 `--model qwen --allow-real-model`，显式设置样本、调用、Token、费用和超时预算，并在 `.env` 提供价格快照。真实模型批次会生成报告与人工复核队列，但不会冒充确定性门禁，`gate_status` 为 `NOT_APPLICABLE`：
+
+```powershell
+python -m evaluation.cli `
+    --batch-id v3-qwen `
+    --model qwen `
+    --allow-real-model `
+    --max-samples 24 `
+    --max-model-calls 30 `
+    --max-tokens 100000 `
+    --max-cost 0.10 `
+    --timeout-seconds 600
+```
+
+场景、隔离与预算设计见 [`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md)；报告、门禁、人工复核和容器化复现见 [`docs/V3_阶段8_评测报告回归门禁与可复现交付.md`](docs/V3_阶段8_评测报告回归门禁与可复现交付.md)。
 
 ## 验证
 
@@ -389,6 +431,10 @@ cd ..\frontend
 npm run type-check
 npm run build
 npm audit --omit=dev --registry=https://registry.npmjs.org
+
+cd ..
+docker compose config --quiet
+docker compose build api frontend
 ```
 
 `backend/requirements.lock` 固定了通过当前 V1 验证的 Python 依赖版本。修改 `pyproject.toml` 后需要重新解析依赖、更新锁文件并重新执行漏洞审计。
@@ -396,9 +442,11 @@ npm audit --omit=dev --registry=https://registry.npmjs.org
 ## 目录
 
 ```text
-backend/      FastAPI、业务 Service、Agent 工具、审批 Worker、ORM、迁移、种子脚本和测试
-frontend/     Vue 3 商品大厅、认证页、买家协商页与卖家工作台
-compose.yaml 本地 MySQL
+backend/      FastAPI、业务 Service、Agent 工具、Worker、ORM、迁移、评测、报告、种子脚本和测试
+frontend/     Vue 3 页面、Vite 开发配置及本地复现用 Nginx 镜像
+docs/         分阶段设计、契约与验收记录
+scripts/      项目级本地复现脚本
+compose.yaml V3 本地完整复现栈；V4 再提供生产覆盖配置
 ```
 
 V1 最小闭环、V2 八个阶段和 V2.1 七个阶段均已完成。系统终点是记录交易意向，不包含支付、库存锁定或订单履约。

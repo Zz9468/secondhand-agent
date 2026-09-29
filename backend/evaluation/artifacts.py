@@ -2,6 +2,7 @@ import json
 import re
 from pathlib import Path
 
+from evaluation.reporting import write_derived_artifacts
 from evaluation.runner import BatchResult
 
 _SAFE_BATCH_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
@@ -26,7 +27,6 @@ def write_batch_artifacts(
     batch_dir.mkdir(parents=True, exist_ok=False)
 
     _write_json(batch_dir / "manifest.json", result.manifest.model_dump(mode="json"))
-    _write_json(batch_dir / "summary.json", result.summary.model_dump(mode="json"))
     _write_jsonl(
         batch_dir / "runs.jsonl",
         [run.model_dump(mode="json", exclude={"events"}) for run in result.runs],
@@ -47,6 +47,7 @@ def write_batch_artifacts(
                 }
             )
     _write_jsonl(batch_dir / "events.jsonl", event_rows)
+    write_derived_artifacts(batch_dir)
     return batch_dir
 
 

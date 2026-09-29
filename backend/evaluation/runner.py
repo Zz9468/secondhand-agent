@@ -1,4 +1,6 @@
+import os
 import platform
+import re
 import subprocess
 import time
 from dataclasses import dataclass
@@ -166,6 +168,17 @@ class EvaluationRunner:
 
     @staticmethod
     def _git_state() -> tuple[str, bool]:
+        injected_commit = os.getenv("EVALUATION_GIT_COMMIT", "").strip()
+        injected_dirty = os.getenv("EVALUATION_GIT_WORKTREE_DIRTY", "").strip().lower()
+        if injected_commit or injected_dirty:
+            if not re.fullmatch(r"[0-9a-fA-F]{40,64}", injected_commit):
+                raise ValueError("EVALUATION_GIT_COMMIT 必须是完整 Git 提交哈希")
+            if injected_dirty not in {"true", "false"}:
+                raise ValueError(
+                    "EVALUATION_GIT_WORKTREE_DIRTY 必须是 true 或 false"
+                )
+            return injected_commit.lower(), injected_dirty == "true"
+
         project_root = Path(__file__).resolve().parents[2]
         try:
             commit = subprocess.run(
