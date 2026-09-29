@@ -1,4 +1,5 @@
 import re
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -292,20 +293,42 @@ class ApprovalService:
     ) -> SellerApprovalSnapshot:
         """读取卖家拥有商品的单条审批；其他卖家的记录按不存在处理。"""
 
-        with self._session_factory() as db, db.begin():
+        # 绝大多数详情读取都是纯查询。若先锁 negotiation 再锁 approval，
+        # 会与审批通知 Worker 的 approval → negotiation 顺序形成环路，
+        # 卖家轮询后续状态时可触发 MySQL 1213。先无锁读取，只有在
+        # 确认待审批项已到期时，才转入 expire_request 的短写事务。
+        with self._session_factory() as db:
             negotiation, approval, product, offer = self._get_owned_context(
                 db,
                 seller_id=seller_id,
                 approval_id=approval_id,
-                for_update=True,
+                for_update=False,
             )
-            if (
+            is_due = (
                 approval.status is ApprovalStatus.PENDING
                 and self._is_due(approval.expires_at)
-            ):
-                self._expire(db, negotiation=negotiation, approval=approval)
-                db.flush()
-                db.refresh(approval)
+            )
+            snapshot = self._seller_snapshot(
+                approval=approval,
+                negotiation=negotiation,
+                product=product,
+                offer=offer,
+            )
+        if not is_due:
+            return snapshot
+
+        with suppress(ApprovalConflictError, ApprovalNotExpiredError):
+            self.expire_request(approval_id=approval_id)
+            # 读事务结束后，其他请求可能已审批、取消或延后该记录。
+            # 当前请求只需重新读取最终事实，不应将竞态暴露为详情接口错误。
+
+        with self._session_factory() as db:
+            negotiation, approval, product, offer = self._get_owned_context(
+                db,
+                seller_id=seller_id,
+                approval_id=approval_id,
+                for_update=False,
+            )
             return self._seller_snapshot(
                 approval=approval,
                 negotiation=negotiation,

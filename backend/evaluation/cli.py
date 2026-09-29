@@ -15,10 +15,16 @@ from evaluation.schemas import EvaluationBudget, ExperimentGroup
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="运行不接触业务数据库的 V3 阶段七离线 A/B/C 对比实验。"
+        description="运行不接触业务数据库的版本化离线系统评测。"
     )
     parser.add_argument("--scenario-file", type=Path, default=default_scenario_path())
     parser.add_argument("--scenario-id", action="append", dest="scenario_ids")
+    parser.add_argument(
+        "--tag",
+        action="append",
+        dest="scenario_tags",
+        help="只运行同时包含全部指定标签的场景，可重复传入。",
+    )
     parser.add_argument(
         "--groups",
         nargs="+",
@@ -34,8 +40,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=20260928)
     parser.add_argument("--batch-id")
     parser.add_argument("--output-dir", type=Path)
-    parser.add_argument("--max-samples", type=int, default=24)
-    parser.add_argument("--max-model-calls", type=int, default=100)
+    parser.add_argument("--max-samples", type=int, default=300)
+    parser.add_argument("--max-model-calls", type=int, default=300)
     parser.add_argument("--max-tokens", type=int, default=200000)
     parser.add_argument("--max-cost", type=Decimal)
     parser.add_argument("--timeout-seconds", type=int, default=900)
@@ -59,8 +65,8 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit("真实模型必须显式传入 --max-cost 费用上限")
         if not settings.model_cost_is_configured:
             raise SystemExit("真实模型费用预算要求配置模型单价与币种")
-        # 评测禁用 SDK 隐式重试，使模型调用数与预算、原始事件一一对应。
-        effective_settings = settings.model_copy(update={"model_max_retries": 0})
+        # 使用正式配置的传输层重试；结构化校验失败时与生产链路一样纠错一次。
+        effective_settings = settings
         model = LangChainEvaluationModel(
             QwenChatModelFactory().create(effective_settings)
         )
@@ -82,6 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         budget=budget,
         batch_id=args.batch_id,
         scenario_ids=set(args.scenario_ids) if args.scenario_ids else None,
+        scenario_tags=set(args.scenario_tags) if args.scenario_tags else None,
     )
     batch_dir = write_batch_artifacts(result, args.output_dir)
     gate = GateReport.model_validate_json((batch_dir / "gate.json").read_bytes())

@@ -1,7 +1,7 @@
 import csv
 import hashlib
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -14,7 +14,7 @@ from evaluation.metrics import (
 )
 from evaluation.schemas import BatchManifest, FinalState, RunResult
 
-REPORT_GENERATOR_VERSION = "1.0.0"
+REPORT_GENERATOR_VERSION = "1.2.0"
 
 
 def load_batch_records(
@@ -41,6 +41,42 @@ def load_batch_records(
     ]
     if len(runs) != manifest.started_run_count:
         raise ValueError("运行明细数量与清单 started_run_count 不一致")
+    if sum(run.final_state is FinalState.SYSTEM_FAILURE for run in runs) != (
+        manifest.failed_run_count
+    ):
+        raise ValueError("运行失败数量与清单 failed_run_count 不一致")
+
+    runs_by_id = {run.run_id: run for run in runs}
+    if len(runs_by_id) != len(runs):
+        raise ValueError("运行明细存在重复 run_id")
+    event_types: dict[str, Counter[str]] = defaultdict(Counter)
+    event_indices: dict[str, list[int]] = defaultdict(list)
+    for row in event_rows:
+        run_id = row.get("run_id")
+        if not isinstance(run_id, str) or run_id not in runs_by_id:
+            raise ValueError("事件引用未知 run_id")
+        run = runs_by_id[run_id]
+        if (
+            row.get("batch_id") != manifest.batch_id
+            or row.get("scenario_id") != run.scenario_id
+            or row.get("scenario_version") != run.scenario_version
+            or row.get("experiment_group") != run.experiment_group.value
+        ):
+            raise ValueError("事件元数据与运行明细不一致")
+        event_type = row.get("event_type")
+        event_index = row.get("event_index")
+        if not isinstance(event_type, str) or type(event_index) is not int:
+            raise ValueError("事件类型或序号无效")
+        event_types[run_id][event_type] += 1
+        event_indices[run_id].append(event_index)
+    for run_id in runs_by_id:
+        if event_types[run_id]["RUN_STARTED"] != 1:
+            raise ValueError("每个运行必须恰好包含一个 RUN_STARTED 事件")
+        if event_types[run_id]["RUN_COMPLETED"] != 1:
+            raise ValueError("每个运行必须恰好包含一个 RUN_COMPLETED 事件")
+        indices = event_indices[run_id]
+        if sorted(indices) != list(range(len(indices))):
+            raise ValueError("运行事件序号必须从零开始且连续唯一")
     return manifest, runs, event_rows
 
 
@@ -95,6 +131,9 @@ def _write_metrics_csv(path: Path, summary: EvaluationSummary) -> None:
         "valid_termination_numerator",
         "valid_termination_denominator",
         "valid_termination_rate",
+        "system_failure_numerator",
+        "system_failure_denominator",
+        "system_failure_rate",
         "violating_run_numerator",
         "violating_run_denominator",
         "violating_run_rate",
@@ -103,6 +142,15 @@ def _write_metrics_csv(path: Path, summary: EvaluationSummary) -> None:
         "invalid_formal_commitment_rate",
         "average_negotiation_turns",
         "approval_run_rate",
+        "approval_resolution_rate",
+        "deterministic_offer_routing_rate",
+        "auto_accept_routing_accuracy",
+        "approval_routing_accuracy",
+        "prohibited_offer_block_rate",
+        "unsupported_terms_block_rate",
+        "invalid_offer_terms_block_rate",
+        "model_call_success_rate",
+        "model_decision_success_rate",
         "model_call_count",
         "usage_coverage_rate",
         "total_tokens",
@@ -117,6 +165,7 @@ def _write_metrics_csv(path: Path, summary: EvaluationSummary) -> None:
                 "completed_run_count": item.completed_run_count,
                 **_ratio_columns("intent_agreement", item.intent_agreement_rate),
                 **_ratio_columns("valid_termination", item.valid_termination_rate),
+                **_ratio_columns("system_failure", item.system_failure_rate),
                 **_ratio_columns("violating_run", item.violating_run_rate),
                 **_ratio_columns(
                     "invalid_commitment",
@@ -125,6 +174,27 @@ def _write_metrics_csv(path: Path, summary: EvaluationSummary) -> None:
                 ),
                 "average_negotiation_turns": item.average_negotiation_turns,
                 "approval_run_rate": item.approval_run_rate.value,
+                "approval_resolution_rate": item.approval_resolution_rate.value,
+                "deterministic_offer_routing_rate": (
+                    item.deterministic_offer_routing_rate.value
+                ),
+                "auto_accept_routing_accuracy": (
+                    item.auto_accept_routing_accuracy.value
+                ),
+                "approval_routing_accuracy": item.approval_routing_accuracy.value,
+                "prohibited_offer_block_rate": (
+                    item.prohibited_offer_block_rate.value
+                ),
+                "unsupported_terms_block_rate": (
+                    item.unsupported_terms_block_rate.value
+                ),
+                "invalid_offer_terms_block_rate": (
+                    item.invalid_offer_terms_block_rate.value
+                ),
+                "model_call_success_rate": item.model_call_success_rate.value,
+                "model_decision_success_rate": (
+                    item.model_decision_success_rate.value
+                ),
                 "model_call_count": item.model_call_count,
                 "usage_coverage_rate": item.usage_coverage_rate.value,
                 "total_tokens": item.total_tokens,
@@ -168,12 +238,28 @@ def _write_runs_csv(path: Path, runs: list[RunResult]) -> None:
         "formal_commitment_count",
         "invalid_formal_commitment_count",
         "approval_request_count",
+        "deterministic_decision_count",
+        "auto_accept_eligible_count",
+        "auto_accept_routed_count",
+        "approval_eligible_count",
+        "approval_routed_count",
+        "prohibited_offer_count",
+        "prohibited_offer_blocked_count",
+        "unsupported_terms_offer_count",
+        "unsupported_terms_blocked_count",
+        "invalid_offer_terms_count",
+        "invalid_offer_terms_blocked_count",
         "model_call_count",
+        "successful_model_call_count",
+        "model_decision_request_count",
+        "model_decision_success_count",
+        "model_duration_ms",
         "usage_covered_call_count",
         "total_tokens",
         "estimated_cost",
         "cost_currency",
         "error_category",
+        "error_detail",
     ]
     rows = [
         {
@@ -191,12 +277,28 @@ def _write_runs_csv(path: Path, runs: list[RunResult]) -> None:
             "formal_commitment_count": run.formal_commitment_count,
             "invalid_formal_commitment_count": run.invalid_formal_commitment_count,
             "approval_request_count": run.approval_request_count,
+            "deterministic_decision_count": run.deterministic_decision_count,
+            "auto_accept_eligible_count": run.auto_accept_eligible_count,
+            "auto_accept_routed_count": run.auto_accept_routed_count,
+            "approval_eligible_count": run.approval_eligible_count,
+            "approval_routed_count": run.approval_routed_count,
+            "prohibited_offer_count": run.prohibited_offer_count,
+            "prohibited_offer_blocked_count": run.prohibited_offer_blocked_count,
+            "unsupported_terms_offer_count": run.unsupported_terms_offer_count,
+            "unsupported_terms_blocked_count": run.unsupported_terms_blocked_count,
+            "invalid_offer_terms_count": run.invalid_offer_terms_count,
+            "invalid_offer_terms_blocked_count": run.invalid_offer_terms_blocked_count,
             "model_call_count": run.model_call_count,
+            "successful_model_call_count": run.successful_model_call_count,
+            "model_decision_request_count": run.model_decision_request_count,
+            "model_decision_success_count": run.model_decision_success_count,
+            "model_duration_ms": run.model_duration_ms,
             "usage_covered_call_count": run.usage_covered_call_count,
             "total_tokens": run.total_tokens,
             "estimated_cost": run.estimated_cost,
             "cost_currency": run.cost_currency,
             "error_category": run.error_category,
+            "error_detail": run.error_detail,
         }
         for run in runs
     ]
@@ -311,6 +413,11 @@ def _markdown_report(
         f"- 场景集：`{manifest.scenario_set_version}` / `{manifest.scenario_set_hash}`",
         f"- 模型：`{manifest.model_provider}/{manifest.model_name}`；"
         f"模拟模型：`{str(manifest.model_is_mock).lower()}`",
+        "- 价格快照（每百万 Token）：输入 "
+        f"`{manifest.model_input_price_per_million}`；输出 "
+        f"`{manifest.model_output_price_per_million}`；缓存输入 "
+        f"`{manifest.model_cached_input_price_per_million}`；币种 "
+        f"`{manifest.model_cost_currency or '未配置'}`",
         f"- Prompt：`{manifest.prompt_version}` / `{manifest.prompt_hash}`",
         f"- 随机种子：`{manifest.random_seed}`",
         f"- 样本：`{manifest.started_run_count}`；系统失败："
@@ -321,8 +428,8 @@ def _markdown_report(
         "",
         "## 分组指标",
         "",
-        "| 组 | 已开始/完成 | 意向达成率 | 有效结束率 | 运行违规率 | "
-        "正式承诺违规率 | 平均轮次 | 审批率 | 用量覆盖率 | Token |",
+        "| 组 | 已开始/完成 | 意向达成率 | 有效结束率 | 系统失败率 | 运行违规率 | "
+        "正式承诺违规率 | 平均轮次 | 用量覆盖率 | Token |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for item in summary.groups:
@@ -334,12 +441,43 @@ def _markdown_report(
                     f"{item.started_run_count}/{item.completed_run_count}",
                     _format_ratio(item.intent_agreement_rate),
                     _format_ratio(item.valid_termination_rate),
+                    _format_ratio(item.system_failure_rate),
                     _format_ratio(item.violating_run_rate),
                     _format_ratio(item.invalid_formal_commitment_rate),
                     _format_number(item.average_negotiation_turns),
-                    _format_ratio(item.approval_run_rate),
                     _format_ratio(item.usage_coverage_rate),
                     str(item.total_tokens) if item.total_tokens is not None else "未知",
+                ]
+            )
+            + " |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## 正式报价路由与审批",
+            "",
+            "路由准确率使用对应适格正式报价作分母，而不是全部运行。C 组正式报价"
+            "在生产规则能够确定结果时绕过模型。",
+            "",
+            "| 组 | 自动接受路由 | 审批路由 | 禁止报价安全阻断 | 不支持条件安全阻断 | "
+            "不可计算条件安全阻断 | 审批解决率 | 确定性路由总准确率 |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for item in summary.groups:
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    item.experiment_group.value,
+                    _format_ratio(item.auto_accept_routing_accuracy),
+                    _format_ratio(item.approval_routing_accuracy),
+                    _format_ratio(item.prohibited_offer_block_rate),
+                    _format_ratio(item.unsupported_terms_block_rate),
+                    _format_ratio(item.invalid_offer_terms_block_rate),
+                    _format_ratio(item.approval_resolution_rate),
+                    _format_ratio(item.deterministic_offer_routing_rate),
                 ]
             )
             + " |"
@@ -353,9 +491,9 @@ def _markdown_report(
             "完成样本指执行终态不是 `SYSTEM_FAILURE` 的运行。P95 使用 nearest-rank "
             "方法；Token 或费用缺失时只统计有提供商用量的样本，并由覆盖率揭示缺口。",
             "",
-            "| 组 | 模型调用/样本（均值/中位/P95） | "
-            "Token/样本（均值/中位/P95） | 费用/样本 |",
-            "|---|---:|---:|---|",
+            "| 组 | 可用结构化响应/结构化调用 | 决策成功率 | 结构化调用/样本（均值/中位/P95） | "
+            "模型耗时ms/样本（均值/中位/P95） | Token/样本（均值/中位/P95） | 费用/样本 |",
+            "|---|---:|---:|---:|---:|---:|---|",
         ]
     )
     for item in summary.groups:
@@ -367,7 +505,10 @@ def _markdown_report(
         ) or "未知"
         lines.append(
             f"| {item.experiment_group.value} | "
+            f"{_format_ratio(item.model_call_success_rate)} | "
+            f"{_format_ratio(item.model_decision_success_rate)} | "
             f"{_format_distribution(item.model_calls_per_completed_run)} | "
+            f"{_format_distribution(item.model_duration_ms_per_completed_run)} | "
             f"{_format_distribution(item.total_tokens_per_completed_run)} | "
             f"{costs} |"
         )
@@ -414,7 +555,13 @@ def _markdown_report(
 def _format_ratio(metric: RatioMetric) -> str:
     if metric.value is None:
         return f"{metric.numerator}/{metric.denominator} (null)"
-    return f"{metric.numerator}/{metric.denominator} ({metric.value:.2%})"
+    interval = ""
+    if metric.ci95_lower is not None and metric.ci95_upper is not None:
+        interval = f"; 95% CI {metric.ci95_lower:.2%}–{metric.ci95_upper:.2%}"
+    return (
+        f"{metric.numerator}/{metric.denominator} "
+        f"({metric.value:.2%}{interval})"
+    )
 
 
 def _format_number(value: float | None) -> str:

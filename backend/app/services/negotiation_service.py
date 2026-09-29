@@ -33,24 +33,13 @@ from app.services.errors import (
     ProductUnavailableError,
 )
 from app.services.pricing_service import (
+    OfferAuthorization,
     OfferTerms,
-    PriceZone,
     PricingError,
     PricingPolicy,
     PricingService,
     ShippingPayer,
 )
-
-
-@dataclass(frozen=True, slots=True)
-class OfferAuthorization:
-    zone: PriceZone
-    conditions_valid: bool
-    can_accept_automatically: bool
-    can_submit_counter_offer: bool
-    can_request_approval: bool
-    is_acceptance_prohibited: bool
-    reason_code: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -467,54 +456,16 @@ class NegotiationService:
         additional_terms: Mapping[str, object] | None = None,
     ) -> OfferAuthorization:
         try:
-            evaluation = self._pricing_service.evaluate(
+            return self._pricing_service.authorize(
                 terms=terms,
                 policy=PricingPolicy(
                     minimum_net_price=policy.minimum_net_price,
                     auto_accept_threshold=policy.auto_accept_threshold,
                 ),
+                additional_terms=additional_terms,
             )
         except PricingError as exc:
             raise InvalidOfferTermsError("交易条件无法安全计算") from exc
-
-        conditions_valid = self._additional_terms_are_authorized(additional_terms)
-        if not conditions_valid:
-            return OfferAuthorization(
-                zone=evaluation.zone,
-                conditions_valid=False,
-                can_accept_automatically=False,
-                can_submit_counter_offer=False,
-                can_request_approval=False,
-                is_acceptance_prohibited=True,
-                reason_code="UNSUPPORTED_ADDITIONAL_TERMS",
-            )
-
-        reason_codes = {
-            PriceZone.AUTO_ACCEPT: "AUTO_AUTHORIZED",
-            PriceZone.APPROVAL_REQUIRED: "SELLER_APPROVAL_REQUIRED",
-            PriceZone.PROHIBITED: "BELOW_MINIMUM_NET_INCOME",
-        }
-        return OfferAuthorization(
-            zone=evaluation.zone,
-            conditions_valid=True,
-            can_accept_automatically=evaluation.can_accept_automatically,
-            can_submit_counter_offer=evaluation.can_accept_automatically,
-            can_request_approval=evaluation.can_request_approval,
-            is_acceptance_prohibited=evaluation.is_acceptance_prohibited,
-            reason_code=reason_codes[evaluation.zone],
-        )
-
-    @staticmethod
-    def _additional_terms_are_authorized(
-        additional_terms: Mapping[str, object] | None,
-    ) -> bool:
-        """V1 只自动承诺可验证的配送方式，其他条件留待卖家确认。"""
-
-        if not additional_terms:
-            return True
-        if set(additional_terms) != {"delivery_method"}:
-            return False
-        return additional_terms["delivery_method"] in {"shipping", "pickup"}
 
     @staticmethod
     def _supersede_current_offer(

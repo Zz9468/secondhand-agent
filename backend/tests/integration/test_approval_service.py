@@ -401,6 +401,98 @@ def test_seller_rejection_restores_session_and_enqueues_followup(
         assert stored_offer.status is OfferStatus.REJECTED
 
 
+def test_seller_get_of_reviewed_request_does_not_take_business_row_locks(
+    service_session_factory: sessionmaker[Session],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session_id, buyer_id, offer = create_buyer_offer(service_session_factory)
+    service = ApprovalService(service_session_factory)
+    created = service.create_request(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        offer_id=offer.id,
+        expected_policy_version=1,
+        reason="等待卖家确认",
+        expires_at=datetime.now() + timedelta(hours=1),
+    )
+    with service_session_factory() as db:
+        negotiation = db.get(NegotiationSession, session_id)
+        assert negotiation is not None
+        product = db.get(Product, negotiation.product_id)
+        assert product is not None
+        seller_id = product.seller_id
+    rejected = service.reject_request(
+        seller_id=seller_id,
+        approval_id=created.id,
+        request_id="reject-read-lock-regression-001",
+    )
+    assert rejected.status is ApprovalStatus.REJECTED
+
+    lock_modes: list[bool] = []
+    original = ApprovalService._get_owned_context
+
+    def tracked_get_owned_context(
+        db: Session,
+        *,
+        seller_id: str,
+        approval_id: int,
+        for_update: bool,
+    ) -> tuple[NegotiationSession, ApprovalRequest, Product, Offer]:
+        lock_modes.append(for_update)
+        return original(
+            db,
+            seller_id=seller_id,
+            approval_id=approval_id,
+            for_update=for_update,
+        )
+
+    monkeypatch.setattr(
+        ApprovalService,
+        "_get_owned_context",
+        staticmethod(tracked_get_owned_context),
+    )
+
+    detail = service.get_for_seller(
+        seller_id=seller_id,
+        approval_id=created.id,
+    )
+
+    assert detail.status is ApprovalStatus.REJECTED
+    assert lock_modes == [False]
+
+
+def test_seller_get_expires_due_request_in_separate_write_transaction(
+    service_session_factory: sessionmaker[Session],
+) -> None:
+    session_id, buyer_id, offer = create_buyer_offer(service_session_factory)
+    service = ApprovalService(service_session_factory)
+    created = service.create_request(
+        session_id=session_id,
+        buyer_id=buyer_id,
+        offer_id=offer.id,
+        expected_policy_version=1,
+        reason="已到期审批",
+        expires_at=datetime.now() + timedelta(hours=1),
+    )
+    with service_session_factory() as db, db.begin():
+        approval = db.get(ApprovalRequest, created.id)
+        negotiation = db.get(NegotiationSession, session_id)
+        assert approval is not None
+        assert negotiation is not None
+        product = db.get(Product, negotiation.product_id)
+        assert product is not None
+        seller_id = product.seller_id
+        approval.expires_at = datetime.now() - timedelta(seconds=1)
+
+    detail = service.get_for_seller(
+        seller_id=seller_id,
+        approval_id=created.id,
+    )
+
+    assert detail.status is ApprovalStatus.EXPIRED
+    assert detail.session_status is NegotiationStatus.ACTIVE
+
+
 def test_seller_review_invalidates_stale_policy_before_returning_conflict(
     service_session_factory: sessionmaker[Session],
 ) -> None:

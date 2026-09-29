@@ -1,4 +1,4 @@
-param(
+﻿param(
     [switch]$SkipBuild
 )
 
@@ -87,9 +87,9 @@ if ($LASTEXITCODE -ne 0) {
 $batchId = "v3-demo-" + [DateTime]::UtcNow.ToString("yyyyMMddTHHmmssZ")
 & docker compose exec -T api python -m evaluation.cli `
     --batch-id $batchId `
-    --max-samples 24 `
-    --max-model-calls 30 `
-    --max-tokens 30000 `
+    --max-samples 300 `
+    --max-model-calls 300 `
+    --max-tokens 200000 `
     --timeout-seconds 120
 if ($LASTEXITCODE -ne 0) {
     throw "确定性评测或安全门禁失败。"

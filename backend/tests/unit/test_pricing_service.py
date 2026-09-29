@@ -11,6 +11,7 @@ from app.services.pricing_service import (
     PricingPolicy,
     ShippingPayer,
     UnknownCostError,
+    authorize_offer,
     calculate_net_income,
     evaluate_offer,
 )
@@ -197,3 +198,73 @@ def test_calculate_net_income_is_independent_from_offer_evaluation() -> None:
     )
 
     assert calculate_net_income(terms) == Decimal("2870.00")
+
+
+@pytest.mark.parametrize(
+    ("price", "zone", "auto", "approval", "prohibited", "reason"),
+    [
+        ("2850.00", PriceZone.AUTO_ACCEPT, True, False, False, "AUTO_AUTHORIZED"),
+        (
+            "2700.00",
+            PriceZone.APPROVAL_REQUIRED,
+            False,
+            True,
+            False,
+            "SELLER_APPROVAL_REQUIRED",
+        ),
+        (
+            "2699.99",
+            PriceZone.PROHIBITED,
+            False,
+            False,
+            True,
+            "BELOW_MINIMUM_NET_INCOME",
+        ),
+    ],
+)
+def test_authorize_offer_exposes_one_consistent_permission_set(
+    policy: PricingPolicy,
+    price: str,
+    zone: PriceZone,
+    auto: bool,
+    approval: bool,
+    prohibited: bool,
+    reason: str,
+) -> None:
+    authorization = authorize_offer(
+        terms=OfferTerms(
+            buyer_payment=Decimal(price),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+        policy=policy,
+        additional_terms={"delivery_method": "shipping"},
+    )
+
+    assert authorization.zone is zone
+    assert authorization.conditions_valid is True
+    assert authorization.can_accept_automatically is auto
+    assert authorization.can_submit_counter_offer is auto
+    assert authorization.can_request_approval is approval
+    assert authorization.is_acceptance_prohibited is prohibited
+    assert authorization.reason_code == reason
+
+
+def test_unknown_additional_terms_override_price_permissions(
+    policy: PricingPolicy,
+) -> None:
+    authorization = authorize_offer(
+        terms=OfferTerms(
+            buyer_payment=Decimal("3000.00"),
+            shipping_paid_by=ShippingPayer.BUYER,
+        ),
+        policy=policy,
+        additional_terms={"dispatch_deadline": "today"},
+    )
+
+    assert authorization.zone is PriceZone.AUTO_ACCEPT
+    assert authorization.conditions_valid is False
+    assert authorization.can_accept_automatically is False
+    assert authorization.can_submit_counter_offer is False
+    assert authorization.can_request_approval is False
+    assert authorization.is_acceptance_prohibited is True
+    assert authorization.reason_code == "UNSUPPORTED_ADDITIONAL_TERMS"

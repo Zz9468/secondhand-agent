@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
@@ -109,6 +110,7 @@ class EvaluationScenario(BaseModel):
     timeout_seconds: int = Field(default=60, ge=1, le=3600)
     seller_review: SellerReview = SellerReview.APPROVE
     exhaustion_behavior: ExhaustionBehavior = ExhaustionBehavior.CLOSE
+    tags: list[str] = Field(default_factory=list)
     synthetic_data: bool = True
 
     @model_validator(mode="after")
@@ -117,14 +119,18 @@ class EvaluationScenario(BaseModel):
             raise ValueError("场景轮次不能超过 max_turns")
         if not self.synthetic_data:
             raise ValueError("阶段七只允许合成评测数据")
+        if len(self.tags) != len(set(self.tags)):
+            raise ValueError("场景标签不能重复")
+        if any(re.fullmatch(r"[a-z0-9][a-z0-9_]{0,39}", tag) is None for tag in self.tags):
+            raise ValueError("场景标签只能包含字母、数字和下划线")
         return self
 
 
 class EvaluationBudget(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    max_samples: int = Field(default=24, ge=1, le=10000)
-    max_model_calls: int = Field(default=100, ge=1, le=100000)
+    max_samples: int = Field(default=300, ge=1, le=10000)
+    max_model_calls: int = Field(default=300, ge=1, le=100000)
     max_tokens: int = Field(default=200000, ge=1)
     max_estimated_cost: Decimal | None = Field(default=None, ge=0)
     timeout_seconds: int = Field(default=900, ge=1, le=86400)
@@ -136,6 +142,7 @@ class ModelResult(BaseModel):
     decision: NegotiationDecision
     usage: ProviderUsage
     duration_ms: int = Field(ge=0)
+    provider_attempt_count: int = Field(default=1, ge=1, le=2)
 
 
 class EvaluationEvent(BaseModel):
@@ -162,7 +169,7 @@ class RunResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     contract_version: str = "1.0.0"
-    result_schema_version: str = "1.0.0"
+    result_schema_version: str = "1.2.0"
     batch_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
     run_id: str
     experiment_group: ExperimentGroup
@@ -183,8 +190,23 @@ class RunResult(BaseModel):
     approval_approved_count: int
     approval_rejected_count: int
     approval_invalidated_count: int
+    deterministic_decision_count: int = 0
+    auto_accept_eligible_count: int = 0
+    auto_accept_routed_count: int = 0
+    approval_eligible_count: int = 0
+    approval_routed_count: int = 0
+    prohibited_offer_count: int = 0
+    prohibited_offer_blocked_count: int = 0
+    unsupported_terms_offer_count: int = 0
+    unsupported_terms_blocked_count: int = 0
+    invalid_offer_terms_count: int = 0
+    invalid_offer_terms_blocked_count: int = 0
     manual_recovery_count: int = 0
     model_call_count: int
+    successful_model_call_count: int = 0
+    model_decision_request_count: int = 0
+    model_decision_success_count: int = 0
+    model_duration_ms: int = 0
     usage_covered_call_count: int
     input_tokens: int | None
     output_tokens: int | None
@@ -193,6 +215,7 @@ class RunResult(BaseModel):
     estimated_cost: Decimal | None
     cost_currency: str | None
     error_category: str | None
+    error_detail: str | None = Field(default=None, max_length=2000)
     commitments: list[FormalCommitment]
     events: list[EvaluationEvent]
 
@@ -201,7 +224,7 @@ class BatchManifest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     contract_version: str = "1.0.0"
-    result_schema_version: str = "1.0.0"
+    result_schema_version: str = "1.2.0"
     batch_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
     git_commit: str
     git_worktree_dirty: bool
@@ -210,6 +233,7 @@ class BatchManifest(BaseModel):
     scenario_set_hash: str
     scenario_ids: list[str]
     scenario_count: int
+    scenario_tags: list[str] = Field(default_factory=list)
     groups: list[ExperimentGroup]
     random_seed: int
     model_provider: str
@@ -220,6 +244,10 @@ class BatchManifest(BaseModel):
     model_temperature: float
     model_timeout_seconds: float
     model_max_retries: int
+    model_input_price_per_million: Decimal | None = None
+    model_output_price_per_million: Decimal | None = None
+    model_cached_input_price_per_million: Decimal | None = None
+    model_cost_currency: str | None = None
     prompt_version: str
     prompt_hash: str
     reply_policy_version: str

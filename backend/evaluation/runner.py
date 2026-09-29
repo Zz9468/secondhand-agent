@@ -49,6 +49,7 @@ class EvaluationRunner:
         budget: EvaluationBudget | None = None,
         batch_id: str | None = None,
         scenario_ids: set[str] | None = None,
+        scenario_tags: set[str] | None = None,
     ) -> BatchResult:
         selected = [
             scenario
@@ -59,6 +60,12 @@ class EvaluationRunner:
             missing = scenario_ids - {scenario.scenario_id for scenario in selected}
             if missing:
                 raise ValueError(f"未知场景 ID: {', '.join(sorted(missing))}")
+        if scenario_tags is not None:
+            selected = [
+                scenario
+                for scenario in selected
+                if scenario_tags.issubset(set(scenario.tags))
+            ]
         if not selected:
             raise ValueError("至少需要选择一个评测场景")
         if not groups or len(groups) != len(set(groups)):
@@ -78,6 +85,7 @@ class EvaluationRunner:
             batch_id=effective_batch_id,
             scenario_set=scenario_set,
             scenarios=selected,
+            scenario_tags=scenario_tags,
             groups=groups,
             random_seed=random_seed,
             budget=effective_budget,
@@ -133,6 +141,7 @@ class EvaluationRunner:
         batch_id: str,
         scenario_set: ScenarioSet,
         scenarios: list[EvaluationScenario],
+        scenario_tags: set[str] | None,
         groups: tuple[ExperimentGroup, ...],
         random_seed: int,
         budget: EvaluationBudget,
@@ -148,6 +157,7 @@ class EvaluationRunner:
             scenario_set_hash=scenario_set.content_hash,
             scenario_ids=[scenario.scenario_id for scenario in scenarios],
             scenario_count=len(scenarios),
+            scenario_tags=sorted(scenario_tags or set()),
             groups=list(groups),
             random_seed=random_seed,
             model_provider=self._model.provider,
@@ -158,6 +168,16 @@ class EvaluationRunner:
             model_temperature=self._settings.model_temperature,
             model_timeout_seconds=self._settings.model_timeout_seconds,
             model_max_retries=self._settings.model_max_retries,
+            model_input_price_per_million=(
+                self._settings.model_input_price_per_million
+            ),
+            model_output_price_per_million=(
+                self._settings.model_output_price_per_million
+            ),
+            model_cached_input_price_per_million=(
+                self._settings.model_cached_input_price_per_million
+            ),
+            model_cost_currency=self._settings.model_cost_currency,
             prompt_version=PROMPT_VERSION,
             prompt_hash=prompt_hash(),
             reply_policy_version="deterministic-backend-v1",

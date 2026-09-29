@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import StrEnum
@@ -122,11 +123,37 @@ class OfferEvaluation:
         return self.zone is PriceZone.PROHIBITED
 
 
+@dataclass(frozen=True, slots=True)
+class OfferAuthorization:
+    """生产编排与离线评测共用的正式报价授权事实。"""
+
+    zone: PriceZone
+    conditions_valid: bool
+    can_accept_automatically: bool
+    can_submit_counter_offer: bool
+    can_request_approval: bool
+    is_acceptance_prohibited: bool
+    reason_code: str
+
+
 class PricingService:
     """向业务编排层提供无数据库依赖的价格授权判断。"""
 
     def evaluate(self, *, terms: OfferTerms, policy: PricingPolicy) -> OfferEvaluation:
         return evaluate_offer(terms=terms, policy=policy)
+
+    def authorize(
+        self,
+        *,
+        terms: OfferTerms,
+        policy: PricingPolicy,
+        additional_terms: Mapping[str, object] | None = None,
+    ) -> OfferAuthorization:
+        return authorize_offer(
+            terms=terms,
+            policy=policy,
+            additional_terms=additional_terms,
+        )
 
 
 def calculate_net_income(terms: OfferTerms) -> Decimal:
@@ -159,3 +186,52 @@ def evaluate_offer(*, terms: OfferTerms, policy: PricingPolicy) -> OfferEvaluati
         zone = PriceZone.PROHIBITED
 
     return OfferEvaluation(net_income=net_income, zone=zone)
+
+
+def additional_terms_are_authorized(
+    additional_terms: Mapping[str, object] | None,
+) -> bool:
+    """只自动承诺系统能够验证的配送方式。"""
+
+    if not additional_terms:
+        return True
+    if set(additional_terms) != {"delivery_method"}:
+        return False
+    return additional_terms["delivery_method"] in {"shipping", "pickup"}
+
+
+def authorize_offer(
+    *,
+    terms: OfferTerms,
+    policy: PricingPolicy,
+    additional_terms: Mapping[str, object] | None = None,
+) -> OfferAuthorization:
+    """把价格区间与可验证交易条件组合为唯一授权契约。"""
+
+    evaluation = evaluate_offer(terms=terms, policy=policy)
+    conditions_valid = additional_terms_are_authorized(additional_terms)
+    if not conditions_valid:
+        return OfferAuthorization(
+            zone=evaluation.zone,
+            conditions_valid=False,
+            can_accept_automatically=False,
+            can_submit_counter_offer=False,
+            can_request_approval=False,
+            is_acceptance_prohibited=True,
+            reason_code="UNSUPPORTED_ADDITIONAL_TERMS",
+        )
+
+    reason_codes = {
+        PriceZone.AUTO_ACCEPT: "AUTO_AUTHORIZED",
+        PriceZone.APPROVAL_REQUIRED: "SELLER_APPROVAL_REQUIRED",
+        PriceZone.PROHIBITED: "BELOW_MINIMUM_NET_INCOME",
+    }
+    return OfferAuthorization(
+        zone=evaluation.zone,
+        conditions_valid=True,
+        can_accept_automatically=evaluation.can_accept_automatically,
+        can_submit_counter_offer=evaluation.can_accept_automatically,
+        can_request_approval=evaluation.can_request_approval,
+        is_acceptance_prohibited=evaluation.is_acceptance_prohibited,
+        reason_code=reason_codes[evaluation.zone],
+    )

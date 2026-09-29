@@ -169,12 +169,14 @@ V3 八个阶段已全部完成，覆盖回归基线、持久化模型任务、�
 - HTTP 响应统一返回 `X-Request-ID` 与 `X-Correlation-ID`；聊天、模型任务、受约束写工具、审批通知、人工恢复和最终确认使用脱敏事件贯通；
 - `observability_events` 是不依赖外部平台的本地事实源，可按会话、关联 ID 或模型任务导出 JSONL/聚合摘要；模型任务和事件同时保存 Token、缓存 Token、运行时单价快照、币种及估算成本；
 - LangSmith 是显式开启的可选元数据镜像，只发送脱敏字段，不启用会上传 Prompt/回复的自动追踪；未配置或发送失败不影响核心交易路径；
-- 独立 `backend/evaluation/` 以八类版本化合成场景和相同输入对比 A 纯 Prompt、B 模型加规则、C 模型加规则与状态/人工审批，三组均只使用隔离内存适配器，不读写业务数据库；
+- 独立 `backend/evaluation/` 默认使用场景集 2.0.0 的 100 个版本化合成场景，对比 A 纯 Prompt、B 模型加规则、C 完整工作流；三组均使用隔离内存适配器，不读写业务数据库；
+- C 组与正式 Seller Agent 共用报价授权和确定性路由，使用生产 Prompt、非敏感授权上下文、多轮历史及相同结构化纠错重试；自动接受区和审批区报价均绕过模型，未知费用在模型调用前安全失败；
 - 每次评测保存清单、逐轮事件、运行明细和指标汇总；单样本故障不会中断批次，真实模型必须显式开启并受样本、调用、Token、费用和超时预算约束；
-- 报告生成器只从落盘 JSONL 重算 JSON/CSV/Markdown 派生产物，记录原始文件 SHA-256，并提供完成样本的均值、中位数与 P95；
+- 报告生成器只从落盘 JSONL 重算 JSON/CSV/Markdown 派生产物，记录原始文件 SHA-256，并提供比率的 Wilson 95% 区间以及完成样本的均值、中位数与 P95；
+- 多批次聚合器要求干净提交、相同场景/Prompt/模型/价格快照和不同随机种子，只在相同高风险场景上生成 A/C 匹配对比；
 - 确定性评测具备失败即非零退出的安全门禁，真实模型结果明确标为 `NOT_APPLICABLE` 并进入预定义人工复核队列；
 - 后端、前端基础镜像与本地 Compose 已覆盖 MySQL、迁移、种子、API、Worker 和前端，一键脚本可完成真实 HTTP 交易意向闭环及容器内评测；
-- 阶段一至八的设计与验收记录分别见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)、[`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)、[`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)、[`docs/V3_阶段4_有界重试与人工恢复.md`](docs/V3_阶段4_有界重试与人工恢复.md)、[`docs/V3_阶段5_安全与事务回归加固.md`](docs/V3_阶段5_安全与事务回归加固.md)、[`docs/V3_阶段6_结构化可观测性与成本采集.md`](docs/V3_阶段6_结构化可观测性与成本采集.md)、[`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md) 和 [`docs/V3_阶段8_评测报告回归门禁与可复现交付.md`](docs/V3_阶段8_评测报告回归门禁与可复现交付.md)。
+- 阶段一至八的设计与验收记录分别见 [`docs/V3_阶段1_回归基线与指标契约.md`](docs/V3_阶段1_回归基线与指标契约.md)、[`docs/V3_阶段2_持久化模型任务.md`](docs/V3_阶段2_持久化模型任务.md)、[`docs/V3_阶段3_短事务模型调用与迟到结果防护.md`](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)、[`docs/V3_阶段4_有界重试与人工恢复.md`](docs/V3_阶段4_有界重试与人工恢复.md)、[`docs/V3_阶段5_安全与事务回归加固.md`](docs/V3_阶段5_安全与事务回归加固.md)、[`docs/V3_阶段6_结构化可观测性与成本采集.md`](docs/V3_阶段6_结构化可观测性与成本采集.md)、[`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md) 和 [`docs/V3_阶段8_评测报告回归门禁与可复现交付.md`](docs/V3_阶段8_评测报告回归门禁与可复现交付.md)。正式真实模型协议与最终结果见 [`docs/V3_正式效果评测方案与结果.md`](docs/V3_正式效果评测方案与结果.md)。
 
 V2.1 的完整设计、迁移原则和七阶段实施记录见 [`docs/V2.1_统一账号与商品大厅升级计划.md`](docs/V2.1_统一账号与商品大厅升级计划.md)。下一步进入 V4，聚焦云服务器部署与运维；阶段八容器化只用于本地复现，不代表生产部署已经完成。
 
@@ -269,7 +271,7 @@ cd ..
 .\scripts\run_v3_demo.ps1
 ```
 
-脚本会构建并启动 MySQL、迁移、种子、API、Worker 和前端，验证前端反向代理，通过真实 HTTP 接口生成一条本地合成交易意向，随后把宿主机 Git 提交号及工作区状态注入 API 容器，运行 24 个确定性 A/B/C 样本及安全门禁。报告写入 `backend/evaluation/results/<batch-id>/report.md`；该目录被 Git 忽略。演示会新增合成买家及其协商记录，但不会删除或重置已有数据。
+脚本会构建并启动 MySQL、迁移、种子、API、Worker 和前端，验证前端反向代理，通过真实 HTTP 接口生成一条本地合成交易意向，随后把宿主机 Git 提交号及工作区状态注入 API 容器，运行场景集 2.0.0 的 100 场景 × A/B/C 共 300 个确定性样本及安全门禁。报告写入 `backend/evaluation/results/<batch-id>/report.md`；该目录被 Git 忽略。演示会新增合成买家及其协商记录，但不会删除或重置已有数据。
 
 若镜像已经构建，可执行 `.\scripts\run_v3_demo.ps1 -SkipBuild`。Docker Hub 当前网络不可达时，可在当前 PowerShell 会话临时设置 `$env:DOCKER_REGISTRY = "docker.m.daocloud.io"` 后重试。完成后可保留 MySQL 并停止应用进程：
 
@@ -396,21 +398,23 @@ python -m evaluation.cli --batch-id v3-deterministic
 python -m evaluation.report_cli evaluation/results/v3-deterministic
 ```
 
-真实模型对比必须额外传入 `--model qwen --allow-real-model`，显式设置样本、调用、Token、费用和超时预算，并在 `.env` 提供价格快照。真实模型批次会生成报告与人工复核队列，但不会冒充确定性门禁，`gate_status` 为 `NOT_APPLICABLE`：
+真实模型评测必须额外传入 `--model qwen --allow-real-model`，显式设置样本、提供商尝试、Token、费用和超时预算，并在 `.env` 提供价格快照。C 是正式效果主组，默认全量运行 100 个场景；真实模型批次会生成报告与人工复核队列，但不会冒充确定性门禁，`gate_status` 为 `NOT_APPLICABLE`：
 
 ```powershell
 python -m evaluation.cli `
-    --batch-id v3-qwen `
+    --batch-id v3-qwen-c `
     --model qwen `
     --allow-real-model `
-    --max-samples 24 `
-    --max-model-calls 30 `
-    --max-tokens 100000 `
-    --max-cost 0.10 `
-    --timeout-seconds 600
+    --groups C `
+    --tag c_primary `
+    --max-samples 100 `
+    --max-model-calls 140 `
+    --max-tokens 250000 `
+    --max-cost 0.20 `
+    --timeout-seconds 1800
 ```
 
-场景、隔离与预算设计见 [`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md)；报告、门禁、人工复核和容器化复现见 [`docs/V3_阶段8_评测报告回归门禁与可复现交付.md`](docs/V3_阶段8_评测报告回归门禁与可复现交付.md)。
+正式协议使用 C 全量 100 场景和 A 高风险 30 场景各 3 次重复，再由 `python -m evaluation.aggregate_cli ... --output-dir ...` 聚合；聚合器默认拒绝 dirty、模拟模型或元数据不一致的批次。场景、隔离与预算设计见 [`docs/V3_阶段7_离线模拟买家与三组对比实验.md`](docs/V3_阶段7_离线模拟买家与三组对比实验.md)；报告、门禁、聚合和容器化复现见 [`docs/V3_阶段8_评测报告回归门禁与可复现交付.md`](docs/V3_阶段8_评测报告回归门禁与可复现交付.md)。
 
 ## 验证
 

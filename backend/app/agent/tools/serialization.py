@@ -1,11 +1,7 @@
 from app.services.approval_service import ApprovalSnapshot
 from app.services.errors import ServiceError
-from app.services.negotiation_service import (
-    NegotiationState,
-    OfferAuthorization,
-    OfferSnapshot,
-)
-from app.services.pricing_service import PricingError
+from app.services.negotiation_service import NegotiationState, OfferSnapshot
+from app.services.pricing_service import OfferAuthorization, PricingError
 from app.services.product_service import ProductInfo
 
 

@@ -9,6 +9,10 @@ from app.agent.decision_provider import (
     DecisionProvider,
     DecisionRequest,
 )
+from app.agent.offer_routing import (
+    constrain_formal_offer_decision,
+    resolve_authorized_offer_decision,
+)
 from app.agent.reply_policy import (
     DialoguePolicyService,
     FormalReplyRenderer,
@@ -219,23 +223,10 @@ class SellerAgent:
                 decision=None,
             )
 
-        if authorization.get("can_accept_automatically") is True:
-            return NegotiationDecision(
-                action=NegotiationAction.ACCEPT,
-                offer_id=current_turn_offer_id,
-                reason="后端规则授权自动接受本轮正式报价",
-                reply="由正式回复安全层生成接受结果。",
-            )
-
-        if authorization.get("can_request_approval") is True:
-            return NegotiationDecision(
-                action=NegotiationAction.REQUEST_APPROVAL,
-                offer_id=current_turn_offer_id,
-                reason="后端规则要求卖家确认本轮正式报价",
-                reply="由正式回复安全层生成审批结果。",
-            )
-
-        return None
+        return resolve_authorized_offer_decision(
+            authorization,
+            current_offer_id=current_turn_offer_id,
+        )
 
     @staticmethod
     def _constrain_current_offer_decision(
@@ -245,15 +236,9 @@ class SellerAgent:
     ) -> NegotiationDecision:
         """禁止完整正式报价被模型降级为咨询、澄清或越权动作。"""
 
-        if current_turn_offer_id is None or decision.action in {
-            NegotiationAction.COUNTER,
-            NegotiationAction.REJECT,
-        }:
-            return decision
-        return NegotiationDecision(
-            action=NegotiationAction.REJECT,
-            reason="本轮正式报价未获得自动接受或卖家审批授权",
-            reply="由正式回复安全层生成拒绝结果。",
+        return constrain_formal_offer_decision(
+            decision,
+            current_offer_id=current_turn_offer_id,
         )
 
     def _execute_decision(

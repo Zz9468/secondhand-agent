@@ -1,6 +1,6 @@
 from collections import Counter
 from decimal import Decimal
-from math import ceil
+from math import ceil, sqrt
 from statistics import mean, median
 
 from pydantic import BaseModel, ConfigDict
@@ -14,6 +14,8 @@ class RatioMetric(BaseModel):
     numerator: int
     denominator: int
     value: float | None
+    ci95_lower: float | None = None
+    ci95_upper: float | None = None
 
 
 class DistributionMetric(BaseModel):
@@ -36,9 +38,19 @@ class GroupMetrics(BaseModel):
     final_state_counts: dict[str, int]
     intent_agreement_rate: RatioMetric
     valid_termination_rate: RatioMetric
+    system_failure_rate: RatioMetric
     violating_run_rate: RatioMetric
     invalid_formal_commitment_rate: RatioMetric
     approval_run_rate: RatioMetric
+    approval_resolution_rate: RatioMetric
+    deterministic_offer_routing_rate: RatioMetric
+    auto_accept_routing_accuracy: RatioMetric
+    approval_routing_accuracy: RatioMetric
+    prohibited_offer_block_rate: RatioMetric
+    unsupported_terms_block_rate: RatioMetric
+    invalid_offer_terms_block_rate: RatioMetric
+    model_call_success_rate: RatioMetric
+    model_decision_success_rate: RatioMetric
     usage_coverage_rate: RatioMetric
     average_negotiation_turns: float | None
     negotiation_turns_distribution: DistributionMetric
@@ -51,6 +63,7 @@ class GroupMetrics(BaseModel):
     estimated_cost_by_currency: dict[str, Decimal]
     model_calls_per_completed_run: DistributionMetric
     total_tokens_per_completed_run: DistributionMetric
+    model_duration_ms_per_completed_run: DistributionMetric
     estimated_cost_per_completed_run_by_currency: dict[str, DistributionMetric]
     system_failure_model_call_count: int
     system_failure_total_tokens: int | None
@@ -60,15 +73,36 @@ class EvaluationSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     contract_version: str = "1.0.0"
-    result_schema_version: str = "1.1.0"
+    result_schema_version: str = "1.2.0"
     groups: list[GroupMetrics]
 
 
 def _ratio(numerator: int, denominator: int) -> RatioMetric:
+    if not denominator:
+        return RatioMetric(
+            numerator=numerator,
+            denominator=denominator,
+            value=None,
+            ci95_lower=None,
+            ci95_upper=None,
+        )
+    value = numerator / denominator
+    z = 1.959963984540054
+    z_squared = z * z
+    center = (value + z_squared / (2 * denominator)) / (
+        1 + z_squared / denominator
+    )
+    margin = z * sqrt(
+        (value * (1 - value) + z_squared / (4 * denominator)) / denominator
+    ) / (1 + z_squared / denominator)
     return RatioMetric(
         numerator=numerator,
         denominator=denominator,
-        value=numerator / denominator if denominator else None,
+        value=value,
+        ci95_lower=0.0 if numerator == 0 else max(0.0, center - margin),
+        ci95_upper=(
+            1.0 if numerator == denominator else min(1.0, center + margin)
+        ),
     )
 
 
@@ -107,7 +141,13 @@ def _sum_covered(runs: list[RunResult], field: str) -> int | None:
 
 def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
     groups: list[GroupMetrics] = []
-    for group in ExperimentGroup:
+    present_groups = {run.experiment_group for run in runs}
+    group_sequence = (
+        tuple(ExperimentGroup)
+        if not runs
+        else tuple(group for group in ExperimentGroup if group in present_groups)
+    )
+    for group in group_sequence:
         group_runs = [run for run in runs if run.experiment_group is group]
         started = len(group_runs)
         completed_runs = [
@@ -150,6 +190,21 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
         failed_runs = [
             run for run in group_runs if run.final_state is FinalState.SYSTEM_FAILURE
         ]
+        approval_requests = sum(run.approval_request_count for run in group_runs)
+        approval_resolutions = sum(
+            run.approval_approved_count
+            + run.approval_rejected_count
+            + run.approval_invalidated_count
+            for run in group_runs
+        )
+        deterministic_eligible = sum(
+            run.auto_accept_eligible_count + run.approval_eligible_count
+            for run in group_runs
+        )
+        deterministic_routed = sum(
+            run.auto_accept_routed_count + run.approval_routed_count
+            for run in group_runs
+        )
         groups.append(
             GroupMetrics(
                 experiment_group=group,
@@ -158,6 +213,7 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
                 final_state_counts=dict(sorted(final_states.items())),
                 intent_agreement_rate=_ratio(agreements, started),
                 valid_termination_rate=_ratio(valid_terminations, started),
+                system_failure_rate=_ratio(len(failed_runs), started),
                 violating_run_rate=_ratio(
                     sum(run.violation for run in group_runs),
                     started,
@@ -169,6 +225,42 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
                 approval_run_rate=_ratio(
                     sum(run.approval_request_count > 0 for run in group_runs),
                     started,
+                ),
+                approval_resolution_rate=_ratio(
+                    approval_resolutions,
+                    approval_requests,
+                ),
+                deterministic_offer_routing_rate=_ratio(
+                    deterministic_routed,
+                    deterministic_eligible,
+                ),
+                auto_accept_routing_accuracy=_ratio(
+                    sum(run.auto_accept_routed_count for run in group_runs),
+                    sum(run.auto_accept_eligible_count for run in group_runs),
+                ),
+                approval_routing_accuracy=_ratio(
+                    sum(run.approval_routed_count for run in group_runs),
+                    sum(run.approval_eligible_count for run in group_runs),
+                ),
+                prohibited_offer_block_rate=_ratio(
+                    sum(run.prohibited_offer_blocked_count for run in group_runs),
+                    sum(run.prohibited_offer_count for run in group_runs),
+                ),
+                unsupported_terms_block_rate=_ratio(
+                    sum(run.unsupported_terms_blocked_count for run in group_runs),
+                    sum(run.unsupported_terms_offer_count for run in group_runs),
+                ),
+                invalid_offer_terms_block_rate=_ratio(
+                    sum(run.invalid_offer_terms_blocked_count for run in group_runs),
+                    sum(run.invalid_offer_terms_count for run in group_runs),
+                ),
+                model_call_success_rate=_ratio(
+                    sum(run.successful_model_call_count for run in group_runs),
+                    model_calls,
+                ),
+                model_decision_success_rate=_ratio(
+                    sum(run.model_decision_success_count for run in group_runs),
+                    sum(run.model_decision_request_count for run in group_runs),
                 ),
                 usage_coverage_rate=_ratio(usage_covered_calls, model_calls),
                 average_negotiation_turns=(
@@ -200,6 +292,9 @@ def summarize_runs(runs: list[RunResult]) -> EvaluationSummary:
                         for run in completed_runs
                         if run.total_tokens is not None
                     ]
+                ),
+                model_duration_ms_per_completed_run=_distribution(
+                    [run.model_duration_ms for run in completed_runs]
                 ),
                 estimated_cost_per_completed_run_by_currency={
                     currency: _distribution(values)
