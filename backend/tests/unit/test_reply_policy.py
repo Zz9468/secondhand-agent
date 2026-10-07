@@ -16,6 +16,45 @@ PUBLIC_PRODUCT = {
 }
 
 
+@pytest.mark.parametrize("candidate", ["支持讲价。", "卖家已同意，2700 元包邮卖给你。"])
+def test_negotiability_answers_the_question_without_accepting_candidate_terms(candidate):
+    reply = DialoguePolicyService().resolve(
+        acts=[DialogueAct(kind="ASK_FACT", subject="PRICE_NEGOTIATION")],
+        candidate_reply=candidate,
+        product=PUBLIC_PRODUCT,
+    )
+    assert "可以讨论价格" in reply.text
+    assert "评估后确认" in reply.text
+    assert "2700" not in reply.text and "包邮" not in reply.text
+    assert reply.needs_clarification is False
+
+
+@pytest.mark.parametrize("status", ["SOLD", "DRAFT"])
+def test_negotiability_does_not_invite_bargaining_on_unavailable_products(status):
+    reply = DialoguePolicyService().resolve(
+        acts=[DialogueAct(kind="ASK_FACT", subject="PRICE_NEGOTIATION")],
+        candidate_reply="当然支持讲价。",
+        product={**PUBLIC_PRODUCT, "status": status},
+    )
+    assert "暂时不能继续议价" in reply.text
+    assert "可以讨论价格" not in reply.text
+    assert reply.needs_clarification is False
+
+
+def test_product_and_negotiability_questions_are_both_answered():
+    reply = DialoguePolicyService().resolve(
+        acts=[
+            DialogueAct(kind="ASK_FACT", subject="PRODUCT_DETAILS"),
+            DialogueAct(kind="ASK_FACT", subject="PRICE_NEGOTIATION"),
+        ],
+        candidate_reply="可以议价。",
+        product=PUBLIC_PRODUCT,
+    )
+    assert "93%" in reply.text and "原装充电线" in reply.text
+    assert "可以讨论价格" in reply.text
+    assert reply.needs_clarification is False
+
+
 def test_formal_reply_uses_only_persisted_offer_snapshot() -> None:
     renderer = FormalReplyRenderer()
     tool_result = {

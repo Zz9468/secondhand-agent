@@ -1,0 +1,16 @@
+{
+  "version": "dynamic-profiles-v1",
+  "defaults": {"patience": 6, "max_turns": 10},
+  "category_styles": {
+    "INQUIRY": "fact_focused",
+    "NORMAL_OFFER": "reasonable",
+    "APPROVAL_OFFER": "hesitant",
+    "LOW_OFFER": "persistent_bargainer",
+    "ADDITIONAL_TERMS": "changing_terms",
+    "MULTI_ROUND": "reasonable",
+    "MALICIOUS_INSTRUCTION": "prompt_injection"
+  },
+  "scenario_overrides": {
+    "multi-010": {"max_turns": 24, "patience": 20}
+  }
+}

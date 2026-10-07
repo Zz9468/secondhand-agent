@@ -14,7 +14,9 @@ from app.agent.decision_provider import (
     DecisionProvider,
     DecisionRequest,
 )
+from app.agent.message_protocol import json_value
 from app.agent.model_observation import ObservedProviderResult, ProviderUsage
+from app.agent.runtime_state import freeze_config
 from app.agent.seller_agent import (
     AgentTurnOutcome,
     AgentTurnPreparation,
@@ -38,6 +40,7 @@ from app.db.models import (
 )
 from app.observability.context import observation_scope
 from app.observability.service import ObservabilityEventInput, ObservabilityService
+from app.services.agent_message_service import AgentMessageService
 from app.services.approval_service import ApprovalService
 from app.services.errors import (
     IncompleteRequestError,
@@ -131,9 +134,7 @@ class ChatService:
         self._task_service = ModelTaskService(session_factory)
         self._usage_service = ModelUsageService(self._settings)
         self._observer = ObservabilityService(session_factory)
-        self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(
-            self._settings
-        )
+        self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(self._settings)
 
     def send_buyer_message(
         self,
@@ -222,6 +223,7 @@ class ChatService:
             if self._has_active_chat_task(db, session_id=session_id):
                 raise IncompleteRequestError("当前会话仍有一条消息正在处理，请稍后重试")
 
+            AgentMessageService.backfill(db, session_id)
             history = self._recent_history(db, session_id=session_id)
             buyer_offer_id: int | None = None
             if offer is not None:
@@ -246,18 +248,36 @@ class ChatService:
                 content=content,
                 request_id=request_id,
                 request_fingerprint=request_fingerprint,
+                formal_offer_id=buyer_offer_id,
             )
             db.add(buyer_message)
             db.flush()
             db.refresh(buyer_message)
+            buyer_record = AgentMessageService.project(db, buyer_message)
             buyer_snapshot = self._snapshot(buyer_message)
 
             turn_session_factory = self._transaction_session_factory(db)
+            rule_step = [0]
+
+            def observe_rule_tool(name, args, value):
+                rule_step[0] += 1
+                AgentMessageService.append(
+                    db,
+                    session_id=session_id,
+                    event_key=f"rule:{request_id}:{rule_step[0]}:{name}",
+                    role="SYSTEM",
+                    kind="RUNTIME_EVENT",
+                    payload=json_value(
+                        {"type": "RULE_TOOL_RESULT", "tool": name, "args": args, "result": value}
+                    ),
+                )
+
             agent = self._build_agent(
                 session_id=session_id,
                 buyer_id=buyer_id,
                 session_factory=turn_session_factory,
                 current_turn_offer_id=buyer_offer_id,
+                tool_observer=observe_rule_tool,
             )
             preparation = agent.prepare_turn(
                 content,
@@ -266,6 +286,18 @@ class ChatService:
             )
             if not preparation.requires_model:
                 result = agent.apply_prepared(preparation)
+                AgentMessageService.append(
+                    db,
+                    session_id=session_id,
+                    event_key=f"rule:{request_id}",
+                    role="SYSTEM",
+                    kind="RUNTIME_EVENT",
+                    payload={
+                        "route": "DETERMINISTIC",
+                        "outcome": result.outcome.value,
+                        "formal_offer_id": result.formal_offer_id,
+                    },
+                )
                 return self._persist_result(
                     db,
                     session_id=session_id,
@@ -279,19 +311,50 @@ class ChatService:
             if decision_request is None:  # pragma: no cover - 防御分支
                 raise RuntimeError("模型任务缺少决策输入")
             current_offer_id = self._context_current_offer_id(decision_request)
+            task_input = self._serialize_task_input(
+                buyer_message_id=buyer_message.id,
+                reply_request_id=reply_request_id,
+                decision_request=decision_request,
+            )
+            if self._settings.agent_runtime == "V4" and (
+                self._settings.agent_v4_session_ids is None
+                or session_id in self._settings.agent_v4_session_ids
+            ):
+                from app.agent.tools.gateway import tool_schemas
+                from app.services.agent_runtime_service import initial_context
+
+                task_input["agent_config"] = freeze_config(self._settings)
+                task_input["agent_config"]["tools"] = tool_schemas(
+                    list(agent._tools.values()), task_input["agent_config"]
+                )
+                task_input["input_high_water_seq"] = buyer_record.stream_seq
+                task_input["current_input_seq"] = buyer_record.stream_seq
+                task_input["initial_context"] = initial_context(db, session_id)
             creation = self._task_service.create_task_in_transaction(
                 db=db,
                 task_type=ModelTaskType.CHAT_DECISION,
                 business_key=self._task_business_key(session_id, request_id),
                 session_id=session_id,
                 offer_id=current_offer_id,
-                input_snapshot=self._serialize_task_input(
-                    buyer_message_id=buyer_message.id,
-                    reply_request_id=reply_request_id,
-                    decision_request=decision_request,
-                ),
+                input_snapshot=task_input,
                 max_attempts=self._retry_policy.max_attempts,
             )
+            if "agent_config" in task_input:
+                task_row = db.get(ModelExecutionTask, creation.task.id)
+                task_row.runtime_kind = "V4"
+                task_row.run_budget_json = task_input["agent_config"]["budget"]
+                AgentMessageService.append(
+                    db,
+                    session_id=session_id,
+                    event_key=f"run:{creation.task.id}",
+                    role="SYSTEM",
+                    kind="RUN_CONFIG",
+                    task_id=creation.task.id,
+                    payload={
+                        "config": task_input["agent_config"],
+                        "input_high_water_seq": buyer_record.stream_seq,
+                    },
+                )
             return _PendingChatTurn(
                 session_id=session_id,
                 buyer_snapshot=buyer_snapshot,
@@ -325,9 +388,7 @@ class ChatService:
             raise IncompleteRequestError("该请求尚未形成完整回复，请稍后查询消息记录")
 
         if leased.status is ModelTaskStatus.FAILED:
-            raise ModelTaskRecoveryRequiredError(
-                "该模型任务已达到最大尝试次数，需要卖家人工处理"
-            )
+            raise ModelTaskRecoveryRequiredError("该模型任务已达到最大尝试次数，需要卖家人工处理")
         return self._execute_leased_turn(pending=pending, leased=leased)
 
     def process_next_pending_task(
@@ -421,9 +482,7 @@ class ChatService:
             )
             if replay is not None:
                 return replay
-            raise IncompleteRequestError(
-                "模型任务租约已变化，请稍后查询消息记录"
-            ) from exc
+            raise IncompleteRequestError("模型任务租约已变化，请稍后查询消息记录") from exc
         except IncompleteRequestError as exc:
             self._task_service.fail_task(
                 task_id=leased.id,
@@ -441,9 +500,7 @@ class ChatService:
                 error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
                 error_message=str(exc),
             )
-            raise ModelTaskRecoveryRequiredError(
-                "模型任务幂等结果冲突，需要卖家人工处理"
-            ) from exc
+            raise ModelTaskRecoveryRequiredError("模型任务幂等结果冲突，需要卖家人工处理") from exc
         started = time.perf_counter()
         self._observer.record(
             ObservabilityEventInput(
@@ -458,6 +515,41 @@ class ChatService:
             provider = self._decision_provider
             if provider is None:  # pragma: no cover - 入口已校验
                 raise RuntimeError("发送消息前必须配置决策模型")
+            if leased.input_snapshot.get("agent_config"):
+                from app.agent.runtime import SellerAgentRuntime
+                from app.services.agent_runtime_service import ProductionRuntimeBackend
+
+                backend = ProductionRuntimeBackend(self, pending, leased, provider)
+                turn = SellerAgentRuntime(backend).run()
+                tool_name = {
+                    AgentTurnOutcome.COUNTER_OFFERED.value: "submit_counter_offer",
+                    AgentTurnOutcome.OFFER_ACCEPTED.value: "accept_offer",
+                    AgentTurnOutcome.NEEDS_SELLER_CONFIRMATION.value: "request_approval",
+                }.get(turn.outcome)
+                if tool_name:
+                    self._observer.record(
+                        ObservabilityEventInput(
+                            event_type="TOOL_ACTION_COMPLETED",
+                            action="EXECUTE_NEGOTIATION_TOOL",
+                            outcome="SUCCESS",
+                            offer_id=turn.formal_offer_id or leased.offer_id,
+                            attributes={"tool_name": tool_name},
+                        )
+                    )
+                self._observer.record(
+                    ObservabilityEventInput(
+                        event_type="CHAT_TURN_COMPLETED",
+                        action="APPLY_CHAT_DECISION",
+                        outcome="SUCCESS",
+                        offer_id=turn.formal_offer_id,
+                        attributes={
+                            "agent_outcome": turn.outcome,
+                            "formal_commitment": turn.formal_offer_id is not None,
+                            "idempotent_replay": turn.idempotent_replay,
+                        },
+                    )
+                )
+                return turn
             observed_method = getattr(provider, "decide_with_usage", None)
             if callable(observed_method):
                 observed = observed_method(request)
@@ -471,6 +563,15 @@ class ChatService:
                 )
             decision = observed.value
             usage = self._usage_service.build(observed.usage)
+        except ModelExecutionTaskLeaseError as exc:
+            replay = self._load_reply(
+                session_id=pending.session_id,
+                buyer_snapshot=pending.buyer_snapshot,
+                idempotent_replay=True,
+            )
+            if replay is not None:
+                return replay
+            raise IncompleteRequestError("模型任务租约已变化，请稍后查询消息记录") from exc
         except Exception as exc:
             plan = self._retry_policy.plan_failure(
                 task_id=leased.id,
@@ -480,7 +581,9 @@ class ChatService:
             )
             self._observer.record(
                 ObservabilityEventInput(
-                    event_type="MODEL_CALL_COMPLETED",
+                    event_type="MODEL_TASK_ATTEMPT_FAILED"
+                    if leased.input_snapshot.get("agent_config")
+                    else "MODEL_CALL_COMPLETED",
                     action="CHAT_DECISION",
                     outcome="ERROR",
                     attempt_count=leased.attempt_count,
@@ -545,9 +648,7 @@ class ChatService:
                             else "REJECTED"
                         ),
                         offer_id=turn.formal_offer_id or leased.offer_id,
-                        duration_ms=round(
-                            (time.perf_counter() - finalization_started) * 1000
-                        ),
+                        duration_ms=round((time.perf_counter() - finalization_started) * 1000),
                         attributes={"tool_name": tool_name},
                     )
                 )
@@ -583,9 +684,7 @@ class ChatService:
                 error_category=ModelTaskErrorCategory.BUSINESS_CONFLICT,
                 error_message=str(exc),
             )
-            raise ModelTaskRecoveryRequiredError(
-                "模型任务幂等结果冲突，需要卖家人工处理"
-            ) from exc
+            raise ModelTaskRecoveryRequiredError("模型任务幂等结果冲突，需要卖家人工处理") from exc
 
     @staticmethod
     def _write_tool_name(decision: NegotiationDecision) -> str | None:
@@ -785,6 +884,7 @@ class ChatService:
         reply_request_id: str,
         result: AgentTurnResult,
         idempotent_replay: bool,
+        task_id: int | None = None,
     ) -> ChatTurnSnapshot:
         agent_message = Message(
             session_id=session_id,
@@ -797,6 +897,7 @@ class ChatService:
         db.add(agent_message)
         db.flush()
         db.refresh(agent_message)
+        AgentMessageService.project(db, agent_message, task_id=task_id)
         return ChatTurnSnapshot(
             buyer_message=buyer_snapshot,
             agent_message=self._snapshot(agent_message),
@@ -857,6 +958,7 @@ class ChatService:
         buyer_id: str,
         session_factory: sessionmaker[Session] | None = None,
         current_turn_offer_id: int | None = None,
+        tool_observer=None,
     ) -> SellerAgent:
         provider = self._decision_provider
         if provider is None:
@@ -872,6 +974,23 @@ class ChatService:
             negotiation_service=NegotiationService(active_session_factory),
             approval_service=ApprovalService(active_session_factory),
         )
+        if tool_observer is not None:
+            from langchain_core.tools import StructuredTool
+
+            def traced_tool(original):
+                def invoke(**kwargs):
+                    result = original.invoke(kwargs)
+                    tool_observer(original.name, kwargs, result)
+                    return result
+
+                return StructuredTool.from_function(
+                    func=invoke,
+                    name=original.name,
+                    description=original.description,
+                    args_schema=original.args_schema,
+                )
+
+            tools = [traced_tool(original) for original in tools]
         return SellerAgent(decision_provider=provider, tools=tools)
 
     def _stale_reason(
@@ -921,8 +1040,7 @@ class ChatService:
         if (
             expected_negotiation.get("id") != negotiation.id
             or expected_negotiation.get("status") != negotiation.status.value
-            or expected_negotiation.get("current_offer_id")
-            != negotiation.current_offer_id
+            or expected_negotiation.get("current_offer_id") != negotiation.current_offer_id
             or expected_negotiation.get("version") != negotiation.version
             or expected_negotiation.get("policy_version") != policy.version
         ):
@@ -976,9 +1094,7 @@ class ChatService:
                 or not isinstance(item.get("content"), str)
             ):
                 raise IncompleteRequestError("模型任务历史消息快照无效")
-            history.append(
-                ConversationMessage(role=item["role"], content=item["content"])
-            )
+            history.append(ConversationMessage(role=item["role"], content=item["content"]))
         current_offer_id = raw_request.get("current_turn_offer_id")
         if current_offer_id is not None and type(current_offer_id) is not int:
             raise IncompleteRequestError("模型任务报价快照无效")
@@ -1083,8 +1199,7 @@ class ChatService:
         )
         items.reverse()
         return tuple(
-            ConversationMessage(role=item.role.value, content=item.content)
-            for item in items
+            ConversationMessage(role=item.role.value, content=item.content) for item in items
         )
 
     @staticmethod
@@ -1122,9 +1237,7 @@ class ChatService:
                 "price": format(offer.price, ".2f"),
                 "shipping_paid_by": offer.shipping_paid_by.value,
                 "shipping_cost": (
-                    format(offer.shipping_cost, ".2f")
-                    if offer.shipping_cost is not None
-                    else None
+                    format(offer.shipping_cost, ".2f") if offer.shipping_cost is not None else None
                 ),
                 "delivery_method": offer.delivery_method,
             }

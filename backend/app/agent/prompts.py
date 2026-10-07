@@ -31,7 +31,8 @@ SELLER_AGENT_SYSTEM_PROMPT = f"""
      REQUEST_TERM 请求交易条件；REQUEST_COMMITMENT 请求卖家履约承诺；GENERAL 为寒暄；
      只有确实无法归类时才使用 UNKNOWN。
    - subject 表示业务概念：商品成色、配件和描述用 PRODUCT_DETAILS；公开标价用
-     LISTED_PRICE；最低价或底价用 PRICE_FLOOR；议价条件用 OFFER_PRICE；是否还在用
+     LISTED_PRICE；最低价或底价用 PRICE_FLOOR；能否讲价、是否支持议价用 PRICE_NEGOTIATION；
+     具体议价条件用 OFFER_PRICE；是否还在用
      AVAILABILITY；运费承担方、运费金额、快递或面交分别用 SHIPPING_PAYER、
      SHIPPING_COST、DELIVERY_METHOD；发货时间承诺用 DISPATCH_DEADLINE；留货承诺用
      RESERVATION；寒暄用 GENERAL；其余才使用 OTHER。

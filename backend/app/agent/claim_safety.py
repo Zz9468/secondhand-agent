@@ -60,6 +60,16 @@ def find_unsafe_claims(reply: str) -> set[str]:
             prefix = reply[max(0, match.start() - 16) : match.start()]
             if _NEGATION_NEAR_CLAIM.search(prefix):
                 continue
+            # A rejected quoted buyer condition is not the assistant's promise.
+            quoted_refusal = False
+            for quote in re.finditer(r"[‘“\"']([^‘’“”\"']{1,100})[’”\"']", reply):
+                if quote.start() <= match.start() and match.end() <= quote.end():
+                    suffix = reply[quote.end() : quote.end() + 40].split("。")[0]
+                    if re.search(r"无法|不能|不支持|不可|未获授权|不予|不被接受", suffix):
+                        quoted_refusal = True
+                        break
+            if quoted_refusal:
+                continue
             violations.add(code)
             break
     return violations

@@ -157,6 +157,7 @@ class ReplyDirectiveKind(StrEnum):
 
     PRODUCT_DETAILS = "PRODUCT_DETAILS"
     LISTED_PRICE = "LISTED_PRICE"
+    PRICE_NEGOTIATION = "PRICE_NEGOTIATION"
     PRIVATE_PRICE = "PRIVATE_PRICE"
     AVAILABILITY = "AVAILABILITY"
     FORMAL_OFFER_TERM = "FORMAL_OFFER_TERM"
@@ -288,9 +289,7 @@ class DialoguePolicyService:
         r"(?P<suffix>\d+(?:\.\d+)?)\s*(?:元|块|RMB)",
         re.IGNORECASE,
     )
-    _chinese_money_pattern = re.compile(
-        r"[零〇一二两三四五六七八九十百千万亿点]+\s*(?:元|块)"
-    )
+    _chinese_money_pattern = re.compile(r"[零〇一二两三四五六七八九十百千万亿点]+\s*(?:元|块)")
 
     def resolve(
         self,
@@ -338,7 +337,8 @@ class DialoguePolicyService:
             needs_clarification = True
 
         allow_model_candidate = all(
-            directive.kind in {
+            directive.kind
+            in {
                 ReplyDirectiveKind.PRODUCT_DETAILS,
                 ReplyDirectiveKind.GENERAL,
             }
@@ -354,10 +354,7 @@ class DialoguePolicyService:
     @staticmethod
     def _resolve_act(act: DialogueAct) -> tuple[ReplyDirective, bool]:
         subject = act.subject
-        if (
-            act.kind is DialogueActKind.ASK_PRIVATE_INFO
-            or subject is DialogueSubject.PRICE_FLOOR
-        ):
+        if act.kind is DialogueActKind.ASK_PRIVATE_INFO or subject is DialogueSubject.PRICE_FLOOR:
             return ReplyDirective(ReplyDirectiveKind.PRIVATE_PRICE, subject), False
         if act.kind is DialogueActKind.REQUEST_COMMITMENT:
             return ReplyDirective(ReplyDirectiveKind.SELLER_CONFIRMATION, subject), False
@@ -369,12 +366,19 @@ class DialoguePolicyService:
             return ReplyDirective(ReplyDirectiveKind.PRODUCT_DETAILS, subject), False
         if subject is DialogueSubject.LISTED_PRICE:
             return ReplyDirective(ReplyDirectiveKind.LISTED_PRICE, subject), False
+        if subject is DialogueSubject.PRICE_NEGOTIATION:
+            return ReplyDirective(ReplyDirectiveKind.PRICE_NEGOTIATION, subject), False
         if subject is DialogueSubject.AVAILABILITY:
             return ReplyDirective(ReplyDirectiveKind.AVAILABILITY, subject), False
-        if subject in {
-            DialogueSubject.SHIPPING_PAYER,
-            DialogueSubject.DELIVERY_METHOD,
-        } and act.kind is DialogueActKind.REQUEST_TERM and act.requested_value is None:
+        if (
+            subject
+            in {
+                DialogueSubject.SHIPPING_PAYER,
+                DialogueSubject.DELIVERY_METHOD,
+            }
+            and act.kind is DialogueActKind.REQUEST_TERM
+            and act.requested_value is None
+        ):
             return ReplyDirective(ReplyDirectiveKind.ASK_MISSING_TERM, subject), True
         if subject in {
             DialogueSubject.OFFER_PRICE,
@@ -397,8 +401,7 @@ class DialoguePolicyService:
         product: dict[str, object],
     ) -> str:
         clauses = [
-            self._render_directive(directive, product=product)
-            for directive in plan.directives
+            self._render_directive(directive, product=product) for directive in plan.directives
         ]
         return "；".join(dict.fromkeys(clauses)) + "。"
 
@@ -419,6 +422,13 @@ class DialoguePolicyService:
             return f"{title}：{description}页面公开标价为 {listed_price} 元"
         if directive.kind is ReplyDirectiveKind.LISTED_PRICE:
             return f"当前公开标价是 {listed_price} 元"
+        if directive.kind is ReplyDirectiveKind.PRICE_NEGOTIATION:
+            if product.get("status") != "AVAILABLE":
+                return "商品当前已经不在上架状态，暂时不能继续议价"
+            return (
+                "可以讨论价格，你可以先说说期望价格和配送方式，"
+                "具体能否调整需要根据卖家授权评估后确认"
+            )
         if directive.kind is ReplyDirectiveKind.PRIVATE_PRICE:
             return (
                 "卖家的最低接受价格不能直接公开，"

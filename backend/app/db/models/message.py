@@ -34,6 +34,9 @@ class Message(Base):
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     request_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_agent_message_id: Mapped[int | None] = mapped_column(
+        ForeignKey("agent_messages.id", ondelete="SET NULL"), unique=True, nullable=True
+    )
     # 买家消息保存完整请求指纹；Agent 消息保存可重放的业务结果。
     request_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
     agent_outcome: Mapped[str | None] = mapped_column(String(32), nullable=True)

@@ -182,6 +182,7 @@ class SellerAgent:
         preparation: AgentTurnPreparation,
         *,
         decision: NegotiationDecision | None = None,
+        validated_dialogue_reply=None,
     ) -> AgentTurnResult:
         """把已冻结的决策交给受约束工具；调用方负责先复核数据库版本。"""
 
@@ -198,11 +199,14 @@ class SellerAgent:
                 decision,
                 current_turn_offer_id=request.current_turn_offer_id,
             )
+            if resolved_decision is not decision:
+                validated_dialogue_reply = None
         return self._execute_decision(
             decision=resolved_decision,
             product_result=request.product_context,
             negotiation_result=request.negotiation_context,
             current_turn_offer_id=request.current_turn_offer_id,
+            validated_dialogue_reply=validated_dialogue_reply,
         )
 
     def _authorized_current_offer_decision(
@@ -248,6 +252,7 @@ class SellerAgent:
         product_result: dict[str, object],
         negotiation_result: dict[str, object],
         current_turn_offer_id: int | None,
+        validated_dialogue_reply=None,
     ) -> AgentTurnResult:
         if decision.action is NegotiationAction.COUNTER:
             return self._execute_counter(decision)
@@ -263,7 +268,16 @@ class SellerAgent:
         if not isinstance(product, dict):
             return self._safe_failure(decision)
 
-        if decision.action is NegotiationAction.INQUIRY:
+        if validated_dialogue_reply is not None:
+            outcome = (
+                AgentTurnOutcome.REJECTED
+                if decision.action is NegotiationAction.REJECT
+                else AgentTurnOutcome.CLARIFICATION
+                if validated_dialogue_reply.needs_clarification
+                else AgentTurnOutcome.INFORMATIONAL
+            )
+            reply = validated_dialogue_reply.text
+        elif decision.action is NegotiationAction.INQUIRY:
             if not decision.dialogue_acts:
                 return self._safe_failure(decision)
             dialogue_reply = self._dialogue_policy.resolve(
@@ -436,11 +450,7 @@ class SellerAgent:
     @staticmethod
     def _offer_id(tool_result: dict[str, object]) -> int:
         offer = tool_result.get("offer")
-        if (
-            not isinstance(offer, dict)
-            or type(offer.get("id")) is not int
-            or offer["id"] <= 0
-        ):
+        if not isinstance(offer, dict) or type(offer.get("id")) is not int or offer["id"] <= 0:
             raise ReplySafetyError("正式报价缺少有效编号")
         return offer["id"]
 
@@ -458,10 +468,6 @@ class SellerAgent:
         if not isinstance(offers, list):
             return None
         return next(
-            (
-                offer
-                for offer in offers
-                if isinstance(offer, dict) and offer.get("id") == offer_id
-            ),
+            (offer for offer in offers if isinstance(offer, dict) and offer.get("id") == offer_id),
             None,
         )

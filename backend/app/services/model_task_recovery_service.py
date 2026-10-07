@@ -264,15 +264,48 @@ class ModelTaskRecoveryService:
         )
         if existing is not None:
             return
-        db.add(
-            Message(
-                session_id=task.session_id,
-                role=MessageRole.AGENT,
-                content="本次请求未能可靠完成，卖家已停止继续处理，请根据当前会话状态重新发送。",
-                request_id=reply_request_id,
-                agent_outcome="SAFE_FAILURE",
-            )
+        from app.services.agent_message_service import AgentMessageService
+
+        AgentMessageService.backfill(db, task.session_id)
+        message = Message(
+            session_id=task.session_id,
+            role=MessageRole.AGENT,
+            content="本次请求未能可靠完成，卖家已停止继续处理，请根据当前会话状态重新发送。",
+            request_id=reply_request_id,
+            agent_outcome="SAFE_FAILURE",
         )
+        db.add(message)
+        db.flush()
+        checkpoint = dict(task.runtime_checkpoint or {})
+        if checkpoint.get("pending_calls"):
+            from langchain_core.messages import ToolMessage
+
+            from app.agent.message_protocol import encode_message
+
+            for call in checkpoint["pending_calls"]:
+                AgentMessageService.append(
+                    db,
+                    session_id=task.session_id,
+                    event_key=f"task:{task.id}:tool:{call['id']}",
+                    task_id=task.id,
+                    branch_id=checkpoint.get("branch_id"),
+                    step_id=f"model:{checkpoint.get('steps', 0)}",
+                    role="TOOL",
+                    kind="TOOL_RESULT",
+                    tool_call_id=call["id"],
+                    payload={
+                        "message": encode_message(
+                            ToolMessage(
+                                content='{"ok":false,"error":{"code":"MANUAL_TERMINATED"}}',
+                                tool_call_id=call["id"],
+                                name=call["name"],
+                            )
+                        )
+                    },
+                )
+            checkpoint.update(pending_calls=[], stop_reason="MANUAL_TERMINATED")
+            task.runtime_checkpoint = checkpoint
+        AgentMessageService.project(db, message, task_id=task.id)
 
     @staticmethod
     def _record_manual_action(

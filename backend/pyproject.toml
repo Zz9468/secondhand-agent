@@ -13,6 +13,7 @@ dependencies = [
     "langchain>=1.0,<2.0",
     "langchain-openai>=1.0,<2.0",
     "langsmith>=0.14,<1.0",
+    "openai>=3.19,<4.0",
     "pydantic-settings>=2.6,<3.0",
     "pymysql>=1.1,<2.0",
     "sqlalchemy>=2.0,<3.0",
@@ -32,6 +33,7 @@ dev = [
 include = ["app*", "evaluation*"]
 
 [tool.setuptools.package-data]
+app = ["agent/prompt_resources/*.txt"]
 evaluation = ["scenarios/*.json"]
 
 [tool.pytest.ini_options]

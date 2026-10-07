@@ -25,6 +25,7 @@ class LiveEvaluationError(RuntimeError):
 @dataclass(slots=True)
 class ApiClient:
     base_url: str
+    timeout_seconds: float = 45
     _opener: Any = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -51,7 +52,7 @@ class ApiClient:
             headers={"Content-Type": "application/json"},
         )
         try:
-            with self._opener.open(request, timeout=45) as response:
+            with self._opener.open(request, timeout=self.timeout_seconds) as response:
                 status = response.status
                 body = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:

@@ -79,8 +79,7 @@ class ModelExecutionTask(TimestampMixin, Base):
             name="output_price_per_million_nonnegative",
         ),
         CheckConstraint(
-            "cached_input_price_per_million IS NULL "
-            "OR cached_input_price_per_million >= 0",
+            "cached_input_price_per_million IS NULL OR cached_input_price_per_million >= 0",
             name="cached_input_price_per_million_nonnegative",
         ),
         CheckConstraint(
@@ -139,6 +138,14 @@ class ModelExecutionTask(TimestampMixin, Base):
     policy_version: Mapped[int] = mapped_column(nullable=False)
     input_snapshot: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
     input_snapshot_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    runtime_kind: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="V3", server_default=text("'V3'")
+    )
+    runtime_schema_version: Mapped[int] = mapped_column(
+        nullable=False, default=1, server_default=text("1")
+    )
+    runtime_checkpoint: Mapped[dict[str, object] | None] = mapped_column(JSON)
+    run_budget_json: Mapped[dict[str, object] | None] = mapped_column(JSON)
     correlation_id: Mapped[str] = mapped_column(String(36), nullable=False)
     status: Mapped[ModelTaskStatus] = mapped_column(
         stored_enum(ModelTaskStatus, name="model_task_status"),

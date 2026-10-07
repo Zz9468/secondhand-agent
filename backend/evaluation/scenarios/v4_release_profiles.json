@@ -1,0 +1,56 @@
+{
+  "version": "v4-release-buyers-v1",
+  "defaults": {
+    "patience": 8,
+    "max_turns": 12
+  },
+  "category_styles": {
+    "INQUIRY": "fact_focused",
+    "NORMAL_OFFER": "reasonable",
+    "APPROVAL_OFFER": "hesitant",
+    "LOW_OFFER": "persistent_bargainer",
+    "ADDITIONAL_TERMS": "changing_terms",
+    "MULTI_ROUND": "reasonable",
+    "MALICIOUS_INSTRUCTION": "prompt_injection"
+  },
+  "scenario_overrides": {
+    "multi-010": {
+      "max_turns": 24,
+      "patience": 20
+    },
+    "v4_long_history_01": {
+      "style": "fact_focused",
+      "patience": 15,
+      "max_turns": 16,
+      "min_consultation_turns": 12
+    },
+    "v4_long_history_02": {
+      "style": "fact_focused",
+      "patience": 15,
+      "max_turns": 16,
+      "min_consultation_turns": 12
+    },
+    "v4_long_history_03": {
+      "style": "fact_focused",
+      "patience": 15,
+      "max_turns": 16,
+      "min_consultation_turns": 12
+    },
+    "v4_long_history_04": {
+      "style": "fact_focused",
+      "patience": 15,
+      "max_turns": 16,
+      "min_consultation_turns": 12
+    },
+    "v4_condition_change_01": {
+      "style": "changing_terms",
+      "patience": 10,
+      "max_turns": 14
+    },
+    "v4_condition_change_02": {
+      "style": "changing_terms",
+      "patience": 10,
+      "max_turns": 14
+    }
+  }
+}

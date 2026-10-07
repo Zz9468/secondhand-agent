@@ -93,6 +93,10 @@ class ModelExecutionTaskSnapshot:
     last_manual_at: datetime | None
     created_at: datetime
     updated_at: datetime
+    runtime_kind: str = "V3"
+    runtime_schema_version: int = 1
+    runtime_checkpoint: dict[str, object] | None = None
+    run_budget_json: dict[str, object] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -343,8 +347,7 @@ class ModelTaskService:
             now=now,
         )
         if task_types is not None and (
-            not task_types
-            or any(not isinstance(item, ModelTaskType) for item in task_types)
+            not task_types or any(not isinstance(item, ModelTaskType) for item in task_types)
         ):
             raise InvalidModelExecutionTaskError("模型任务类型过滤条件无效")
 
@@ -375,9 +378,7 @@ class ModelTaskService:
                 .limit(1)
             )
             if task_types is not None:
-                statement = statement.where(
-                    ModelExecutionTask.task_type.in_(task_types)
-                )
+                statement = statement.where(ModelExecutionTask.task_type.in_(task_types))
             task = db.scalar(statement)
             if task is None:
                 return None
@@ -625,6 +626,28 @@ class ModelTaskService:
         )
         return self._snapshot(task)
 
+    def renew_lease_in_transaction(
+        self, *, db: Session, task_id: int, lease_token: str, seconds: int = 300
+    ):
+        if not 1 <= seconds <= 3600:
+            raise ValueError("Invalid lease renewal duration")
+        now = self._database_datetime(datetime.now(UTC))
+        task = self._locked_task(db, task_id=task_id)
+        self._require_active_lease(task, lease_token=lease_token, now=now)
+        task.lease_expires_at = now + timedelta(seconds=seconds)
+        db.flush()
+        return self._snapshot(task)
+
+    def update_checkpoint_in_transaction(
+        self, *, db: Session, task_id: int, lease_token: str, checkpoint: dict
+    ):
+        task = self._locked_task(db, task_id=task_id)
+        self._require_active_lease(
+            task, lease_token=lease_token, now=self._database_datetime(datetime.now(UTC))
+        )
+        task.runtime_checkpoint, _ = self._validated_json_object(checkpoint)
+        db.flush()
+
     def _complete_error(
         self,
         *,
@@ -735,10 +758,14 @@ class ModelTaskService:
         else:
             if approval is None or offer is None or approval.offer_id != offer.id:
                 raise InvalidModelExecutionTaskError("审批通知任务必须绑定一致的审批和报价")
-            if approval.status not in {
-                ApprovalStatus.APPROVED,
-                ApprovalStatus.REJECTED,
-            } or not approval.followup_request_id:
+            if (
+                approval.status
+                not in {
+                    ApprovalStatus.APPROVED,
+                    ApprovalStatus.REJECTED,
+                }
+                or not approval.followup_request_id
+            ):
                 raise InvalidModelExecutionTaskError("审批通知任务只能为已审核记录创建")
             # 审批自身保留授权时的 policy_version；任务保存创建时的当前版本，
             # 便于模型返回后识别调用期间发生的再次变更。
@@ -777,9 +804,7 @@ class ModelTaskService:
             or task.snapshot_schema_version != snapshot_schema_version
             or task.input_snapshot_hash != input_hash
         ):
-            raise ModelExecutionTaskConflictError(
-                "相同模型任务幂等键不能用于不同输入或业务对象"
-            )
+            raise ModelExecutionTaskConflictError("相同模型任务幂等键不能用于不同输入或业务对象")
         return ModelTaskCreationResult(
             task=self._snapshot(task),
             idempotent_replay=True,
@@ -814,9 +839,7 @@ class ModelTaskService:
         now: datetime,
     ) -> None:
         task.status = ModelTaskStatus.FAILED
-        task.last_error_category = (
-            task.last_error_category or ModelTaskErrorCategory.UNKNOWN
-        )
+        task.last_error_category = task.last_error_category or ModelTaskErrorCategory.UNKNOWN
         task.last_error_message = "模型任务已达到最大尝试次数"
         task.completed_at = now
         self._clear_lease(task)
@@ -832,10 +855,7 @@ class ModelTaskService:
         if task.approval_id is None:
             return
         approval = db.get(ApprovalRequest, task.approval_id, with_for_update=True)
-        if (
-            approval is not None
-            and approval.followup_status is not ApprovalFollowupStatus.SENT
-        ):
+        if approval is not None and approval.followup_status is not ApprovalFollowupStatus.SENT:
             approval.followup_status = ApprovalFollowupStatus.MANUAL_REQUIRED
 
     @staticmethod
@@ -1071,4 +1091,8 @@ class ModelTaskService:
             last_manual_at=task.last_manual_at,
             created_at=task.created_at,
             updated_at=task.updated_at,
+            runtime_kind=task.runtime_kind,
+            runtime_schema_version=task.runtime_schema_version,
+            runtime_checkpoint=deepcopy(task.runtime_checkpoint),
+            run_budget_json=deepcopy(task.run_budget_json),
         )

@@ -22,6 +22,7 @@ from app.db.models import (
     ProductStatus,
     SellerPolicy,
 )
+from app.services.agent_message_service import AgentMessageService
 from app.services.errors import (
     NegotiationLifecycleConflictError,
     NegotiationNotFoundError,
@@ -129,14 +130,15 @@ class IntentService:
                 "confirm",
                 stored_request_id,
             )
-            if self._message_by_request_id(
-                db,
-                session_id=negotiation.id,
-                request_id=system_request_id,
-            ) is not None:
-                raise NegotiationLifecycleConflictError(
-                    "确认幂等键已经被不完整请求占用"
+            if (
+                self._message_by_request_id(
+                    db,
+                    session_id=negotiation.id,
+                    request_id=system_request_id,
                 )
+                is not None
+            ):
+                raise NegotiationLifecycleConflictError("确认幂等键已经被不完整请求占用")
 
             confirmed_at = datetime.now()
             offer.status = OfferStatus.ACCEPTED
@@ -146,6 +148,7 @@ class IntentService:
             negotiation.confirmation_request_id = stored_request_id
             negotiation.confirmation_source = source
             negotiation.version += 1
+            AgentMessageService.backfill(db, negotiation.id)
             message = Message(
                 session_id=negotiation.id,
                 role=MessageRole.SYSTEM,
@@ -157,10 +160,9 @@ class IntentService:
             try:
                 db.flush()
             except IntegrityError as exc:
-                raise NegotiationLifecycleConflictError(
-                    "确认幂等键已经被其他请求使用"
-                ) from exc
+                raise NegotiationLifecycleConflictError("确认幂等键已经被其他请求使用") from exc
             db.refresh(message)
+            AgentMessageService.project(db, message, kind="SESSION_NOTIFICATION")
             return IntentConfirmationSnapshot(
                 session_id=negotiation.id,
                 status=negotiation.status,
@@ -189,9 +191,7 @@ class IntentService:
                 for_update=True,
             )
             if negotiation.status is NegotiationStatus.AGREED:
-                raise NegotiationLifecycleConflictError(
-                    "已经形成交易意向的会话不能改为关闭"
-                )
+                raise NegotiationLifecycleConflictError("已经形成交易意向的会话不能改为关闭")
             if negotiation.status is NegotiationStatus.CLOSED:
                 return self._replay_closure(db, negotiation=negotiation)
             if negotiation.status not in {
@@ -214,16 +214,18 @@ class IntentService:
                 cancelled_approval_id = pending.id
 
             system_request_id = self._system_request_id("close", stored_request_id)
-            if self._message_by_request_id(
-                db,
-                session_id=negotiation.id,
-                request_id=system_request_id,
-            ) is not None:
-                raise NegotiationLifecycleConflictError(
-                    "关闭幂等键已经被不完整请求占用"
+            if (
+                self._message_by_request_id(
+                    db,
+                    session_id=negotiation.id,
+                    request_id=system_request_id,
                 )
+                is not None
+            ):
+                raise NegotiationLifecycleConflictError("关闭幂等键已经被不完整请求占用")
             negotiation.status = NegotiationStatus.CLOSED
             negotiation.version += 1
+            AgentMessageService.backfill(db, negotiation.id)
             message = Message(
                 session_id=negotiation.id,
                 role=MessageRole.SYSTEM,
@@ -234,6 +236,7 @@ class IntentService:
             db.add(message)
             db.flush()
             db.refresh(message)
+            AgentMessageService.project(db, message, kind="SESSION_NOTIFICATION")
             return NegotiationClosureSnapshot(
                 session_id=negotiation.id,
                 status=negotiation.status,
@@ -256,9 +259,7 @@ class IntentService:
                 policy=policy,
             )
         except ServiceError as exc:
-            raise NegotiationLifecycleConflictError(
-                "报价交易条件无法重新授权"
-            ) from exc
+            raise NegotiationLifecycleConflictError("报价交易条件无法重新授权") from exc
 
         if offer.proposer is OfferProposer.AGENT:
             if (
@@ -271,9 +272,7 @@ class IntentService:
                     outcome="COUNTER_OFFERED",
                 )
             ):
-                raise NegotiationLifecycleConflictError(
-                    "当前 Agent 报价缺少有效授权或正式回复记录"
-                )
+                raise NegotiationLifecycleConflictError("当前 Agent 报价缺少有效授权或正式回复记录")
             return ConfirmationSource.AGENT_COUNTER
 
         if offer.proposer is not OfferProposer.BUYER:
@@ -282,9 +281,7 @@ class IntentService:
             raise NegotiationLifecycleConflictError("买家报价尚未获得接受授权")
 
         approval = db.scalar(
-            select(ApprovalRequest)
-            .where(ApprovalRequest.offer_id == offer.id)
-            .with_for_update()
+            select(ApprovalRequest).where(ApprovalRequest.offer_id == offer.id).with_for_update()
         )
         if approval is not None:
             if (
@@ -299,23 +296,16 @@ class IntentService:
                     outcome="APPROVAL_APPROVED",
                 )
             ):
-                raise NegotiationLifecycleConflictError(
-                    "卖家审批授权已经失效或尚未完成通知"
-                )
+                raise NegotiationLifecycleConflictError("卖家审批授权已经失效或尚未完成通知")
             return ConfirmationSource.SELLER_APPROVED_BUYER_OFFER
 
-        if (
-            not authorization.can_accept_automatically
-            or not self._has_formal_agent_message(
-                db,
-                session_id=negotiation.id,
-                offer_id=offer.id,
-                outcome="OFFER_ACCEPTED",
-            )
+        if not authorization.can_accept_automatically or not self._has_formal_agent_message(
+            db,
+            session_id=negotiation.id,
+            offer_id=offer.id,
+            outcome="OFFER_ACCEPTED",
         ):
-            raise NegotiationLifecycleConflictError(
-                "买家报价缺少有效的自动接受记录"
-            )
+            raise NegotiationLifecycleConflictError("买家报价缺少有效的自动接受记录")
         return ConfirmationSource.AUTO_ACCEPTED_BUYER_OFFER
 
     @staticmethod
@@ -334,9 +324,7 @@ class IntentService:
             statement = statement.with_for_update()
         negotiation = db.scalar(statement)
         if negotiation is None:
-            raise NegotiationNotFoundError(
-                "协商会话不存在或当前买家无权访问"
-            )
+            raise NegotiationNotFoundError("协商会话不存在或当前买家无权访问")
         return negotiation
 
     @staticmethod
@@ -386,9 +374,7 @@ class IntentService:
             or negotiation.confirmation_request_id is None
             or negotiation.confirmation_source is None
         ):
-            raise NegotiationLifecycleConflictError(
-                "会话已经形成其他报价的交易意向"
-            )
+            raise NegotiationLifecycleConflictError("会话已经形成其他报价的交易意向")
         message = self._message_by_request_id(
             db,
             session_id=negotiation.id,
@@ -451,7 +437,9 @@ class IntentService:
         delivery_text = (
             "，交易方式为面交"
             if delivery == "pickup"
-            else "，交易方式为快递" if delivery == "shipping" else ""
+            else "，交易方式为快递"
+            if delivery == "shipping"
+            else ""
         )
         return (
             f"买家已明确确认报价 #{offer.id}：{format(offer.price, '.2f')} 元，"
@@ -473,10 +461,7 @@ class IntentService:
     @staticmethod
     def _validated_request_id(request_id: str) -> str:
         stored = request_id.strip()
-        if (
-            not 8 <= len(stored) <= 56
-            or _REQUEST_ID_PATTERN.fullmatch(stored) is None
-        ):
+        if not 8 <= len(stored) <= 56 or _REQUEST_ID_PATTERN.fullmatch(stored) is None:
             raise NegotiationLifecycleConflictError("请求幂等键格式不正确")
         return stored
 

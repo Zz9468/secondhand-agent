@@ -92,9 +92,7 @@ class ApprovalProcessor:
         self._settings = get_settings()
         self._usage_service = ModelUsageService(self._settings)
         self._observer = ObservabilityService(session_factory)
-        self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(
-            self._settings
-        )
+        self._retry_policy = retry_policy or ModelRetryPolicy.from_settings(self._settings)
 
     def process_batch(self, *, limit: int = 20) -> tuple[ApprovalProcessingResult, ...]:
         """每轮最多尝试一次同一审批，避免失败任务在单轮内热重试。"""
@@ -210,9 +208,7 @@ class ApprovalProcessor:
                     offer_id=leased.offer_id,
                     attributes={
                         "approval_status": result.status.value,
-                        "agent_outcome": (
-                            result.outcome.value if result.outcome else None
-                        ),
+                        "agent_outcome": (result.outcome.value if result.outcome else None),
                     },
                 )
             )
@@ -229,9 +225,7 @@ class ApprovalProcessor:
             statement = (
                 select(ApprovalRequest)
                 .where(
-                    ApprovalRequest.status.in_(
-                        [ApprovalStatus.APPROVED, ApprovalStatus.REJECTED]
-                    ),
+                    ApprovalRequest.status.in_([ApprovalStatus.APPROVED, ApprovalStatus.REJECTED]),
                     ApprovalRequest.followup_status.in_(
                         [
                             ApprovalFollowupStatus.PENDING,
@@ -242,8 +236,7 @@ class ApprovalProcessor:
                 .order_by(
                     case(
                         (
-                            ApprovalRequest.followup_status
-                            == ApprovalFollowupStatus.PENDING,
+                            ApprovalRequest.followup_status == ApprovalFollowupStatus.PENDING,
                             0,
                         ),
                         else_=1,
@@ -253,9 +246,7 @@ class ApprovalProcessor:
                 .with_for_update(skip_locked=True)
             )
             if excluded_approval_ids:
-                statement = statement.where(
-                    ApprovalRequest.id.not_in(excluded_approval_ids)
-                )
+                statement = statement.where(ApprovalRequest.id.not_in(excluded_approval_ids))
             approval = db.scalar(statement.limit(1))
             if approval is None:
                 return None
@@ -411,9 +402,7 @@ class ApprovalProcessor:
                 )
                 return self._mark_manual_required(db, approval=approval)
 
-            original_request, original_offer_result = self._task_input(
-                current_task.input_snapshot
-            )
+            original_request, original_offer_result = self._task_input(current_task.input_snapshot)
             current_request = self._agent_request(context, event=current_event)
             current_offer_result = self._offer_result(context.offer)
             stale_reason = self._stale_reason(
@@ -611,11 +600,7 @@ class ApprovalProcessor:
                 if request_id
                 else None
             )
-            outcome = (
-                self._stored_outcome(message.agent_outcome)
-                if message is not None
-                else None
-            )
+            outcome = self._stored_outcome(message.agent_outcome) if message is not None else None
             return ApprovalProcessingResult(
                 approval_id=approval.id,
                 status=approval.followup_status,
@@ -641,9 +626,7 @@ class ApprovalProcessor:
         if product is None:
             raise ApprovalFollowupProcessingError("审批关联的商品不存在")
         policy = db.scalar(
-            select(SellerPolicy)
-            .where(SellerPolicy.product_id == product.id)
-            .with_for_update()
+            select(SellerPolicy).where(SellerPolicy.product_id == product.id).with_for_update()
         )
         return _FollowupContext(
             approval=approval,
@@ -670,10 +653,7 @@ class ApprovalProcessor:
             or context.offer.status is not OfferStatus.PROPOSED
             or context.policy is None
             or context.policy.version != context.approval.policy_version
-            or (
-                context.offer.expires_at is not None
-                and context.offer.expires_at <= datetime.now()
-            )
+            or (context.offer.expires_at is not None and context.offer.expires_at <= datetime.now())
         ):
             return ApprovalFollowupEvent.INVALIDATED
         try:
@@ -740,9 +720,7 @@ class ApprovalProcessor:
                 "price": format(offer.price, ".2f"),
                 "shipping_paid_by": offer.shipping_paid_by.value,
                 "shipping_cost": (
-                    format(offer.shipping_cost, ".2f")
-                    if offer.shipping_cost is not None
-                    else None
+                    format(offer.shipping_cost, ".2f") if offer.shipping_cost is not None else None
                 ),
                 "seller_borne_discount": format(
                     offer.seller_borne_discount,
@@ -792,22 +770,16 @@ class ApprovalProcessor:
                 price=str(raw["price"]),
                 shipping_paid_by=str(raw["shipping_paid_by"]),
                 shipping_cost=(
-                    str(raw["shipping_cost"])
-                    if raw.get("shipping_cost") is not None
-                    else None
+                    str(raw["shipping_cost"]) if raw.get("shipping_cost") is not None else None
                 ),
                 seller_borne_discount=str(raw["seller_borne_discount"]),
                 additional_terms=dict(raw.get("additional_terms") or {}),
                 seller_comment=(
-                    str(raw["seller_comment"])
-                    if raw.get("seller_comment") is not None
-                    else None
+                    str(raw["seller_comment"]) if raw.get("seller_comment") is not None else None
                 ),
             )
         except (KeyError, TypeError, ValueError) as exc:
-            raise ApprovalFollowupProcessingError(
-                "审批模型任务输入快照无效"
-            ) from exc
+            raise ApprovalFollowupProcessingError("审批模型任务输入快照无效") from exc
         return request, dict(offer_result)
 
     @staticmethod
@@ -851,22 +823,22 @@ class ApprovalProcessor:
         event: ApprovalFollowupEvent,
         result: ApprovalFollowupResult,
     ) -> Message:
+        from app.services.agent_message_service import AgentMessageService
+
+        AgentMessageService.backfill(db, context.approval.session_id)
         message = Message(
             session_id=context.approval.session_id,
             role=MessageRole.AGENT,
             content=result.reply,
             request_id=request_id,
             agent_outcome=result.outcome.value,
-            formal_offer_id=(
-                context.offer.id
-                if event is ApprovalFollowupEvent.APPROVED
-                else None
-            ),
+            formal_offer_id=(context.offer.id if event is ApprovalFollowupEvent.APPROVED else None),
         )
         db.add(message)
         context.approval.followup_status = ApprovalFollowupStatus.SENT
         db.flush()
         db.refresh(message)
+        AgentMessageService.project(db, message, kind="APPROVAL_NOTIFICATION")
         return message
 
     def _draft_with_usage(
@@ -961,13 +933,7 @@ def main() -> int:
                 result.outcome.value if result.outcome else None,
             )
         if args.once:
-            return (
-                1
-                if any(
-                    item.status is ApprovalFollowupStatus.FAILED for item in results
-                )
-                else 0
-            )
+            return 1 if any(item.status is ApprovalFollowupStatus.FAILED for item in results) else 0
         time.sleep(args.poll_seconds)
 
 

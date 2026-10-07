@@ -10,9 +10,7 @@ def test_qwen_factory_requires_secret_and_region_base_url() -> None:
     factory = QwenChatModelFactory()
 
     try:
-        factory.create(
-            Settings(_env_file=None, database_url=TEST_DATABASE_URL)
-        )
+        factory.create(Settings(_env_file=None, database_url=TEST_DATABASE_URL))
     except ModelConfigurationError as exc:
         assert "MODEL_API_KEY" in str(exc)
     else:
@@ -56,7 +54,8 @@ def test_qwen_factory_can_enable_thinking_explicitly() -> None:
             model_api_key=SecretStr("test-key"),
             model_base_url="https://example.invalid/compatible-mode/v1",
             model_enable_thinking=True,
+            model_thinking_budget=512,
         )
     )
 
-    assert model.extra_body == {"enable_thinking": True}
+    assert model.extra_body == {"enable_thinking": True, "thinking_budget": 512}

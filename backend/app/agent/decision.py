@@ -56,6 +56,7 @@ class DialogueSubject(StrEnum):
     LISTED_PRICE = "LISTED_PRICE"
     PRICE_FLOOR = "PRICE_FLOOR"
     OFFER_PRICE = "OFFER_PRICE"
+    PRICE_NEGOTIATION = "PRICE_NEGOTIATION"
     AVAILABILITY = "AVAILABILITY"
     SHIPPING_PAYER = "SHIPPING_PAYER"
     SHIPPING_COST = "SHIPPING_COST"
@@ -71,9 +72,28 @@ class DialogueAct(BaseModel):
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    kind: DialogueActKind
-    subject: DialogueSubject
-    requested_value: str | None = Field(default=None, max_length=120)
+    kind: DialogueActKind = Field(
+        description=(
+            "本轮买家话语的作用，不能填写 Agent 打算反问的内容。"
+            "ASK_FACT 查询公开事实；ASK_PRIVATE_INFO 查询私密策略；REQUEST_TERM 请求交易条件；"
+            "REQUEST_COMMITMENT 请求履约承诺；GENERAL 寒暄；UNKNOWN 无法归类。"
+        )
+    )
+    subject: DialogueSubject = Field(
+        description=(
+            "本轮买家实际询问的主题，与 reply 回答的主题一致。商品介绍、成色、配件、电池用"
+            "PRODUCT_DETAILS；公开标价用 LISTED_PRICE；底价用 PRICE_FLOOR；"
+            "能否讲价、支持议价吗用 PRICE_NEGOTIATION；具体议价条件用 OFFER_PRICE；"
+            "是否还在用 AVAILABILITY；运费承担方用 SHIPPING_PAYER；运费金额用 SHIPPING_COST；"
+            "快递或面交用 DELIVERY_METHOD；发货时间用 DISPATCH_DEADLINE；留货用 RESERVATION；"
+            "寒暄用 GENERAL；无法归类用 OTHER。买家未议价时不得因为想推进交易而填 OFFER_PRICE。"
+        )
+    )
+    requested_value: str | None = Field(
+        default=None,
+        max_length=120,
+        description="买家明确提出的条件；未提出具体值时为空，不得猜测。",
+    )
 
     @field_validator("requested_value", mode="before")
     @classmethod
@@ -125,14 +145,17 @@ class NegotiationDecision(BaseModel):
         elif self.offer_id is not None:
             raise ValueError(f"{self.action.value} cannot include offer_id")
 
-        if any(
-            value is not None
-            for value in (
-                self.proposed_price,
-                self.shipping_paid_by,
-                self.shipping_cost,
-                self.seller_borne_discount,
+        if (
+            any(
+                value is not None
+                for value in (
+                    self.proposed_price,
+                    self.shipping_paid_by,
+                    self.shipping_cost,
+                    self.seller_borne_discount,
+                )
             )
-        ) or self.additional_terms:
+            or self.additional_terms
+        ):
             raise ValueError(f"{self.action.value} cannot include counter-offer terms")
         return self

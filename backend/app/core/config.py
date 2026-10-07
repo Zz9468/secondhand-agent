@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     model_api_key: SecretStr | None = None
     model_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
     model_enable_thinking: bool = False
+    model_thinking_budget: int = Field(default=768, ge=1, le=32768)
     model_timeout_seconds: float = Field(default=30.0, gt=0.0)
     model_max_retries: int = Field(default=2, ge=0, le=10)
     model_task_max_attempts: int = Field(default=3, ge=1, le=20)
@@ -48,6 +49,27 @@ class Settings(BaseSettings):
     model_output_price_per_million: Decimal | None = Field(default=None, ge=0)
     model_cached_input_price_per_million: Decimal | None = Field(default=None, ge=0)
     model_cost_currency: Literal["CNY", "USD"] | None = None
+
+    agent_runtime: Literal["V3", "V4"] = "V3"
+    agent_reply_strategy: Literal["legacy-v1", "conversation-v1"] = "conversation-v1"
+    agent_reply_review_enable_thinking: bool | None = None
+    agent_v4_session_ids: list[int] | None = None
+    agent_context_window: int = Field(default=32768, ge=4096)
+    agent_input_token_budget: int = Field(default=16000, ge=1024)
+    agent_output_token_reserve: int = Field(default=1024, ge=128)
+    agent_token_safety_margin: int = Field(default=1024, ge=128)
+    agent_initial_tool_growth_reserve: int = Field(default=2048, ge=0)
+    agent_compression_trigger_ratio: float = Field(default=0.8, gt=0.0, lt=1.0)
+    agent_compression_target_ratio: float = Field(default=0.6, gt=0.0, lt=0.8)
+    agent_tool_result_token_limit: int = Field(default=1500, ge=128)
+    agent_max_model_steps: int = Field(default=6, ge=1, le=30)
+    agent_max_total_model_calls: int = Field(default=10, ge=1, le=100)
+    agent_max_maintenance_calls: int = Field(default=2, ge=0, le=10)
+    agent_max_tool_calls: int = Field(default=8, ge=1, le=100)
+    agent_max_wall_seconds: float = Field(default=120, gt=0, le=600)
+    agent_max_total_tokens: int = Field(default=180000, ge=1024)
+    agent_max_estimated_cost: Decimal | None = Field(default=None, gt=0)
+    agent_memory_enabled: bool = True
 
     observability_langsmith_enabled: bool = False
     observability_langsmith_api_key: SecretStr | None = None
@@ -65,10 +87,7 @@ class Settings(BaseSettings):
 
         if self.model_api_key is None or not self.model_base_url:
             return False
-        return bool(
-            self.model_api_key.get_secret_value().strip()
-            and self.model_base_url.strip()
-        )
+        return bool(self.model_api_key.get_secret_value().strip() and self.model_base_url.strip())
 
     @property
     def auth_is_configured(self) -> bool:

@@ -28,6 +28,9 @@ class QwenChatModelFactory:
                 "未配置 MODEL_BASE_URL，请填写 API Key 所属地域的兼容接口地址"
             )
 
+        extra_body = {"enable_thinking": settings.model_enable_thinking}
+        if settings.model_enable_thinking:
+            extra_body["thinking_budget"] = settings.model_thinking_budget
         return ChatOpenAI(
             model=settings.model_name,
             api_key=settings.model_api_key,
@@ -35,6 +38,6 @@ class QwenChatModelFactory:
             temperature=settings.model_temperature,
             timeout=settings.model_timeout_seconds,
             max_retries=settings.model_max_retries,
-            # 协商决策由后端规则重新校验，不需要长思考；默认关闭可降低超时概率。
-            extra_body={"enable_thinking": settings.model_enable_thinking},
+            # 思考开关及预算由配置控制；正式动作仍由后端重新校验。
+            extra_body=extra_body,
         )
