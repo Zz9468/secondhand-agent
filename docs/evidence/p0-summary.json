@@ -1,0 +1,502 @@
+{
+  "stage": "17.1 P0",
+  "status": "passed_minimum_technical_gate",
+  "recorded_at": "2026-10-24T23:01:50.631832+08:00",
+  "baseline_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
+  "plan_commit": "08bf465",
+  "implementation_commit": "09dd4a49a092f286260ca74e2d0317d81493c166",
+  "implementation_tree": "c6a9a238ec5f11c0534832914764247d0fabe747",
+  "tests": {
+    "baseline-mysql.xml": {
+      "tests": "355",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "77.779",
+      "timestamp": "2026-10-24T22:36:33.779757+08:00",
+      "passed": 355,
+      "failed_cases": []
+    },
+    "baseline-unit.xml": {
+      "tests": "355",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "150",
+      "time": "13.431",
+      "timestamp": "2026-10-24T22:36:13.283175+08:00",
+      "passed": 205,
+      "failed_cases": []
+    },
+    "final-baseline-mysql.xml": {
+      "tests": "355",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "133.205",
+      "timestamp": "2026-10-24T22:52:08.119567+08:00",
+      "passed": 355,
+      "failed_cases": []
+    },
+    "permission-hardening.xml": {
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "5.795",
+      "timestamp": "2026-10-24T22:58:28.404540+08:00",
+      "passed": 4,
+      "failed_cases": []
+    },
+    "protocol-initial.xml": {
+      "tests": "21",
+      "failures": "16",
+      "errors": "0",
+      "skipped": "0",
+      "time": "20.176",
+      "timestamp": "2026-10-24T22:39:49.484017+08:00",
+      "passed": 5,
+      "failed_cases": [
+        "test_a27_fifo_retry_barrier",
+        "test_a29_historical_task_never_rewinds",
+        "test_a16_a30_a60_real_process_crashes[before_graph]",
+        "test_a16_a30_a60_real_process_crashes[after_model]",
+        "test_a16_a30_a60_real_process_crashes[after_command]",
+        "test_a16_a30_a60_real_process_crashes[after_publish]",
+        "test_a16_a30_a60_real_process_crashes[after_end]",
+        "test_a31_every_combination_write_rolls_back[1]",
+        "test_a31_every_combination_write_rolls_back[2]",
+        "test_a31_every_combination_write_rolls_back[3]",
+        "test_a31_every_combination_write_rolls_back[4]",
+        "test_a31_every_combination_write_rolls_back[5]",
+        "test_a31_every_combination_write_rolls_back[6]",
+        "test_two_turns_reset_transient_fields",
+        "test_interrupt_released_connection_and_fresh_process_resume",
+        "test_a33_late_model_is_audit_only"
+      ]
+    },
+    "protocol.xml": {
+      "tests": "37",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "82.283",
+      "timestamp": "2026-10-24T22:51:48.387743+08:00",
+      "passed": 37,
+      "failed_cases": []
+    },
+    "recovery.xml": {
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "41.044",
+      "timestamp": "2026-10-24T22:43:53.025131+08:00",
+      "passed": 7,
+      "failed_cases": []
+    },
+    "tracing-model.xml": {
+      "tests": "7",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0",
+      "time": "14.619",
+      "timestamp": "2026-10-24T22:46:33.281817+08:00",
+      "passed": 6,
+      "failed_cases": [
+        "test_native_root_node_sdk_error_and_attachment_boundaries"
+      ]
+    },
+    "tracing.xml": {
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "5.575",
+      "timestamp": "2026-10-24T22:47:37.846364+08:00",
+      "passed": 2,
+      "failed_cases": []
+    }
+  },
+  "takeover_results": [
+    {
+      "mode": "partition",
+      "cleanup_required": true,
+      "after_expiry_seconds": 0.16042733192443848,
+      "takeover": true
+    },
+    {
+      "mode": "hang",
+      "cleanup_required": false,
+      "after_expiry_seconds": 0.23545455932617188,
+      "takeover": true
+    },
+    {
+      "mode": "exit",
+      "cleanup_required": false,
+      "after_expiry_seconds": 0,
+      "takeover": true
+    },
+    {
+      "mode": "partition",
+      "cleanup_required": true,
+      "after_expiry_seconds": 0.2735304832458496,
+      "takeover": true
+    }
+  ],
+  "evidence_sha256": {
+    "baseline-mysql.xml": "8b9bde3c7fe586ace216c0fde411ace454e3cac1f8066593b1df73a4e93a28a3",
+    "baseline-unit.xml": "a1950f447144ebd2100d882608913e1f1bab41ffa3abd2b8e5e3e9b4433a63b0",
+    "final-baseline-mysql.xml": "cbd16e5332ab5d4af6ddb77d4c6fe086203d757ef1dc8c86a60f3a50c88b3b3e",
+    "permission-hardening.xml": "0d173aa330cb4a0516698b164869ac4c3cb672d02493e6c21a6697f0162afa15",
+    "protocol-initial.xml": "ce799b01feec4fa841f16bfe92d4fc4df1b4a1f97ce4d65652bc4a64bb28db7b",
+    "protocol.xml": "e6b831ceeb58729b1034ea1929a779075e3133472b5594547b9087fad3dcc243",
+    "recovery.xml": "7352510e7f1197c61066f695de758c6ea5ae71a49b21f85a7af5771057d5621e",
+    "tracing-model.xml": "f4d8bafb3d9480d6928e251916826e182494d6c741551b01b991657daded897d",
+    "tracing.xml": "d9e81426a43995a918c8c0832c47ca6911c2b92d4a90b89ae51c090702cb09a6",
+    "qwen-probe-1.json": "cb6b31e792e6f8e0cbfd4d643ba8e3af4f313e522f357d6a5620bbd51dbe0fa1",
+    "qwen-probe-2.json": "4231157bd6ca445f0e6c2002032e78977ed370c3495340b2c5feea2f613f26d4",
+    "qwen-probe-3.json": "acc82435e16f5388b879a9d2bf1170ce8a44c61c84ca96a442b28b9b30e3d5a4",
+    "langsmith-probe-1.json": "99890fda98972ed0f8b3c32732f174c8779cf1e53d537c75063be852aa941667",
+    "backend/requirements.lock": "28296ea7ce7f55f602de401f910b9c452b0b4d929a95921bc84defe10609a7d9",
+    "frontend/package-lock.json": "2eab5ccb159b7e71bd0d8467bc7f1135f7ee989e1a990b1d4e3fe3cf1b42e7f7",
+    "backend/evaluation/datasets/p0_semantic_labels.json": "de03c62003f3ed96540e9f7b02fee965b319f7f901f40fed7667d86b1c44db90"
+  },
+  "model_probes": [
+    {
+      "file": "qwen-probe-1.json",
+      "model": "qwen3.7-flash",
+      "thinking": false,
+      "attempts": [
+        {
+          "kind": "structured",
+          "status": "returned",
+          "seconds": 1.359,
+          "usage": {
+            "completion_tokens": 48,
+            "prompt_tokens": 56,
+            "total_tokens": 104,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 56
+            }
+          }
+        }
+      ],
+      "max_calls": 6,
+      "max_reserved_cny": "0.10",
+      "max_tokens": 20000,
+      "pricing_reference": "https://help.aliyun.com/zh/model-studio/qwen3-7-flash",
+      "price_cny_per_million": {
+        "input": "0.2",
+        "output": "0.8"
+      },
+      "calls_reserved": 1,
+      "reserved_cny": "0.007036",
+      "reserved_tokens": 1982,
+      "passed": false,
+      "error_type": "AssertionError",
+      "known_estimated_cny": "0.0000496"
+    },
+    {
+      "file": "qwen-probe-2.json",
+      "model": "qwen3.7-flash",
+      "thinking": false,
+      "attempts": [
+        {
+          "kind": "structured",
+          "status": "returned",
+          "seconds": 1.063,
+          "usage": {
+            "completion_tokens": 45,
+            "prompt_tokens": 95,
+            "total_tokens": 140,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 95
+            }
+          },
+          "validated": {
+            "intent": "PROPOSE_OFFER",
+            "amount": null,
+            "delivery": "pickup",
+            "source_quote": "800元自提可以吗"
+          }
+        },
+        {
+          "kind": "structured",
+          "status": "returned",
+          "seconds": 1.125,
+          "usage": {
+            "completion_tokens": 43,
+            "prompt_tokens": 101,
+            "total_tokens": 144,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 101
+            }
+          },
+          "validated": {
+            "intent": "NONE",
+            "amount": null,
+            "delivery": null,
+            "source_quote": "别人卖800，我预算也差不多"
+          }
+        },
+        {
+          "kind": "structured",
+          "status": "returned",
+          "seconds": 0.703,
+          "usage": {
+            "completion_tokens": 39,
+            "prompt_tokens": 93,
+            "total_tokens": 132,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 93
+            }
+          },
+          "validated": {
+            "intent": "ASK_PRODUCT",
+            "amount": null,
+            "delivery": null,
+            "source_quote": "这部手机有没有维修过"
+          }
+        },
+        {
+          "kind": "tool",
+          "status": "returned",
+          "seconds": 0.578,
+          "usage": {
+            "completion_tokens": 22,
+            "prompt_tokens": 288,
+            "total_tokens": 310,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 288
+            }
+          }
+        }
+      ],
+      "prompt_version": "p0-capability-v2",
+      "max_calls": 6,
+      "max_reserved_cny": "0.10",
+      "max_tokens": 20000,
+      "pricing_reference": "https://help.aliyun.com/zh/model-studio/qwen3-7-flash",
+      "price_cny_per_million": {
+        "input": "0.2",
+        "output": "0.8"
+      },
+      "calls_reserved": 4,
+      "reserved_cny": "0.028302",
+      "reserved_tokens": 8007,
+      "structured_mode": "json_schema",
+      "tool_arguments_valid": true,
+      "passed": true,
+      "known_estimated_cny": "0.0002346"
+    },
+    {
+      "file": "qwen-probe-3.json",
+      "model": "qwen3.7-flash",
+      "thinking": false,
+      "attempts": [
+        {
+          "kind": "structured",
+          "status": "returned",
+          "request_hash": "ccfd855cee39964f5442c0f4c89e2ec47abfb1097e3bc54d98d9cd5671fd5a39",
+          "seconds": 0.969,
+          "usage": {
+            "completion_tokens": 47,
+            "prompt_tokens": 142,
+            "total_tokens": 189,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 142
+            }
+          },
+          "validated": {
+            "intent": "PROPOSE_OFFER",
+            "amount": "800",
+            "delivery": "pickup",
+            "source_quote": "800元自提可以吗"
+          }
+        },
+        {
+          "kind": "structured",
+          "status": "returned",
+          "request_hash": "c1250a12a5ffc2a4d1edf979a213175432c178ff60a6840949575c8889a6e40e",
+          "seconds": 0.781,
+          "usage": {
+            "completion_tokens": 43,
+            "prompt_tokens": 148,
+            "total_tokens": 191,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 148
+            }
+          },
+          "validated": {
+            "intent": "NONE",
+            "amount": null,
+            "delivery": null,
+            "source_quote": "别人卖800，我预算也差不多"
+          }
+        },
+        {
+          "kind": "structured",
+          "status": "returned",
+          "request_hash": "fae9e6ae32907afbd74b58d0ce66fae4ccb6c48fb983a4bce2eabd8629f92587",
+          "seconds": 0.625,
+          "usage": {
+            "completion_tokens": 39,
+            "prompt_tokens": 140,
+            "total_tokens": 179,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 140
+            }
+          },
+          "validated": {
+            "intent": "ASK_PRODUCT",
+            "amount": null,
+            "delivery": null,
+            "source_quote": "这部手机有没有维修过"
+          }
+        },
+        {
+          "kind": "tool",
+          "status": "returned",
+          "request_hash": "a323e2212bc636ccd58c06d6ac9360d953c53207bff3b80571b2ac4da8fc4acb",
+          "seconds": 0.594,
+          "usage": {
+            "completion_tokens": 22,
+            "prompt_tokens": 288,
+            "total_tokens": 310,
+            "completion_tokens_details": null,
+            "prompt_tokens_details": {
+              "audio_tokens": null,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": 288
+            }
+          }
+        }
+      ],
+      "prompt_version": "p0-capability-v3",
+      "max_calls": 6,
+      "max_reserved_cny": "0.10",
+      "max_tokens": 20000,
+      "pricing_reference": "https://help.aliyun.com/zh/model-studio/qwen3-7-flash",
+      "price_cny_per_million": {
+        "input": "0.2",
+        "output": "0.8"
+      },
+      "calls_reserved": 4,
+      "reserved_cny": "0.029472",
+      "reserved_tokens": 8592,
+      "structured_mode": "json_schema",
+      "tool_arguments_valid": true,
+      "passed": true,
+      "known_estimated_cny": "0.0002644"
+    }
+  ],
+  "model_probe_retrospective": {
+    "qwen-probe-2.json": {
+      "gate": "failed_complete_field_review",
+      "reason": "Historical passed=true checked intent/schema but missed null amount for explicit 800-yuan proposal; superseded by probe-3 with exact amount and delivery assertions. Original artifact retained unchanged."
+    }
+  },
+  "protocol_implementation_commit": "3951be3ffd471ceaef0fbe6b65dbb859fa6edb17",
+  "model_totals": {
+    "calls": 9,
+    "reserved_cny": "0.064810",
+    "known_estimated_cny": "0.0005486",
+    "known_tokens": 1699
+  },
+  "capability_probe_latency": {
+    "sample_count": 4,
+    "p50_seconds": 0.7030000000000001,
+    "p95_nearest_rank_seconds": 0.969,
+    "scope": "four heterogeneous capability RPCs; not conversation latency or a performance gate"
+  },
+  "langsmith": {
+    "project": "secondhand-agent-langgraph-test",
+    "passed": true,
+    "run_count": 6,
+    "names": [
+      "ChatOpenAI",
+      "LangGraph",
+      "p0_attachment",
+      "p0_error",
+      "p0_trace",
+      "query_product"
+    ],
+    "run_ids": [
+      "07906d54-6fdc-4767-a88f-c80cfe76d1c3",
+      "01a16e62-c222-73c2-94c0-7543cb4bf00c",
+      "01a16e62-c1ff-78b1-baed-5996b64339d0",
+      "01a16e62-c17d-7bd2-8ee9-73df970712fe",
+      "01a16e62-c12c-71c1-b186-d267be28ebd9",
+      "01a16e62-c11c-7c22-a78a-44b5698148fa"
+    ],
+    "example_url": "https://smith.langchain.com/o/f7c35c3b-a5c7-4dda-b7a5-4c1ff553058b/projects/p/f3a5232f-8aaa-4c24-842c-64340e02c80b/r/07906d54-6fdc-4767-a88f-c80cfe76d1c3?poll=true"
+  },
+  "dependencies": {
+    "langgraph": "1.2.12",
+    "langgraph-checkpoint": "4.3.0",
+    "langgraph-checkpoint-postgres": "3.2.0",
+    "psycopg": "3.3.6",
+    "langsmith": "0.14.0",
+    "openai": "3.19.2",
+    "pydantic": "2.13.5",
+    "openevals": "0.2.2",
+    "agentevals": "0.0.9",
+    "sqlalchemy": "2.0.54",
+    "pytest": "9.1.1",
+    "ruff": "0.16.8"
+  },
+  "python": "3.11.16",
+  "other_checks": {
+    "ruff": "passed",
+    "pip_check": "passed",
+    "frontend_type_check": "passed",
+    "frontend_build": "passed",
+    "dev_mysql_migration": "5991c96c16b8",
+    "staged_secret_scan": "passed",
+    "old_checkout_status_before": "clean",
+    "old_checkout_status_after": "clean",
+    "old_checkout_head_after": "9fa17569010763860b45d541ce4e2dde46bb7b55"
+  }
+}
