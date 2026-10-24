@@ -34,7 +34,7 @@ def main():
         "model": config["MODEL_NAME"],
         "thinking": False,
         "attempts": [],
-        "prompt_version": "p0-capability-v2",
+        "prompt_version": "p0-capability-v3",
         "max_calls": 6,
         "max_reserved_cny": "0.10",
         "max_tokens": 20000,
@@ -100,11 +100,11 @@ def main():
             },
         }
         cases = [
-            ("800元自提可以吗", "PROPOSE_OFFER"),
-            ("别人卖800，我预算也差不多，先看看", "NONE"),
-            ("这部手机有没有维修过", "ASK_PRODUCT"),
+            ("800元自提可以吗", "PROPOSE_OFFER", Decimal("800"), "pickup"),
+            ("别人卖800，我预算也差不多，先看看", "NONE", None, None),
+            ("这部手机有没有维修过", "ASK_PRODUCT", None, None),
         ]
-        for text, expected in cases:
+        for text, expected, expected_amount, expected_delivery in cases:
             kwargs = dict(
                 messages=[
                     {
@@ -112,7 +112,10 @@ def main():
                         "content": "仅做语义提取，返回JSON。"
                         "PROPOSE_OFFER=买家提出当前交易价格；800自提可以吗属于明确报价。"
                         "ASK_PRODUCT=询问商品事实；NONE=仅表达预算、比价等非报价信息。"
-                        "source_quote逐字摘取输入；amount只填报价金额；无金额或配送方式时用null。",
+                        "source_quote逐字摘取输入；amount提取明确报价金额并转为纯数字字符串，"
+                        "例如800元写成字符串800，报价里有金额时绝不能填null；"
+                        "仅当不是报价或确实没有金额时amount用null。"
+                        "配送方式：自提=pickup，邮寄=shipping，未说明则null。",
                     },
                     {"role": "user", "content": text},
                 ],
@@ -135,6 +138,10 @@ def main():
             parsed = parse_proposal(response.choices[0].message.content, text)
             report["attempts"][-1]["validated"] = parsed.model_dump()
             assert parsed.intent == expected
+            assert (
+                Decimal(parsed.amount) if parsed.amount is not None else None
+            ) == expected_amount
+            assert parsed.delivery == expected_delivery
         report["structured_mode"] = response_format["type"]
         tool = {
             "type": "function",
