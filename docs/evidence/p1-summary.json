@@ -1,0 +1,167 @@
+{
+  "stage": "17.2 P1 业务复用与纵向主链路",
+  "status": "passed_fixed_typed_input_gate",
+  "recorded_at": "2026-10-24T23:50:42.614359+08:00",
+  "branch": "refactor/langgraph",
+  "previous_stage_commit": "6024002",
+  "implementation_commit": "31d9494fd70e78459816c544e028ce7a565e8666",
+  "implementation_tree": "249d67e4bf57ce1a606233f3f4482135ecfc5288",
+  "migration": "bb553408a25f",
+  "final_tests": {
+    "graph-final.xml": {
+      "tests": 54,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 54,
+      "seconds": 89.906,
+      "failed_cases": []
+    },
+    "protocol.xml": {
+      "tests": 85,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 85,
+      "seconds": 159.936,
+      "failed_cases": []
+    },
+    "legacy-mysql.xml": {
+      "tests": 355,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 355,
+      "seconds": 163.096,
+      "failed_cases": []
+    },
+    "legacy-boundary.xml": {
+      "tests": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 21,
+      "seconds": 12.699,
+      "failed_cases": []
+    }
+  },
+  "non_additive_note": "protocol.xml contains the earlier 48 P1 tests plus 37 P0 tests; graph-final.xml contains the final 54 P1 tests. legacy-boundary.xml is a subset of the original legacy regression.",
+  "retained_failures": {
+    "initial.xml": {
+      "tests": 19,
+      "failures": 0,
+      "errors": 19,
+      "skipped": 0,
+      "passed": 0,
+      "seconds": 13.544,
+      "failed_cases": [
+        "tests.graph.test_business.test_three_price_zones_use_real_orm[850-OFFER_ACCEPTED]",
+        "tests.graph.test_business.test_three_price_zones_use_real_orm[750-WAITING_APPROVAL]",
+        "tests.graph.test_business.test_three_price_zones_use_real_orm[749.99-OFFER_REJECTED]",
+        "tests.graph.test_business.test_a31_atomic_rollback_and_replay[offer]",
+        "tests.graph.test_business.test_a31_atomic_rollback_and_replay[resolution]",
+        "tests.graph.test_business.test_a31_atomic_rollback_and_replay[round]",
+        "tests.graph.test_business.test_a31_atomic_rollback_and_replay[receipt]",
+        "tests.graph.test_business.test_a31_atomic_rollback_and_replay[notification]",
+        "tests.graph.test_business.test_a31_atomic_rollback_and_replay[outbox]",
+        "tests.graph.test_business.test_unknown_cost_or_unsupported_terms_never_commit[terms0]",
+        "tests.graph.test_business.test_unknown_cost_or_unsupported_terms_never_commit[terms1]",
+        "tests.graph.test_business.test_unknown_cost_or_unsupported_terms_never_commit[terms2]",
+        "tests.graph.test_business.test_a43_last_round_resolves_and_rejects_next_proposal[900-None-OFFER_ACCEPTED]",
+        "tests.graph.test_business.test_a43_last_round_resolves_and_rejects_next_proposal[800-None-WAITING_APPROVAL]",
+        "tests.graph.test_business.test_a43_last_round_resolves_and_rejects_next_proposal[700-875-COUNTER_OFFERED]",
+        "tests.graph.test_business.test_a43_last_round_resolves_and_rejects_next_proposal[700-None-OFFER_REJECTED]",
+        "tests.graph.test_business.test_a44_equivalent_proposal_no_new_round_and_query_no_revision",
+        "tests.graph.test_business.test_rejected_new_proposal_preserves_previous_approval",
+        "tests.graph.test_business.test_counter_candidate_is_authorized_itself"
+      ]
+    },
+    "business.xml": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0,
+      "passed": 0,
+      "seconds": 17.336,
+      "failed_cases": [
+        "tests.graph.test_business.test_three_price_zones_use_real_orm[850-OFFER_ACCEPTED]"
+      ]
+    },
+    "graph-api.xml": {
+      "tests": 2,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 1,
+      "seconds": 26.358,
+      "failed_cases": [
+        "tests.graph.test_api_worker.test_legacy_entrypoints_cannot_bypass_graph_protocol"
+      ]
+    },
+    "combined.xml": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0,
+      "passed": 0,
+      "seconds": 5.0,
+      "failed_cases": [
+        ".tests.p0.test_recovery"
+      ]
+    }
+  },
+  "checks": {
+    "ruff": "passed",
+    "pip_check": "passed",
+    "migration_upgrade_downgrade_upgrade": "passed",
+    "alembic_check_development": "no new upgrade operations",
+    "worker_once_development": {
+      "completed": 0,
+      "notified": 0,
+      "busy": 0,
+      "failed": 0
+    },
+    "staged_secret_scan": "passed"
+  },
+  "cost": {
+    "real_model_calls": 0,
+    "remote_langsmith_calls": 0,
+    "new_model_cost": 0
+  },
+  "original_checkout": {
+    "path": "E:/code/agent/个人闲置交易的自主协商卖家助手",
+    "status_at_end": "clean",
+    "head": "9fa17569010763860b45d541ce4e2dde46bb7b55",
+    "writes_performed": false
+  },
+  "remaining_scope": [
+    "P2 semantic model, drafts, facts/cost rules and public chat/display APIs",
+    "P3 approval graph and effective decision lifecycle",
+    "P4 complete runtime budgets, natural reply review and recovery UI",
+    "P6 production supervisor deployment, packaging, archive and CI"
+  ],
+  "artifacts_sha256": {
+    "artifacts/p1/business.log": "7ea54e8bb96ce96507a82302723805fdb2b7774e7d7cfa51d505ed75f1d2f502",
+    "artifacts/p1/business.xml": "08d723bb1456031fff31d123ec5aa3df30210f252a0ea70ccffc9fa62b14c4ce",
+    "artifacts/p1/combined.log": "93e7477dc9fb3343df8f71056f55a00a3d4954c8d5c66e4fbad54dc827c28635",
+    "artifacts/p1/combined.xml": "309205b46889e4ff65cd5f97a3cb79de5d0489d007194ea899fa87b5d9ef6bdd",
+    "artifacts/p1/graph-api.log": "332908d59367eab73f95f49b5826cc8f99df662f8d063ceb2e83303ebe1c2cf1",
+    "artifacts/p1/graph-api.xml": "452ad9da1c609e407bad9cf82c95996053ba40c38413d1e354bf80cd7ac124e2",
+    "artifacts/p1/graph-expanded.log": "77f0b9e643528dd2e42f7ad00f2898b6ff7482a99a461d77a8fc0839102cbc1f",
+    "artifacts/p1/graph-expanded.xml": "bced0a9cc5f7bb4d37f9a08a6bd2a51a0238d5f59eb1d87b96353e5ad61ab256",
+    "artifacts/p1/graph-final.log": "f295ce6a8ac67b69544f26fdf110246bad1f4371fe8111b77f60fd0993e58bd6",
+    "artifacts/p1/graph-final.xml": "07a2d86547c3b7134a7dc4ce67683a71027bb830a8b4de8bebb6c0b2d5cb913c",
+    "artifacts/p1/graph-first.log": "a37294d1a6d5d0296dd19acbba2f71ffacc4034e63acab52dc766bd1c686b596",
+    "artifacts/p1/graph-first.xml": "f150df2ca6ecd0845aaf5ec03c9dde8fff6ef17911db157ff01b85ceb6194d68",
+    "artifacts/p1/initial.xml": "9eb77f8e77cccaf9c49d094dceeb6dc8282f1b3eaaf9d7f720d67a13682bbb3d",
+    "artifacts/p1/legacy-boundary.log": "6ebf31169f12922f6399d9989994370bf991fc20a8e15316cdeab27fe7d2cf4f",
+    "artifacts/p1/legacy-boundary.xml": "e83bb11c0da93db15bfebceee6720a9d12faaf905e0fa76cb5c7ce97d78b7106",
+    "artifacts/p1/legacy-mysql.log": "2115345af394f57d5ed46befb6e72de093f87520d58034664486e15c504920a8",
+    "artifacts/p1/legacy-mysql.xml": "6512b63da88aab0351b54be76b6eb064ee1df9e1c7acf3af5f26e214284830b7",
+    "artifacts/p1/lint-initial.log": "57e53ca452fc7fecd806557169007600753e168ce74353bf15b2bd58699f706a",
+    "artifacts/p1/lint-next.log": "f2ff17b52e7e0265b466c5d013bf6cbdaf75498c75c09edad83cfd1ffcc626ca",
+    "artifacts/p1/lint.log": "aac3a0503d8b95052cc85fb9f1717dc82b74aa55853a5aa9749b41e30275d472",
+    "artifacts/p1/protocol.log": "ad59521d18eb71fbefc1cb77116beee108d9470cdd754d52a0e4c9ade1a7f842",
+    "artifacts/p1/protocol.xml": "323cb16e13569d14af17268320562a61cef12329f1a4001028a41cb8be9ae22f"
+  }
+}
