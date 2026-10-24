@@ -13,6 +13,13 @@ from app.core.config import get_settings
 
 def main():
     url = make_url(get_settings().database_url)
+    if (
+        url.host != "127.0.0.1"
+        or url.port != 3307
+        or url.database != "secondhand_langgraph"
+        or url.username != "langgraph_app"
+    ):
+        raise RuntimeError("Refusing a database outside the new LangGraph Compose environment")
     suffix = uuid4().hex[:12]
     databases = ["v4_suite_check_" + suffix, "secondhand_agent_migration_test_" + suffix]
     if url.get_backend_name() != "mysql" or any(name == url.database for name in databases):
@@ -24,7 +31,7 @@ def main():
         "docker",
         "exec",
         "-i",
-        "secondhand-agent-mysql-1",
+        "secondhand-agent-langgraph-mysql-1",
         "sh",
         "-c",
         'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -uroot',

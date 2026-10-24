@@ -1,7 +1,7 @@
-name: secondhand-agent
+name: secondhand-agent-langgraph
 
 x-backend-service: &backend-service
-  image: secondhand-agent-backend:local
+  image: secondhand-agent-langgraph-backend:local
   build:
     context: ./backend
     args:
@@ -9,7 +9,7 @@ x-backend-service: &backend-service
   env_file:
     - .env
   environment:
-    DATABASE_URL: ${CONTAINER_DATABASE_URL:-mysql+pymysql://secondhand:CHANGE_ME@mysql:3306/secondhand_agent?charset=utf8mb4}
+    DATABASE_URL: ${CONTAINER_DATABASE_URL:?Run bootstrap_p0 first}
     EVALUATION_GIT_COMMIT: ${EVALUATION_GIT_COMMIT:-}
     EVALUATION_GIT_WORKTREE_DIRTY: ${EVALUATION_GIT_WORKTREE_DIRTY:-}
 
@@ -18,8 +18,8 @@ services:
     image: mysql:8.4
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-secondhand_agent}
-      MYSQL_USER: ${MYSQL_USER:-secondhand}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-secondhand_langgraph}
+      MYSQL_USER: ${MYSQL_USER:-langgraph_app}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请在本地 .env 设置 MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在本地 .env 设置 MYSQL_ROOT_PASSWORD}
       TZ: Asia/Shanghai
@@ -27,7 +27,7 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_0900_ai_ci
     ports:
-      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
+      - "127.0.0.1:${MYSQL_PORT:-3307}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -59,7 +59,7 @@ services:
     <<: *backend-service
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${API_PORT:-8000}:8000"
+      - "127.0.0.1:${API_PORT:-8100}:8000"
     volumes:
       - ./backend/evaluation/results:/app/evaluation/results
     depends_on:
@@ -85,17 +85,35 @@ services:
         condition: service_completed_successfully
 
   frontend:
-    image: secondhand-agent-frontend:local
+    image: secondhand-agent-langgraph-frontend:local
     build:
       context: ./frontend
       args:
         BASE_REGISTRY: ${DOCKER_REGISTRY:-docker.io}
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-5173}:80"
+      - "127.0.0.1:${FRONTEND_PORT:-5174}:80"
     depends_on:
       api:
         condition: service_healthy
 
+  checkpoint:
+    image: postgres:18.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-secondhand_checkpoints}
+      POSTGRES_USER: ${POSTGRES_USER:-checkpoint_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run bootstrap_p0 first}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - checkpoint_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
 volumes:
   mysql_data:
+  checkpoint_data:

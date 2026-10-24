@@ -1,89 +1,307 @@
-# Resolved with Python 3.11 for the validated V1 development environment.
-# Re-resolve and audit this file after changing pyproject.toml.
+agentevals==0.0.9
+    # via secondhand-agent-backend (backend/pyproject.toml)
 alembic==1.20.0
+    # via secondhand-agent-backend (backend/pyproject.toml)
 annotated-doc==0.0.5
+    # via fastapi
 annotated-types==0.8.0
+    # via pydantic
 anyio==4.15.1
-boolean.py==5.0
-CacheControl==0.14.4
+    # via
+    #   httpx
+    #   httpx2
+    #   langsmith
+    #   openai
+    #   starlette
+    #   watchfiles
+boolean-py==5.0
+    # via license-expression
+cachecontrol==0.14.4
+    # via
+    #   cachecontrol
+    #   pip-audit
 certifi==2026.7.22
+    # via
+    #   httpcore
+    #   httpx
+    #   langchain-openai
+    #   requests
 charset-normalizer==3.5.1
+    # via requests
 click==8.5.0
+    # via uvicorn
 colorama==0.4.6
+    # via pytest
 coverage==7.16.1
+    # via pytest-cov
 cyclonedx-python-lib==11.12.0
+    # via pip-audit
 defusedxml==0.7.1
+    # via py-serializable
 distro==1.9.0
+    # via langsmith
 fastapi==0.141.1
+    # via secondhand-agent-backend (backend/pyproject.toml)
 filelock==4.0.3
+    # via cachecontrol
 greenlet==3.5.6
+    # via sqlalchemy
 h11==0.16.0
+    # via
+    #   httpcore
+    #   httpcore2
+    #   uvicorn
 httpcore==1.0.9
+    # via httpx
 httpcore2==2.13.1
+    # via httpx2
 httptools==0.8.0
+    # via uvicorn
 httpx==0.28.1
+    # via
+    #   langchain-core
+    #   langgraph-sdk
+    #   secondhand-agent-backend (backend/pyproject.toml)
 httpx2==2.13.1
+    # via
+    #   langsmith
+    #   openai
 idna==3.20
+    # via
+    #   anyio
+    #   httpx
+    #   httpx2
+    #   requests
 iniconfig==2.3.0
+    # via pytest
 jiter==0.17.0
+    # via openai
 jsonpatch==1.33
+    # via langchain-core
 jsonpointer==3.1.1
+    # via jsonpatch
 langchain==1.4.2
+    # via
+    #   openevals
+    #   secondhand-agent-backend (backend/pyproject.toml)
 langchain-core==1.6.4
+    # via
+    #   langchain
+    #   langchain-openai
+    #   langgraph
+    #   langgraph-checkpoint
+    #   langgraph-prebuilt
+    #   langgraph-sdk
 langchain-openai==1.6.5
+    # via
+    #   openevals
+    #   secondhand-agent-backend (backend/pyproject.toml)
 langchain-protocol==0.0.19
+    # via
+    #   langchain-core
+    #   langgraph-sdk
 langgraph==1.2.12
-langgraph-checkpoint==4.2.0
+    # via
+    #   langchain
+    #   secondhand-agent-backend (backend/pyproject.toml)
+langgraph-checkpoint==4.3.0
+    # via
+    #   langgraph
+    #   langgraph-checkpoint-postgres
+    #   langgraph-prebuilt
+langgraph-checkpoint-postgres==3.2.0
+    # via secondhand-agent-backend (backend/pyproject.toml)
 langgraph-prebuilt==1.1.0
+    # via langgraph
 langgraph-sdk==0.4.5
+    # via langgraph
 langsmith==0.14.0
+    # via
+    #   langchain-core
+    #   openevals
+    #   secondhand-agent-backend (backend/pyproject.toml)
 license-expression==30.4.4
-Mako==1.4.3
+    # via cyclonedx-python-lib
+mako==1.4.3
+    # via alembic
 markdown-it-py==4.2.0
-MarkupSafe==3.0.3
+    # via rich
+markupsafe==3.0.3
+    # via mako
 mdurl==0.1.2
+    # via markdown-it-py
 msgpack==1.2.2
+    # via cachecontrol
 openai==3.19.2
+    # via
+    #   langchain-openai
+    #   secondhand-agent-backend (backend/pyproject.toml)
+openevals==0.2.2
+    # via
+    #   agentevals
+    #   secondhand-agent-backend (backend/pyproject.toml)
 orjson==3.12.0
+    # via
+    #   langgraph-checkpoint-postgres
+    #   langgraph-sdk
+    #   langsmith
 ormsgpack==1.12.2
+    # via langgraph-checkpoint
 packageurl-python==0.17.6
+    # via cyclonedx-python-lib
 packaging==26.3
-pip_api==0.0.35
-pip_audit==2.10.1
+    # via
+    #   langchain-core
+    #   langsmith
+    #   pip-audit
+    #   pip-requirements-parser
+    #   pytest
+pip-api==0.0.35
+    # via pip-audit
+pip-audit==2.10.1
+    # via secondhand-agent-backend (backend/pyproject.toml)
 pip-requirements-parser==32.0.1
+    # via pip-audit
 platformdirs==4.11.12
+    # via pip-audit
 pluggy==1.6.0
+    # via
+    #   pytest
+    #   pytest-cov
+psycopg==3.3.6
+    # via
+    #   langgraph-checkpoint-postgres
+    #   secondhand-agent-backend (backend/pyproject.toml)
+psycopg-binary==3.3.6
+    # via psycopg
+psycopg-pool==3.3.3
+    # via
+    #   langgraph-checkpoint-postgres
+    #   psycopg
 py-serializable==2.1.0
+    # via cyclonedx-python-lib
 pydantic==2.13.5
-pydantic_core==2.46.5
+    # via
+    #   fastapi
+    #   langchain
+    #   langchain-core
+    #   langgraph
+    #   langsmith
+    #   openai
+    #   pydantic-settings
+pydantic-core==2.46.5
+    # via pydantic
 pydantic-settings==2.15.0
-Pygments==2.21.0
-PyMySQL==1.2.3
+    # via secondhand-agent-backend (backend/pyproject.toml)
+pygments==2.21.0
+    # via
+    #   pytest
+    #   rich
+pymysql==1.2.3
+    # via secondhand-agent-backend (backend/pyproject.toml)
 pyparsing==3.3.3
+    # via pip-requirements-parser
 pytest==9.1.1
+    # via
+    #   pytest-cov
+    #   secondhand-agent-backend (backend/pyproject.toml)
 pytest-cov==7.1.0
+    # via secondhand-agent-backend (backend/pyproject.toml)
 python-dotenv==1.2.3
-PyYAML==6.0.3
+    # via
+    #   pydantic-settings
+    #   uvicorn
+pyyaml==6.0.3
+    # via
+    #   langchain-core
+    #   uvicorn
 regex==2026.9.10
+    # via tiktoken
 requests==2.34.2
+    # via
+    #   cachecontrol
+    #   langsmith
+    #   pip-audit
+    #   requests-toolbelt
+    #   tiktoken
 requests-toolbelt==1.0.0
+    # via langsmith
 rich==15.0.0
+    # via
+    #   openevals
+    #   pip-audit
 ruff==0.16.8
+    # via secondhand-agent-backend (backend/pyproject.toml)
 sniffio==1.3.1
+    # via
+    #   langsmith
+    #   openai
 sortedcontainers==2.4.0
-SQLAlchemy==2.0.54
+    # via cyclonedx-python-lib
+sqlalchemy==2.0.54
+    # via
+    #   alembic
+    #   secondhand-agent-backend (backend/pyproject.toml)
 starlette==1.7.0
+    # via fastapi
 tenacity==9.1.4
+    # via langchain-core
 tiktoken==0.14.0
+    # via langchain-openai
 tomli==2.4.1
-tomli_w==1.2.0
+    # via pip-audit
+tomli-w==1.2.0
+    # via pip-audit
 truststore==0.10.4
-typing_extensions==4.16.0
+    # via
+    #   httpcore2
+    #   httpx2
+typing-extensions==4.16.0
+    # via
+    #   alembic
+    #   anyio
+    #   cyclonedx-python-lib
+    #   fastapi
+    #   httpx2
+    #   langchain-core
+    #   langchain-protocol
+    #   langsmith
+    #   openai
+    #   psycopg
+    #   psycopg-pool
+    #   pydantic
+    #   pydantic-core
+    #   sqlalchemy
+    #   starlette
+    #   typing-inspection
 typing-inspection==0.4.4
+    # via
+    #   fastapi
+    #   pydantic
+    #   pydantic-settings
+tzdata==2026.5
+    # via psycopg
 urllib3==2.8.0
-uuid_utils==0.17.1
+    # via requests
+uuid-utils==0.17.1
+    # via
+    #   langchain-core
+    #   langsmith
 uvicorn==0.53.0
+    # via secondhand-agent-backend (backend/pyproject.toml)
 watchfiles==1.3.0
+    # via uvicorn
 websockets==16.1.1
+    # via
+    #   langgraph-sdk
+    #   langsmith
+    #   uvicorn
 xxhash==4.0.1
+    # via
+    #   langgraph
+    #   langsmith
 zstandard==0.25.0
+    # via langsmith
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip
