@@ -28,6 +28,7 @@ class Product(TimestampMixin, Base):
         index=True,
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
+    product_version: Mapped[int] = mapped_column(default=1, server_default="1")
     description: Mapped[str] = mapped_column(Text, nullable=False)
     listed_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     status: Mapped[ProductStatus] = mapped_column(

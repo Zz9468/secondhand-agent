@@ -82,9 +82,11 @@ class PublicInteractionContext(Base):
     id: Mapped[str] = mapped_column(String(32), primary_key=True)
     session_id: Mapped[int] = mapped_column(ForeignKey("negotiation_sessions.id"), index=True)
     buyer_id: Mapped[str] = mapped_column(String(64))
-    message_id: Mapped[int] = mapped_column(ForeignKey("messages.id"), unique=True)
+    message_id: Mapped[int] = mapped_column(ForeignKey("messages.id"), index=True)
     public_seq: Mapped[int]
-    offer_id: Mapped[int] = mapped_column(ForeignKey("offers.id"))
+    offer_id: Mapped[int | None] = mapped_column(ForeignKey("offers.id"))
+    draft_refs: Mapped[list | None] = mapped_column(JSON)
+    refresh_key: Mapped[str | None] = mapped_column(String(64), unique=True)
     terms_hash: Mapped[str] = mapped_column(String(64))
     business_version: Mapped[int]
     expires_at: Mapped[datetime] = mapped_column(TIME)

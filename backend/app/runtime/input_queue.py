@@ -72,11 +72,11 @@ class InputQueue:
         self.factory = factory
         self.clock = clock
 
-    def enroll(self, sid, buyer_id):
+    def enroll(self, sid, buyer_id, *, version=GRAPH_VERSION):
         """仅供内部迁移/验证：空会话固定图版本，不能混用旧 Runtime。"""
         with self.factory() as db, db.begin():
             session = owned_session(db, sid, buyer_id, lock=True)
-            if session.graph_version == GRAPH_VERSION:
+            if session.graph_version == version:
                 return
             if session.graph_version is not None:
                 raise Conflict("已有图版本不能被重新绑定")
@@ -85,18 +85,27 @@ class InputQueue:
                     select(func.count()).select_from(model).where(model.session_id == sid)
                 ):
                     raise Conflict("只允许新空会话启用图")
-            session.graph_version = GRAPH_VERSION
+            from app.semantic.contracts import VERSION
+
+            if version not in {GRAPH_VERSION, VERSION}:
+                raise Conflict("不支持的图版本")
+            session.graph_version = version
 
     def enqueue(self, sid, buyer_id, request_id, payload: TypedInput, *, config=None):
         if not request_id or len(request_id) > 64:
             raise Conflict("请求标识无效")
-        payload = TypedInput.model_validate(payload.model_dump(mode="json"))
+        from app.semantic.contracts import VERSION, ChatInput
+
+        semantic = isinstance(payload, ChatInput)
+        payload = (ChatInput if semantic else TypedInput).model_validate(
+            payload.model_dump(mode="json")
+        )
         body = payload.model_dump(mode="json")
         fingerprint = digest(body)
         with self.factory() as db, db.begin():
             bounded_transaction(db)
             session = owned_session(db, sid, buyer_id, lock=True)
-            if session.graph_version != GRAPH_VERSION:
+            if session.graph_version != (VERSION if semantic else GRAPH_VERSION):
                 raise Conflict("会话未启用当前图版本")
             old = db.scalar(
                 select(NegotiationInput).where(
@@ -111,6 +120,10 @@ class InputQueue:
             if session.next_input_seq - session.last_resolved_input_seq > 20:
                 raise Conflict("未完成输入已达到 20 条")
             now = self.clock()
+            if semantic:
+                from app.semantic.service import validate_references
+
+                validate_references(db, session, payload, now)
             seen = 0
             if payload.display_receipt_id:
                 ack = db.get(DisplayAck, payload.display_receipt_id)
@@ -126,10 +139,25 @@ class InputQueue:
                 ):
                     raise Conflict("展示凭据归属、视图或时间无效")
                 seen = context.public_seq
+            if semantic and config is None:
+                from app.core.config import get_settings
+                from app.semantic.model import PROMPT_VERSION
+
+                settings = get_settings()
+                config = {
+                    **CONFIG,
+                    "schema": "p2-v1",
+                    "max_calls": 2,
+                    "max_tokens": 50000,
+                    "max_cost": "0.20",
+                    "model_name": settings.model_name,
+                    "prompt_version": PROMPT_VERSION,
+                }
             frozen_config = dict(CONFIG if config is None else config)
             if (
-                set(frozen_config) - {"schema", "max_calls", "max_tokens", "max_cost"}
-                or frozen_config.get("schema") != CONFIG["schema"]
+                set(frozen_config)
+                - {"schema", "max_calls", "max_tokens", "max_cost", "model_name", "prompt_version"}
+                or frozen_config.get("schema") != ("p2-v1" if semantic else CONFIG["schema"])
                 or not isinstance(frozen_config.get("max_calls"), int)
                 or frozen_config["max_calls"] < 0
                 or not isinstance(frozen_config.get("max_tokens"), int)

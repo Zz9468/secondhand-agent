@@ -242,10 +242,14 @@ class ProductService:
                 .limit(1)
             )
             if negotiation_id is not None:
-                raise ProductDeletionConflictError(
-                    "商品已有协商记录，只能保留下架状态，不能删除"
-                )
+                raise ProductDeletionConflictError("商品已有协商记录，只能保留下架状态，不能删除")
 
+            from sqlalchemy import delete
+
+            from app.db.models.semantic import ProductFactValue, ShippingCostRule
+
+            for model in (ProductFactValue, ShippingCostRule):
+                db.execute(delete(model).where(model.product_id == product.id))
             db.delete(product)
             db.flush()
 
@@ -264,16 +268,12 @@ class ProductService:
                 for_update=True,
             )
             policy = db.scalar(
-                select(SellerPolicy)
-                .where(SellerPolicy.product_id == product.id)
-                .with_for_update()
+                select(SellerPolicy).where(SellerPolicy.product_id == product.id).with_for_update()
             )
             if policy is None:
                 raise PricingPolicyNotFoundError("商品尚未配置卖家规则")
             if policy.version != data.expected_version:
-                raise PolicyVersionConflictError(
-                    "卖家规则已经更新，请刷新后再提交"
-                )
+                raise PolicyVersionConflictError("卖家规则已经更新，请刷新后再提交")
             policy.minimum_net_price = data.minimum_net_price
             policy.auto_accept_threshold = data.auto_accept_threshold
             policy.negotiation_style = data.negotiation_style

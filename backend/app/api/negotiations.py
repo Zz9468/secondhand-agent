@@ -1,17 +1,22 @@
 from typing import Annotated, Never
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.decision_provider import DecisionProvider
 from app.agent.tools.serialization import negotiation_state_result, product_result
 from app.api.dependencies import (
     CurrentUser,
+    SettingsDependency,
     get_decision_provider,
     get_session_factory_dependency,
 )
 from app.observability.service import ObservabilityEventInput, ObservabilityService
+from app.runtime.contracts import Conflict
+from app.runtime.input_queue import InputQueue, owned_session
 from app.schemas.negotiation import (
+    AcceptedInputResponse,
     CloseNegotiationRequest,
     CloseNegotiationResponse,
     ConfirmNegotiationRequest,
@@ -24,6 +29,7 @@ from app.schemas.negotiation import (
     SendMessageRequest,
     SendMessageResponse,
 )
+from app.semantic.contracts import VERSION, ChatInput, ChatRequest
 from app.services.chat_service import BuyerOfferSubmission, ChatService
 from app.services.errors import (
     IncompleteRequestError,
@@ -45,6 +51,8 @@ SessionFactory = Annotated[
     sessionmaker[Session],
     Depends(get_session_factory_dependency),
 ]
+
+
 @router.post(
     "",
     response_model=CreateNegotiationResponse,
@@ -54,13 +62,13 @@ def create_negotiation(
     payload: CreateNegotiationRequest,
     user: CurrentUser,
     session_factory: SessionFactory,
+    settings: SettingsDependency,
 ) -> CreateNegotiationResponse:
     try:
-        session_id, created = NegotiationService(
-            session_factory
-        ).create_or_get_active_session(
+        session_id, created = NegotiationService(session_factory).create_or_get_active_session(
             product_id=payload.product_id,
             buyer_id=user.id,
+            graph_version=VERSION if settings.graph_chat_enabled else None,
         )
     except ServiceError as exc:
         _raise_http_error(exc)
@@ -85,17 +93,22 @@ def get_negotiation(
     except ServiceError as exc:
         _raise_http_error(exc)
 
-    return NegotiationDetailResponse.model_validate(
-        {
-            "product": product_result(product)["product"],
-            "negotiation": negotiation_state_result(negotiation)["negotiation"],
-        }
-    )
+    body = {
+        "product": product_result(product)["product"],
+        "negotiation": negotiation_state_result(negotiation)["negotiation"],
+    }
+    if is_semantic(session_factory, session_id, user.id):
+        for offer in body["negotiation"]["recent_offers"]:
+            offer.pop("shipping_cost", None)
+            offer.pop("seller_borne_discount", None)
+        return JSONResponse(content={**body, "graph_version": VERSION})
+    return NegotiationDetailResponse.model_validate(body)
 
 
 @router.post(
     "/{session_id}/confirm",
     response_model=ConfirmNegotiationResponse,
+    responses={202: {"model": AcceptedInputResponse}},
 )
 def confirm_negotiation(
     session_id: int,
@@ -103,6 +116,23 @@ def confirm_negotiation(
     user: CurrentUser,
     session_factory: SessionFactory,
 ) -> ConfirmNegotiationResponse:
+    if is_semantic(session_factory, session_id, user.id):
+        try:
+            return enqueue_chat(
+                session_factory,
+                session_id,
+                user.id,
+                payload.request_id,
+                ChatInput(
+                    text="确认交易意向",
+                    action="CONFIRM",
+                    offer_id=payload.offer_id,
+                    client_view_id=payload.client_view_id or "",
+                    display_receipt_id=payload.display_receipt_id,
+                ),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail="确认需要该视图已展示报价的回执") from exc
     try:
         result = IntentService(session_factory).confirm_offer(
             session_id=session_id,
@@ -132,6 +162,7 @@ def confirm_negotiation(
 @router.post(
     "/{session_id}/close",
     response_model=CloseNegotiationResponse,
+    responses={202: {"model": AcceptedInputResponse}},
 )
 def close_negotiation(
     session_id: int,
@@ -139,6 +170,16 @@ def close_negotiation(
     user: CurrentUser,
     session_factory: SessionFactory,
 ) -> CloseNegotiationResponse:
+    if is_semantic(session_factory, session_id, user.id):
+        return enqueue_chat(
+            session_factory,
+            session_id,
+            user.id,
+            payload.request_id,
+            ChatInput(
+                text="结束协商", action="CLOSE", client_view_id=payload.client_view_id or "button"
+            ),
+        )
     try:
         result = IntentService(session_factory).close_negotiation(
             session_id=session_id,
@@ -191,14 +232,19 @@ def get_messages(
     "/{session_id}/messages",
     response_model=SendMessageResponse,
     status_code=status.HTTP_201_CREATED,
+    responses={202: {"model": AcceptedInputResponse}},
 )
 def send_message(
     session_id: int,
-    payload: SendMessageRequest,
+    payload: ChatRequest | SendMessageRequest,
     user: CurrentUser,
     session_factory: SessionFactory,
     decision_provider: Annotated[DecisionProvider, Depends(get_decision_provider)],
 ) -> SendMessageResponse:
+    if isinstance(payload, ChatRequest):
+        return enqueue_chat(
+            session_factory, session_id, user.id, payload.request_id, payload.as_input()
+        )
     offer = None
     if payload.offer is not None:
         offer = BuyerOfferSubmission(
@@ -225,6 +271,47 @@ def send_message(
         formal_offer_id=result.formal_offer_id,
         idempotent_replay=result.idempotent_replay,
     )
+
+
+def is_semantic(factory, sid, buyer):
+    try:
+        with factory() as db:
+            return owned_session(db, sid, buyer).graph_version == VERSION
+    except Conflict as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+def enqueue_chat(factory, sid, buyer, request_id, payload):
+    from sqlalchemy import select
+
+    from app.db.models import ModelExecutionTask
+    from app.db.models.graph import NegotiationInput
+
+    try:
+        queue = InputQueue(factory)
+        with factory() as db:
+            old = db.scalar(
+                select(NegotiationInput).where(
+                    NegotiationInput.session_id == sid, NegotiationInput.request_id == request_id
+                )
+            )
+        run_id = queue.enqueue(sid, buyer, request_id, payload)
+        run = queue.read(run_id)
+        with factory() as db:
+            task = db.get(ModelExecutionTask, run["task_id"])
+            task_status = task.status.value
+        return JSONResponse(
+            status_code=202,
+            content={
+                "run_id": run_id,
+                "input_seq": run["input_seq"],
+                "buyer_message_id": run["buyer_message_id"],
+                "status": task_status,
+                "idempotent_replay": old is not None,
+            },
+        )
+    except Conflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 def _raise_http_error(error: ServiceError | PricingError) -> Never:

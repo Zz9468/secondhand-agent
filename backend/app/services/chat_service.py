@@ -90,6 +90,7 @@ class MessageSnapshot:
     content: str
     request_id: str
     created_at: datetime
+    card: dict | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -1276,4 +1277,5 @@ class ChatService:
             content=message.content,
             request_id=message.request_id,
             created_at=message.created_at,
+            card=message.card,
         )

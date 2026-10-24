@@ -1,6 +1,7 @@
 """集中导出 ORM 模型，确保 Alembic 能完整加载元数据。"""
 
 from app.db.models import graph as graph_models  # noqa: F401
+from app.db.models import semantic as semantic_models  # noqa: F401
 from app.db.models.agent_call_snapshot import AgentCallSnapshot
 from app.db.models.agent_message import AgentMessage
 from app.db.models.agent_session_context import AgentSessionContext

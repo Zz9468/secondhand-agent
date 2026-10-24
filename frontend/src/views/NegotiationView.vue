@@ -1,576 +1,240 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-
-import { getHealth, getReadiness } from '../api/health'
+import { ApiError } from '../api/client'
 import {
-  ApiError,
-  closeNegotiation,
-  confirmNegotiation,
-  getMessages,
-  getNegotiation,
-  sendMessage,
-  type BuyerOfferPayload,
-  type ChatMessage,
-  type NegotiationDetail,
-  type SendMessagePayload,
-  type ShippingPayer,
+  acknowledgeDisplay, closeNegotiation, confirmNegotiation, getMessages, getNegotiation,
+  getRun, refreshContext, sendMessage,
+  type AcceptedInput, type ChatMessage, type DraftOption, type NegotiationDetail,
+  type PublicCard, type RunStatus, type SendMessagePayload,
 } from '../api/negotiations'
 
 const route = useRoute()
-const sessionId = computed(() => Number(route.params.sessionId))
-const negotiation = ref<NegotiationDetail | null>(null)
+const sid = computed(() => Number(route.params.sessionId))
+const viewId = crypto.randomUUID()
+const detail = ref<NegotiationDetail | null>(null)
 const messages = ref<ChatMessage[]>([])
-const messageText = ref('')
-const submittingOffer = ref(false)
-const offerPrice = ref('')
-const shippingPaidBy = ref<ShippingPayer>('buyer')
-const shippingCost = ref('')
-const deliveryMethod = ref<'shipping' | 'pickup'>('shipping')
+const runs = ref<Record<string, RunStatus>>({})
+const receipts = ref<Record<string, string>>({})
+const text = ref('')
+const error = ref('')
+const busy = ref(false)
 const loading = ref(true)
-const sending = ref(false)
-const errorMessage = ref('')
-const serviceReady = ref(false)
-const modelReady = ref(false)
-const lastOutcome = ref('')
 const messageList = ref<HTMLElement | null>(null)
-const polling = ref(false)
-const lifecycleBusy = ref(false)
+const terminal = computed(() => ['AGREED', 'CLOSED'].includes(detail.value?.negotiation.status ?? ''))
+const unified = computed(() => detail.value?.graph_version === 'negotiation-v2')
+let pending: { sid: number; payload: SendMessagePayload } | null = null
+let pendingButton: { key: string; request: string; receipt: string } | null = null
+let timer: number | undefined
+let observer: IntersectionObserver | undefined
+const acknowledging = new Set<string>()
+let polling = false
 
-let pendingConfirmation: {
-  sessionId: number
-  offerId: number
-  requestId: string
-} | null = null
-let pendingClosure: { sessionId: number; requestId: string } | null = null
-let pendingMessage: { sessionId: number; payload: SendMessagePayload } | null = null
+function remember(result: AcceptedInput) {
+  runs.value[result.run_id] = { run_id: result.run_id, input_seq: result.input_seq,
+    task_status: result.status, business_status: 'NOT_COMMITTED', business_outcome: null,
+    notification_status: 'NOT_REQUIRED', blocked_by_input_seq: null,
+    public_error_category: null, recovery_required: false }
+  sessionStorage.setItem(`negotiation-runs:${sid.value}`, JSON.stringify(Object.keys(runs.value)))
+}
 
-const MESSAGE_POLL_INTERVAL_MS = 2000
-let messagePollTimer: number | undefined
-
-const currentOffer = computed(() => {
-  const state = negotiation.value?.negotiation
-  if (!state?.current_offer_id) return null
-  return state.recent_offers.find((offer) => offer.id === state.current_offer_id) ?? null
-})
-
-const sessionIsTerminal = computed(() => {
-  const status = negotiation.value?.negotiation.status
-  return status === 'AGREED' || status === 'CLOSED'
-})
-
-const canConfirmCurrentOffer = computed(() => {
-  const state = negotiation.value?.negotiation
-  const offer = currentOffer.value
-  if (!state || state.status !== 'ACTIVE' || !offer) return false
-  if (offer.expires_at && new Date(offer.expires_at).getTime() <= Date.now()) return false
-  return (
-    (offer.proposer === 'AGENT' && offer.status === 'PROPOSED')
-    || (offer.proposer === 'BUYER' && offer.status === 'ACCEPTED')
-  )
-})
-
-const canCloseNegotiation = computed(() => {
-  const status = negotiation.value?.negotiation.status
-  return status === 'ACTIVE' || status === 'WAITING_APPROVAL'
-})
-
-const canSend = computed(() => {
-  if (
-    !modelReady.value
-    || !messageText.value.trim()
-    || sending.value
-    || sessionIsTerminal.value
-  ) return false
-  if (!submittingOffer.value) return true
-  if (!offerPrice.value || Number(offerPrice.value) < 0) return false
-  if (deliveryMethod.value === 'pickup' || shippingPaidBy.value !== 'seller') return true
-  return shippingCost.value !== '' && Number(shippingCost.value) >= 0
-})
-
-async function loadPage(): Promise<void> {
-  const requestedSessionId = sessionId.value
+async function load() {
+  const current = sid.value
   loading.value = true
-  errorMessage.value = ''
-  negotiation.value = null
-  messages.value = []
-  if (!Number.isInteger(requestedSessionId) || requestedSessionId <= 0) {
-    errorMessage.value = '协商会话编号无效。'
-    loading.value = false
-    return
-  }
+  messages.value = []; detail.value = null; receipts.value = {}; runs.value = {}
+  pending = null; pendingButton = null; error.value = ''
   try {
-    await getHealth()
-    const readiness = await getReadiness()
-    serviceReady.value = true
-    modelReady.value = readiness.model === 'configured'
-    const [detail, history] = await Promise.all([
-      getNegotiation(requestedSessionId),
-      getMessages(requestedSessionId),
-    ])
-    if (sessionId.value !== requestedSessionId) return
-    negotiation.value = detail
-    messages.value = history
-    lastOutcome.value = ''
-    await scrollToLatest()
-  } catch (error) {
-    if (sessionId.value !== requestedSessionId) return
-    errorMessage.value = readableError(error)
-  } finally {
-    if (sessionId.value === requestedSessionId) loading.value = false
-  }
-}
-
-async function submitMessage(): Promise<void> {
-  const activeSessionId = sessionId.value
-  if (!canSend.value || !Number.isInteger(activeSessionId)) return
-  sending.value = true
-  errorMessage.value = ''
-
-  const offer = buildOfferPayload()
-  const draft = {
-    content: messageText.value.trim(),
-    ...(offer ? { offer } : {}),
-  }
-  const canReusePending = (
-    pendingMessage?.sessionId === activeSessionId
-    && JSON.stringify({
-      content: pendingMessage.payload.content,
-      ...(pendingMessage.payload.offer ? { offer: pendingMessage.payload.offer } : {}),
-    }) === JSON.stringify(draft)
-  )
-  const payload: SendMessagePayload = canReusePending && pendingMessage
-    ? pendingMessage.payload
-    : {
-        request_id: crypto.randomUUID().replaceAll('-', ''),
-        ...draft,
-      }
-  pendingMessage = { sessionId: activeSessionId, payload }
-  try {
-    const response = await sendMessage(activeSessionId, payload)
-    appendMessage(response.buyer_message)
-    appendMessage(response.agent_message)
-    lastOutcome.value = response.outcome
-    pendingMessage = null
-    messageText.value = ''
-    submittingOffer.value = false
-    offerPrice.value = ''
-    shippingCost.value = ''
-    negotiation.value = await getNegotiation(activeSessionId)
-    await scrollToLatest()
-  } catch (error) {
-    if (!(error instanceof ApiError) || ![409, 503].includes(error.status)) {
-      pendingMessage = null
+    const [info, history] = await Promise.all([getNegotiation(current), getMessages(current)])
+    if (sid.value !== current) return
+    detail.value = info; messages.value = history
+    const ids: string[] = JSON.parse(sessionStorage.getItem(`negotiation-runs:${current}`) || '[]')
+    for (const id of ids) {
+      try { runs.value[id] = await getRun(current, id) } catch { /* Expired references are ignored. */ }
     }
-    errorMessage.value = readableError(error)
-  } finally {
-    sending.value = false
-  }
+    await renderCards(true)
+  } catch (e) { error.value = e instanceof Error ? e.message : '会话加载失败' }
+  finally { if (sid.value === current) loading.value = false }
 }
 
-async function pollNegotiationUpdates(): Promise<void> {
-  const activeSessionId = sessionId.value
-  if (
-    !Number.isInteger(activeSessionId)
-    || negotiation.value === null
-    || loading.value
-    || sending.value
-    || polling.value
-    || sessionIsTerminal.value
-  ) return
-
-  polling.value = true
-  try {
-    const afterId = messages.value.reduce(
-      (latest, message) => Math.max(latest, message.id),
-      0,
-    )
-    const [updates, detail] = await Promise.all([
-      getMessages(activeSessionId, afterId),
-      getNegotiation(activeSessionId),
-    ])
-    if (sessionId.value !== activeSessionId) return
-    negotiation.value = detail
-    if (updates.length > 0) {
-      const knownIds = new Set(messages.value.map((message) => message.id))
-      messages.value.push(...updates.filter((message) => !knownIds.has(message.id)))
-      await scrollToLatest()
-    }
-  } catch {
-    // 轮询瞬时失败不打断输入，下一轮继续从最后一条消息补取。
-  } finally {
-    polling.value = false
-  }
-}
-
-async function confirmCurrentOffer(): Promise<void> {
-  const activeSessionId = sessionId.value
-  const offer = currentOffer.value
-  if (!canConfirmCurrentOffer.value || !Number.isInteger(activeSessionId) || !offer) return
-
-  lifecycleBusy.value = true
-  errorMessage.value = ''
-  if (
-    pendingConfirmation === null
-    || pendingConfirmation.sessionId !== activeSessionId
-    || pendingConfirmation.offerId !== offer.id
-  ) {
-    pendingConfirmation = {
-      sessionId: activeSessionId,
-      offerId: offer.id,
-      requestId: crypto.randomUUID().replaceAll('-', ''),
-    }
-  }
-  try {
-    const result = await confirmNegotiation(
-      activeSessionId,
-      offer.id,
-      pendingConfirmation.requestId,
-    )
-    appendMessage(result.system_message)
-    negotiation.value = await getNegotiation(activeSessionId)
-    lastOutcome.value = 'INTENT_AGREED'
-    pendingConfirmation = null
-    await scrollToLatest()
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 409) {
-      pendingConfirmation = null
-      try {
-        negotiation.value = await getNegotiation(activeSessionId)
-      } catch {
-        // 下一轮轮询会继续同步服务端状态。
-      }
-    }
-    errorMessage.value = readableError(error)
-  } finally {
-    lifecycleBusy.value = false
-  }
-}
-
-async function closeCurrentNegotiation(): Promise<void> {
-  const activeSessionId = sessionId.value
-  if (!canCloseNegotiation.value || !Number.isInteger(activeSessionId)) return
-  if (!window.confirm('确定结束本次协商吗？尚未完成的审批也会被取消。')) return
-
-  lifecycleBusy.value = true
-  errorMessage.value = ''
-  if (pendingClosure === null || pendingClosure.sessionId !== activeSessionId) {
-    pendingClosure = {
-      sessionId: activeSessionId,
-      requestId: crypto.randomUUID().replaceAll('-', ''),
-    }
-  }
-  try {
-    const result = await closeNegotiation(activeSessionId, pendingClosure.requestId)
-    appendMessage(result.system_message)
-    negotiation.value = await getNegotiation(activeSessionId)
-    lastOutcome.value = 'NEGOTIATION_CLOSED'
-    pendingClosure = null
-    await scrollToLatest()
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 409) {
-      pendingClosure = null
-      try {
-        negotiation.value = await getNegotiation(activeSessionId)
-      } catch {
-        // 下一轮轮询会继续同步服务端状态。
-      }
-    }
-    errorMessage.value = readableError(error)
-  } finally {
-    lifecycleBusy.value = false
-  }
-}
-
-function appendMessage(message: ChatMessage): void {
-  if (!messages.value.some((item) => item.id === message.id)) {
-    messages.value.push(message)
-  }
-}
-
-function buildOfferPayload(): BuyerOfferPayload | undefined {
-  if (!submittingOffer.value) return undefined
-  return {
-    price: offerPrice.value,
-    shipping_paid_by: shippingPaidBy.value,
-    ...(shippingPaidBy.value === 'seller'
-      ? { shipping_cost: shippingCost.value }
-      : {}),
-    delivery_method: deliveryMethod.value,
-  }
-}
-
-function readableError(error: unknown): string {
-  if (error instanceof ApiError && error.status === 503) {
-    return '模型服务暂时不可用，本次输入已保留，可稍后再次点击发送安全重试。'
-  }
-  if (error instanceof ApiError && error.status === 409) {
-    return '当前请求仍在处理中，请稍后再次点击发送或等待消息自动刷新。'
-  }
-  if (error instanceof Error) return error.message
-  return '请求失败，请检查后端与数据库状态。'
-}
-
-function roleLabel(role: ChatMessage['role']): string {
-  return { BUYER: '你', AGENT: 'Seller Agent', SYSTEM: '系统' }[role]
-}
-
-function formatTime(value: string): string {
-  return new Intl.DateTimeFormat('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value))
-}
-
-function shippingLabel(payer: ShippingPayer): string {
-  return payer === 'seller' ? '卖家包邮' : '买家承担运费'
-}
-
-function negotiationStatusLabel(status: string): string {
-  return {
-    ACTIVE: '协商中',
-    WAITING_APPROVAL: '等待卖家审批',
-    AGREED: '已确认交易意向',
-    CLOSED: '已结束',
-  }[status] ?? status
-}
-
-function outcomeLabel(outcome: string): string {
-  return {
-    INFORMATIONAL: '已回复商品咨询',
-    COUNTER_OFFERED: 'Agent 已还价',
-    OFFER_ACCEPTED: '报价已接受',
-    NEEDS_SELLER_CONFIRMATION: '等待卖家确认',
-    REJECTED: '报价未接受',
-    CLARIFICATION: '需要补充条件',
-    SAFE_FAILURE: '本轮未生成正式决策',
-    MODEL_ERROR: '模型服务处理失败',
-    APPROVAL_APPROVED: '卖家审批已通过',
-    APPROVAL_REJECTED: '卖家审批未通过',
-    COUNTER_OFFERED_AFTER_APPROVAL: '卖家审批后已还价',
-    INTENT_AGREED: '交易意向已确认',
-    NEGOTIATION_CLOSED: '协商已结束',
-    IDEMPOTENT_REPLAY: '已返回原请求结果',
-  }[outcome] ?? outcome
-}
-
-async function scrollToLatest(): Promise<void> {
+async function renderCards(scroll = false) {
   await nextTick()
-  messageList.value?.scrollTo({ top: messageList.value.scrollHeight, behavior: 'smooth' })
+  if (scroll) messageList.value?.scrollTo({ top: messageList.value.scrollHeight })
+  observer?.disconnect()
+  messageList.value?.querySelectorAll('[data-context]').forEach(el => observer?.observe(el))
 }
 
-watch(sessionId, () => {
-  pendingMessage = null
-  pendingConfirmation = null
-  pendingClosure = null
-  void loadPage()
-}, { immediate: true })
+async function markDisplayed(context: string) {
+  const current = sid.value
+  if (!context || receipts.value[context] || acknowledging.has(context) || document.visibilityState !== 'visible') return
+  acknowledging.add(context)
+  try {
+    const result = await acknowledgeDisplay(current, context, viewId, `display-${context}`)
+    if (sid.value === current) receipts.value[context] = result.display_receipt_id
+  } catch { /* An invalid card never grants confirmation; the card offers refresh. */ }
+  finally { acknowledging.delete(context) }
+}
 
-watch(deliveryMethod, (value) => {
-  if (value === 'pickup') {
-    shippingPaidBy.value = 'buyer'
-    shippingCost.value = ''
+function latestReceipt(): string | null {
+  for (const message of [...messages.value].reverse()) {
+    const context = message.card?.context_id
+    if (context && receipts.value[context]) return receipts.value[context]!
   }
-})
+  return null
+}
 
+async function submit(option?: DraftOption) {
+  if (busy.value || terminal.value || (!option && !text.value.trim())) return
+  const current = sid.value
+  const content = option ? '继续' : text.value.trim()
+  // Retries preserve the complete original input, including its display reference.
+  if (!pending || pending.sid !== current || pending.payload.content !== content
+      || pending.payload.draft_id !== option?.draft_id) {
+    pending = { sid: current, payload: { request_id: crypto.randomUUID().replaceAll('-', ''),
+      content, client_view_id: viewId, display_receipt_id: latestReceipt(),
+      ...(option ? { draft_id: option.draft_id, draft_version: option.draft_version } : {}) } }
+  }
+  busy.value = true; error.value = ''
+  try {
+    const result = await sendMessage(current, pending.payload)
+    if (sid.value !== current) return
+    remember(result); pending = null; text.value = ''
+    await poll()
+  } catch (e) {
+    if (e instanceof ApiError && [400, 404, 409, 422].includes(e.status)) pending = null
+    error.value = e instanceof Error ? e.message : '发送失败，可重试原输入'
+  }
+  finally { busy.value = false }
+}
+
+async function confirm(card: PublicCard) {
+  const context = card.context_id
+  if (!card.offer_id || !context || !receipts.value[context] || busy.value) return
+  const current = sid.value
+  const key = `${current}:confirm:${context}`
+  if (pendingButton?.key !== key) pendingButton = { key, request: crypto.randomUUID().replaceAll('-', ''), receipt: receipts.value[context]! }
+  busy.value = true; error.value = ''
+  try {
+    const result = await confirmNegotiation(current, card.offer_id, pendingButton.request, viewId, pendingButton.receipt)
+    if (sid.value !== current) return
+    remember(result); pendingButton = null; await poll()
+  } catch (e) { error.value = e instanceof Error ? e.message : '确认失败' }
+  finally { busy.value = false }
+}
+
+async function close() {
+  if (busy.value) return
+  const current = sid.value
+  const key = `${current}:close`
+  if (pendingButton?.key !== key) pendingButton = { key, request: crypto.randomUUID().replaceAll('-', ''), receipt: '' }
+  busy.value = true; error.value = ''
+  try {
+    const result = await closeNegotiation(current, pendingButton.request, viewId)
+    if (sid.value !== current) return
+    remember(result); pendingButton = null; await poll()
+  } catch (e) { error.value = e instanceof Error ? e.message : '结束协商失败' }
+  finally { busy.value = false }
+}
+
+async function refresh(card: PublicCard) {
+  if (!card.context_id) return
+  const current = sid.value
+  try {
+    const result = await refreshContext(current, card.context_id, crypto.randomUUID())
+    if (sid.value !== current) return
+    card.context_id = result.context_id
+    await renderCards()
+  } catch (e) { error.value = e instanceof Error ? e.message : '方案已失效，请重新协商' }
+}
+
+async function poll() {
+  if (polling || !detail.value) return
+  polling = true
+  const current = sid.value
+  try {
+    const after = Math.max(0, ...messages.value.map(m => m.id))
+    const [updates, info] = await Promise.all([getMessages(current, after), getNegotiation(current)])
+    if (current !== sid.value) return
+    detail.value = info
+    messages.value.push(...updates.filter(m => !messages.value.some(old => old.id === m.id)))
+    for (const [id, run] of Object.entries(runs.value)) {
+      if (run.task_status !== 'SUCCEEDED') runs.value[id] = await getRun(current, id)
+    }
+    await renderCards(updates.length > 0)
+  } catch { /* Polling never changes the pending input or its receipt. */ }
+  finally { polling = false }
+}
+
+function outcome(run: RunStatus) {
+  const names: Record<string, string> = { OFFER_ACCEPTED: '报价已接受，待最终确认', WAITING_APPROVAL: '等待卖家审批',
+    OFFER_REJECTED: '报价未被接受', INTENT_CONFIRMED: '交易意向已记录', OFFER_WITHDRAWN: '报价已撤回', SESSION_CLOSED: '协商已结束' }
+  if (run.business_status === 'COMMITTED') return `${names[run.business_outcome ?? ''] ?? '业务结果已记录'}${run.notification_status !== 'PUBLISHED' ? '；结果通知恢复中' : ''}`
+  if (run.recovery_required || run.task_status === 'FAILED') return '处理需要恢复，原输入已保留'
+  if (run.blocked_by_input_seq) return `等待前序输入 #${run.blocked_by_input_seq}`
+  return run.task_status === 'SUCCEEDED' ? '已回复，未提交业务动作' : '正在处理'
+}
+
+function activeCard(card: PublicCard) {
+  return !terminal.value && card.can_confirm && card.offer_id === detail.value?.negotiation.current_offer_id
+    && (!card.expires_at || Date.parse(card.expires_at) > Date.now())
+}
+
+watch(sid, () => void load(), { immediate: true })
 onMounted(() => {
-  messagePollTimer = window.setInterval(
-    () => void pollNegotiationUpdates(),
-    MESSAGE_POLL_INTERVAL_MS,
-  )
+  observer = new IntersectionObserver(entries => entries.forEach(entry => {
+    if (entry.isIntersecting) void markDisplayed((entry.target as HTMLElement).dataset.context ?? '')
+  }), { threshold: 0.5 })
+  void renderCards()
+  timer = window.setInterval(() => void poll(), 2000)
 })
-
-onUnmounted(() => {
-  if (messagePollTimer !== undefined) window.clearInterval(messagePollTimer)
-})
+onUnmounted(() => { if (timer) clearInterval(timer); observer?.disconnect() })
 </script>
 
 <template>
   <section class="buyer-page negotiation-page">
-    <div class="buyer-page-heading">
-      <div>
-        <RouterLink class="back-link" to="/buyer/negotiations">← 我的协商</RouterLink>
-        <p class="eyebrow">BUYER NEGOTIATION · #{{ sessionId }}</p>
-        <h1>协商会话</h1>
-      </div>
-      <div class="service-status" :data-ready="serviceReady && modelReady">
-        <span aria-hidden="true"></span>
-        {{ serviceReady ? (modelReady ? '协商服务已就绪' : '模型未配置') : '服务未就绪' }}
-      </div>
-    </div>
-
-    <section v-if="loading" class="loading-card">正在读取协商会话…</section>
-
-    <section v-else-if="negotiation" class="workspace">
+    <div class="buyer-page-heading"><div><RouterLink class="back-link" to="/buyer/negotiations">← 我的协商</RouterLink><h1>协商会话 #{{ sid }}</h1></div></div>
+    <p v-if="loading" class="loading-card">正在读取会话…</p>
+    <section v-if="detail" class="workspace">
       <aside class="product-panel">
-        <div class="product-visual" aria-hidden="true">
-          <span>{{ String(negotiation.product.id).padStart(2, '0').slice(-2) }}</span>
-          <small>SECONDHAND</small>
-        </div>
-        <p class="eyebrow">商品 #{{ negotiation.product.id }}</p>
-        <h1>{{ negotiation.product.title }}</h1>
-        <p class="product-description">{{ negotiation.product.description }}</p>
-        <div class="listed-price">
-          <span>公开标价</span>
-          <strong>¥{{ negotiation.product.listed_price }}</strong>
-        </div>
-
-        <dl class="session-facts">
-          <div>
-            <dt>协商进度</dt>
-            <dd>{{ negotiation.negotiation.round_count }} / {{ negotiation.negotiation.max_rounds }} 轮</dd>
-          </div>
-          <div>
-            <dt>当前状态</dt>
-            <dd>{{ negotiationStatusLabel(negotiation.negotiation.status) }}</dd>
-          </div>
-        </dl>
-
-        <section class="offer-card">
-          <p class="eyebrow">CURRENT OFFER</p>
-          <template v-if="currentOffer">
-            <strong>¥{{ currentOffer.price }}</strong>
-            <span>{{ currentOffer.proposer === 'BUYER' ? '买家报价' : 'Agent 还价' }}</span>
-            <span>{{ shippingLabel(currentOffer.shipping_paid_by) }}</span>
-          </template>
-          <p v-else>还没有正式报价</p>
-          <button
-            v-if="canConfirmCurrentOffer"
-            class="confirm-intent-button"
-            type="button"
-            :disabled="lifecycleBusy"
-            @click="confirmCurrentOffer"
-          >
-            {{ lifecycleBusy ? '确认中…' : '确认交易意向' }}
-          </button>
-          <small v-if="canConfirmCurrentOffer" class="intent-disclaimer">
-            确认后仅记录双方交易意向，不代表付款、锁定库存或实际成交。
-          </small>
-          <p v-else-if="negotiation.negotiation.status === 'AGREED'" class="intent-complete">
-            已确认报价 #{{ negotiation.negotiation.confirmed_offer_id }}，交易意向已记录。
-          </p>
-        </section>
-
-        <p class="privacy-note">卖家底价和自动接受阈值不会展示给买家。</p>
+        <h2>{{ detail.product.title }}</h2><p class="product-description">{{ detail.product.description }}</p>
+        <div class="listed-price"><span>公开标价</span><strong>¥{{ detail.product.listed_price }}</strong></div>
+        <p>议价进度 {{ detail.negotiation.round_count }} / {{ detail.negotiation.max_rounds }} 轮</p>
+        <p v-if="terminal">{{ detail.negotiation.status === 'AGREED' ? '已记录交易意向' : '协商已结束' }}</p>
+        <p class="privacy-note">确认交易意向不代表付款、锁定库存或完成交易。</p>
       </aside>
-
-      <section class="chat-panel" aria-labelledby="chat-title">
-        <div class="chat-heading">
-          <div>
-            <p class="eyebrow">LIVE NEGOTIATION</p>
-            <h2 id="chat-title">和 Seller Agent 协商</h2>
-          </div>
-          <div class="chat-heading-actions">
-            <button
-              v-if="canCloseNegotiation"
-              class="ghost-button close-button"
-              type="button"
-              :disabled="lifecycleBusy"
-              @click="closeCurrentNegotiation"
-            >
-              结束协商
-            </button>
-            <button class="ghost-button" type="button" @click="loadPage">刷新</button>
-          </div>
-        </div>
-
+      <section class="chat-panel">
+        <div class="chat-heading"><h2>和卖家助手协商</h2><button v-if="unified && !terminal" type="button" :disabled="busy" @click="close">结束协商</button></div>
         <div ref="messageList" class="message-list" aria-live="polite">
-          <article v-if="messages.length === 0" class="welcome-message">
-            <span class="agent-avatar">S</span>
-            <div>
-              <strong>Seller Agent</strong>
-              <p>你好，可以询问商品情况，也可以在下方勾选“提交正式报价”开始议价。</p>
-            </div>
-          </article>
-
-          <article
-            v-for="message in messages"
-            :key="message.id"
-            class="message"
-            :data-role="message.role"
-          >
-            <div class="message-meta">
-              <strong>{{ roleLabel(message.role) }}</strong>
-              <time>{{ formatTime(message.created_at) }}</time>
-            </div>
-            <p>{{ message.content }}</p>
+          <p v-if="!messages.length">可以直接提问或报价，例如“电池怎么样？900 自提可以吗？”</p>
+          <article v-for="message in messages" :key="message.id" class="message" :data-role="message.role">
+            <strong>{{ message.role === 'BUYER' ? '你' : message.role === 'SYSTEM' ? '系统' : '卖家助手' }}</strong>
+            <p style="white-space: pre-wrap">{{ message.content }}</p>
+            <section v-if="message.card" class="offer-card" :data-context="message.card.context_id || undefined">
+              <template v-if="message.card.kind !== 'drafts'">
+                <strong>¥{{ message.card.amount }}</strong>
+                <p>{{ message.card.terms?.delivery_method === 'pickup' ? '自提' : message.card.shipping_paid_by === 'seller' ? '卖家包邮' : '快递，买家承担运费' }}</p>
+                <button v-if="activeCard(message.card)" type="button" :disabled="busy || !receipts[message.card.context_id || '']" @click="confirm(message.card)">确认交易意向</button>
+                <p v-else>此卡片当前不可确认</p>
+              </template>
+              <div v-for="(option, index) in message.card.drafts" :key="option.draft_id">
+                <strong>方案 {{ index + 1 }} · {{ option.candidate.amount ? `¥${option.candidate.amount}` : '金额待补充' }}</strong>
+                <p>{{ option.candidate.delivery === 'pickup' ? '自提' : option.candidate.delivery === 'shipping' ? '快递' : '配送方式待补充' }}{{ option.candidate.payer === 'seller' ? '，卖家包邮' : '' }}{{ option.candidate.region ? `，${option.candidate.region}` : '' }}</p>
+                <p v-for="condition in option.candidate.conditions" :key="condition.source_quote">前提：{{ condition.source_quote }}</p>
+                <p v-for="commitment in option.candidate.commitments" :key="commitment">要求：{{ commitment }}</p>
+                <button v-if="!terminal" type="button" :disabled="busy || !receipts[message.card.context_id || '']" @click="submit(option)">选择并继续此方案</button>
+              </div>
+              <button v-if="message.card.context_id && !terminal" type="button" class="ghost-button" @click="refresh(message.card)">刷新此方案</button>
+            </section>
           </article>
         </div>
-
-        <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>
-        <p v-else-if="lastOutcome" class="outcome-banner">本轮结果：{{ outcomeLabel(lastOutcome) }}</p>
-        <p v-if="sessionIsTerminal" class="terminal-banner">
-          {{ negotiation.negotiation.status === 'AGREED'
-            ? '双方交易意向已经记录，本会话不能继续议价。'
-            : '本次协商已经结束。' }}
-        </p>
-
-        <form v-if="!sessionIsTerminal" class="composer" @submit.prevent="submitMessage">
-          <label class="message-input">
-            <span class="sr-only">聊天消息</span>
-            <textarea
-              v-model="messageText"
-              maxlength="4000"
-              rows="3"
-              placeholder="询问成色，或描述你的报价…"
-              @keydown.ctrl.enter="submitMessage"
-            ></textarea>
-          </label>
-
-          <label class="offer-toggle">
-            <input v-model="submittingOffer" type="checkbox" />
-            <span>提交正式报价</span>
-            <small>金额与运费将由后端校验并保存</small>
-          </label>
-
-          <div v-if="submittingOffer" class="offer-fields">
-            <label>
-              <span>报价金额</span>
-              <div class="money-input">
-                <b>¥</b>
-                <input v-model="offerPrice" min="0" step="0.01" type="number" required />
-              </div>
-            </label>
-            <label>
-              <span>配送方式</span>
-              <select v-model="deliveryMethod">
-                <option value="shipping">快递</option>
-                <option value="pickup">面交</option>
-              </select>
-            </label>
-            <label>
-              <span>运费承担</span>
-              <select v-model="shippingPaidBy" :disabled="deliveryMethod === 'pickup'">
-                <option value="buyer">买家承担</option>
-                <option value="seller">卖家承担（包邮）</option>
-              </select>
-            </label>
-            <label v-if="shippingPaidBy === 'seller' && deliveryMethod !== 'pickup'">
-              <span>预计运费</span>
-              <div class="money-input">
-                <b>¥</b>
-                <input v-model="shippingCost" min="0" step="0.01" type="number" required />
-              </div>
-            </label>
-          </div>
-
-          <div class="composer-footer">
-            <span>Ctrl + Enter 发送</span>
-            <button type="submit" :disabled="!canSend">
-              {{ sending ? '处理中…' : '发送消息' }}
-            </button>
-          </div>
+        <p v-for="run in Object.values(runs)" :key="run.run_id" class="outcome-banner">输入 #{{ run.input_seq }}：{{ outcome(run) }}</p>
+        <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
+        <p v-if="!unified" class="outcome-banner">此会话使用旧版流程。新版统一聊天适用于新会话。</p>
+        <form v-if="unified && !terminal" class="composer" @submit.prevent="submit()">
+          <label class="message-input"><span class="sr-only">聊天消息</span><textarea v-model="text" maxlength="4000" rows="3" placeholder="提问、报价或补充上一个方案的资料…" @keydown.ctrl.enter.prevent="submit()"></textarea></label>
+          <div class="composer-footer"><span>Ctrl + Enter 发送</span><button type="submit" :disabled="busy || !text.trim()">{{ busy ? '提交中…' : '发送' }}</button></div>
         </form>
       </section>
     </section>
-
-    <section v-else class="loading-card error-state">
-      <h1>暂时无法载入会话</h1>
-      <p>{{ errorMessage }}</p>
-      <div class="welcome-actions">
-        <RouterLink class="secondary-link" to="/buyer/negotiations">返回我的协商</RouterLink>
-        <button type="button" @click="loadPage">重新连接</button>
-      </div>
-    </section>
+    <p v-else-if="error" class="error-banner">{{ error }}</p>
   </section>
 </template>

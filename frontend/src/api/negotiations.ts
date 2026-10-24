@@ -12,6 +12,46 @@ export interface ChatMessage {
   content: string
   request_id: string
   created_at: string
+  card?: PublicCard | null
+}
+
+export interface DraftOption {
+  draft_id: string
+  draft_version: number
+  candidate: { amount: string | null; delivery: string | null; payer: string | null; region: string | null; conditions: { source_quote: string }[]; commitments: string[] }
+  missing: string[]
+}
+
+export interface PublicCard {
+  kind?: 'offer' | 'drafts'
+  context_id: string | null
+  offer_id?: number
+  amount?: string
+  shipping_paid_by?: ShippingPayer
+  terms?: { delivery_method?: string }
+  can_confirm: boolean
+  expires_at?: string
+  drafts?: DraftOption[]
+}
+
+export interface RunStatus {
+  run_id: string
+  input_seq: number
+  task_status: string
+  business_status: string
+  business_outcome: string | null
+  notification_status: string
+  blocked_by_input_seq: number | null
+  public_error_category: string | null
+  recovery_required: boolean
+}
+
+export interface AcceptedInput {
+  run_id: string
+  input_seq: number
+  buyer_message_id: number
+  status: string
+  idempotent_replay: boolean
 }
 
 export interface Offer {
@@ -28,6 +68,7 @@ export interface Offer {
 }
 
 export interface NegotiationDetail {
+  graph_version?: string
   product: {
     id: number
     title: string
@@ -65,7 +106,11 @@ export interface BuyerOfferPayload {
 export interface SendMessagePayload {
   request_id: string
   content: string
-  offer?: BuyerOfferPayload
+  client_view_id: string
+  display_receipt_id?: string | null
+  draft_id?: string
+  draft_version?: number
+  reply_to_message_id?: number
 }
 
 export interface SendMessageResponse {
@@ -156,8 +201,8 @@ export async function getMessages(
 export function sendMessage(
   sessionId: number,
   payload: SendMessagePayload,
-): Promise<SendMessageResponse> {
-  return requestJson<SendMessageResponse>(`/api/negotiations/${sessionId}/messages`, {
+): Promise<AcceptedInput> {
+  return requestJson<AcceptedInput>(`/api/negotiations/${sessionId}/messages`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -167,12 +212,14 @@ export function confirmNegotiation(
   sessionId: number,
   offerId: number,
   requestId: string,
-): Promise<ConfirmNegotiationResponse> {
-  return requestJson<ConfirmNegotiationResponse>(
+  viewId: string,
+  receiptId: string,
+): Promise<AcceptedInput> {
+  return requestJson<AcceptedInput>(
     `/api/negotiations/${sessionId}/confirm`,
     {
       method: 'POST',
-      body: JSON.stringify({ offer_id: offerId, request_id: requestId }),
+      body: JSON.stringify({ offer_id: offerId, request_id: requestId, client_view_id: viewId, display_receipt_id: receiptId }),
     },
   )
 }
@@ -180,12 +227,29 @@ export function confirmNegotiation(
 export function closeNegotiation(
   sessionId: number,
   requestId: string,
-): Promise<CloseNegotiationResponse> {
-  return requestJson<CloseNegotiationResponse>(
+  viewId: string,
+): Promise<AcceptedInput> {
+  return requestJson<AcceptedInput>(
     `/api/negotiations/${sessionId}/close`,
     {
       method: 'POST',
-      body: JSON.stringify({ request_id: requestId }),
+      body: JSON.stringify({ request_id: requestId, client_view_id: viewId }),
     },
   )
+}
+
+export function getRun(sid: number, run: string): Promise<RunStatus> {
+  return requestJson(`/api/negotiations/${sid}/runs/${run}`)
+}
+
+export function acknowledgeDisplay(sid: number, context: string, view: string, request: string): Promise<{ display_receipt_id: string }> {
+  return requestJson(`/api/negotiations/${sid}/display-acks`, {
+    method: 'POST', body: JSON.stringify({ context_id: context, client_view_id: view, request_id: request }),
+  })
+}
+
+export function refreshContext(sid: number, context: string, request: string): Promise<{ context_id: string; expires_at: string }> {
+  return requestJson(`/api/negotiations/${sid}/interaction-contexts/refresh`, {
+    method: 'POST', body: JSON.stringify({ context_id: context, request_id: request }),
+  })
 }

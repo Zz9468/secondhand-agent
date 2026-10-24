@@ -60,6 +60,7 @@ def main():
             "RUN_MYSQL_INTEGRATION": "1",
             "RUN_MYSQL_MIGRATION_TESTS": "1",
             "AGENT_RUNTIME": "V3",
+            "GRAPH_CHAT_ENABLED": "false",
         }
         migration = subprocess.run(
             [sys.executable, "-m", "alembic", "upgrade", "head"],

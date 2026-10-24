@@ -35,6 +35,7 @@ import {
   type SellerNegotiationSummary,
 } from '../api/sellerNegotiations'
 import { useAuth } from '../state/auth'
+import ProductEvidence from './ProductEvidence.vue'
 
 interface ProductForm {
   title: string
@@ -1185,6 +1186,7 @@ onUnmounted(() => {
           </div>
         </template>
       </section>
+      <ProductEvidence v-if="selectedProduct && activeSection === 'products'" :key="selectedProduct.id" :product-id="selectedProduct.id" />
     </div>
   </section>
 </template>

@@ -1,0 +1,22 @@
+[
+  {"id":"clear-pickup","text":"900自提可以吗？","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","delivery":"pickup","payer":"buyer"}]},
+  {"id":"clear-shipping","text":"900包邮到上海可以吗？","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","delivery":"shipping","payer":"seller","region":"上海"}]},
+  {"id":"buyer-shipping","text":"900元到付寄北京可以吗？","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","delivery":"shipping","payer":"buyer","region":"北京"}]},
+  {"id":"incomplete","text":"900可以吗？","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","delivery":null,"payer":null}]},
+  {"id":"budget","text":"预算大概900，先看看","no_action":true},
+  {"id":"comparison","text":"别人卖900，我预算也差不多","no_action":true},
+  {"id":"correction","text":"不是800，我说的是900自提","types":["PROPOSE_OFFER","CHANGE_TERMS"],"any_type":true,"candidates":[{"amount":"900","delivery":"pickup"}]},
+  {"id":"repair-condition","text":"如果没修过，900自提","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","delivery":"pickup","conditions":[{"fact":"repair_history","operator":"==","value":"NO"}]}]},
+  {"id":"battery-condition","text":"如果电池至少90%，900自提","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","conditions":[{"fact":"battery_health_pct","operator":">=","value":"90"}]}]},
+  {"id":"two-conditions","text":"如果电池至少90%而且没修过，900自提","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","conditions":[{"fact":"battery_health_pct","operator":">=","value":"90"},{"fact":"repair_history","operator":"==","value":"NO"}]}]},
+  {"id":"mixed","text":"电池多少？维修过吗？900自提行吗？","types":["ASK_PRODUCT","PROPOSE_OFFER"],"min_intents":3,"candidates":[{"amount":"900","conditions":[]}]},
+  {"id":"alternatives","text":"900包邮或者880自提","min_intents":2,"alternatives":true,"candidates":[{"amount":"900","delivery":"shipping","payer":"seller"},{"amount":"880","delivery":"pickup","payer":"buyer"}]},
+  {"id":"continuation","text":"自提","context":{"has_bound_draft":true,"missing_fields":["delivery","payer"],"has_displayed_offer":false},"types":["PROVIDE_INFO"],"candidates":[{"amount":null,"delivery":"pickup","payer":"buyer"}]},
+  {"id":"confirm","text":"行","context":{"has_bound_draft":false,"missing_fields":[],"has_displayed_offer":true},"types":["CONFIRM_INTENT"]},
+  {"id":"change-not-confirm","text":"行，但是得包邮","context":{"has_bound_draft":false,"missing_fields":[],"has_displayed_offer":true},"types":["CHANGE_TERMS"],"candidates":[{"amount":null,"delivery":"shipping","payer":"seller"}]},
+  {"id":"unsupported-promise","text":"900自提，但今天必须发货","types":["PROPOSE_OFFER"],"commitment":true},
+  {"id":"withdraw","text":"撤回刚才的报价","types":["WITHDRAW_OFFER"]},
+  {"id":"close","text":"不买了，结束吧","types":["CLOSE_SESSION"]},
+  {"id":"conflict","text":"不买了结束吧，同时900自提继续报价","ambiguous":true},
+  {"id":"no-default-cost","text":"900包邮可以吗，运费你自己核实","types":["PROPOSE_OFFER"],"candidates":[{"amount":"900","delivery":"shipping","payer":"seller","region":null}]}
+]

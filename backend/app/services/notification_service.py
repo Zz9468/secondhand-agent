@@ -157,6 +157,11 @@ class NotificationService:
                     "context_id": context_id,
                     "expires_at": offer.expires_at.isoformat() + "Z",
                 }
+            from app.semantic.presentation import decorate
+
+            content, card, draft_refs = decorate(db, run, session, result, content, card, now)
+            if draft_refs and card and card.get("kind") == "drafts":
+                context_id = card["context_id"]
             message = Message(
                 session_id=session.id,
                 role=MessageRole.AGENT,
@@ -178,10 +183,13 @@ class NotificationService:
                         buyer_id=session.buyer_id,
                         message_id=message.id,
                         public_seq=message.public_seq,
-                        offer_id=offer.id,
-                        terms_hash=terms_hash(offer),
+                        offer_id=offer.id if offer else None,
+                        terms_hash=terms_hash(offer) if offer else "drafts-v1",
+                        draft_refs=draft_refs,
                         business_version=session.version,
-                        expires_at=min(offer.expires_at, now + timedelta(minutes=30)),
+                        expires_at=min(offer.expires_at, now + timedelta(minutes=30))
+                        if offer
+                        else now + timedelta(minutes=30),
                     )
                 )
             AgentMessageService.project(db, message, kind="GRAPH_RESULT")
@@ -217,6 +225,9 @@ class NotificationService:
                 or context.business_version != session.version
             ):
                 raise Conflict("展示上下文已失效或无权访问")
+            from app.semantic.presentation import check_object
+
+            check_object(db, context, session, self.clock())
             ack = DisplayAck(
                 id=token_urlsafe(32),
                 context_id=context_id,

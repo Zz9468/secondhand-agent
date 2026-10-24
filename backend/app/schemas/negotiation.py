@@ -63,6 +63,8 @@ class ConfirmNegotiationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     offer_id: int = Field(gt=0)
+    client_view_id: str | None = Field(default=None, min_length=1, max_length=64)
+    display_receipt_id: str | None = Field(default=None, max_length=64)
     request_id: str = Field(
         min_length=8,
         max_length=56,
@@ -72,6 +74,7 @@ class ConfirmNegotiationRequest(BaseModel):
 
 class CloseNegotiationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    client_view_id: str | None = Field(default=None, min_length=1, max_length=64)
 
     request_id: str = Field(
         min_length=8,
@@ -107,6 +110,7 @@ class MessageResponse(BaseModel):
     content: str
     request_id: str
     created_at: datetime
+    card: dict | None = None
 
 
 class MessageListResponse(BaseModel):
@@ -181,6 +185,14 @@ class SendMessageResponse(BaseModel):
     agent_message: MessageResponse
     outcome: AgentTurnOutcome | Literal["IDEMPOTENT_REPLAY"]
     formal_offer_id: int | None
+    idempotent_replay: bool
+
+
+class AcceptedInputResponse(BaseModel):
+    buyer_message_id: int
+    input_seq: int
+    run_id: str
+    status: str
     idempotent_replay: bool
 
 

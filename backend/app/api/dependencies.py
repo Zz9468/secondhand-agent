@@ -2,7 +2,7 @@ from datetime import timedelta
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.decision_provider import DecisionProvider, LangChainDecisionProvider
@@ -35,7 +35,9 @@ def _get_configured_decision_provider() -> DecisionProvider:
     return LangChainDecisionProvider(model)
 
 
-def get_decision_provider() -> DecisionProvider:
+async def get_decision_provider(request: Request) -> DecisionProvider | None:
+    if request.method == "POST" and "client_view_id" in await request.json():
+        return None
     try:
         return _get_configured_decision_provider()
     except ModelConfigurationError as exc:

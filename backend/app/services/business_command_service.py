@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from app.db.models import NegotiationSession, NegotiationStatus, Product, SellerPolicy
 from app.db.models.graph import BusinessActionReceipt, NotificationDelivery, OutboxEvent
-from app.runtime.contracts import Conflict, TypedInput, digest, thread_id, utcnow
+from app.runtime.contracts import Conflict, digest, thread_id, utcnow
 from app.runtime.input_queue import bounded_transaction, lock_owner
 from app.services.graph_business_operations import (
     confirm_in_transaction,
@@ -60,7 +60,22 @@ class BusinessCommandService:
                 )
                 .with_for_update()
             )
-            payload = TypedInput.model_validate(run.payload)
+            from app.semantic.service import load_command
+
+            payload = load_command(db, run)
+            quote = evaluations = candidate = None
+            if run.payload["kind"] == "CHAT" and payload.kind in {"SUBMIT", "REPLACE"}:
+                from app.db.models.semantic import OfferDraft, SemanticTurn
+                from app.semantic.contracts import Candidate
+                from app.semantic.evidence import quote_in_transaction
+
+                turn = db.get(SemanticTurn, run.id)
+                draft = db.get(OfferDraft, turn.selected_draft_id)
+                if not draft or draft.business_version != session.version:
+                    raise Conflict("草案业务版本已改变")
+                candidate = Candidate.model_validate(draft.candidate)
+                quote, terms, evaluations = quote_in_transaction(db, product, candidate, now)
+                payload = payload.model_copy(update={"terms": terms})
             if session.status in {NegotiationStatus.AGREED, NegotiationStatus.CLOSED}:
                 raise Conflict("会话已经结束")
             if payload.kind in {"SUBMIT", "REPLACE"}:
@@ -72,7 +87,22 @@ class BusinessCommandService:
                     payload,
                     now,
                     self.fault,
+                    semantic_candidate=candidate,
                 )
+                if quote:
+                    from app.db.models.semantic import SemanticOfferBasis
+
+                    basis = db.get(SemanticOfferBasis, result["offer_id"])
+                    if not basis:
+                        db.add(
+                            SemanticOfferBasis(
+                                offer_id=result["offer_id"],
+                                cost_quote_id=quote.id,
+                                candidate=candidate.model_dump(mode="json"),
+                                evaluations=evaluations,
+                            )
+                        )
+                    draft.status = "SUBMITTED"
             elif payload.kind == "CONFIRM":
                 result = confirm_in_transaction(db, session, product, policy, payload, run, now)
             elif payload.kind in {"WITHDRAW", "CLOSE"}:
@@ -114,6 +144,35 @@ class BusinessCommandService:
             if delivery:
                 return delivery.result
             product = db.get(Product, session.product_id)
+            if reason and run.payload["kind"] == "CHAT":
+                from uuid import uuid4
+
+                from app.db.models.semantic import OfferDraft, SemanticTurn, VerificationItem
+                from app.semantic.contracts import Candidate
+                from app.semantic.evidence import assess
+
+                turn = db.get(SemanticTurn, run.id)
+                draft = (
+                    db.get(OfferDraft, turn.selected_draft_id)
+                    if turn and turn.selected_draft_id
+                    else None
+                )
+                if draft and draft.business_version == session.version:
+                    missing, _, _, _ = assess(
+                        db, product, Candidate.model_validate(draft.candidate), self.clock()
+                    )
+                    draft.missing = missing
+                    if missing:
+                        draft.status = "PENDING"
+                        item = db.scalar(
+                            select(VerificationItem).where(VerificationItem.draft_id == draft.id)
+                        )
+                        if not item:
+                            item = VerificationItem(
+                                id=uuid4().hex, draft_id=draft.id, product_id=product.id
+                            )
+                            db.add(item)
+                        item.status, item.reasons = "OPEN", missing
             result = (
                 {"outcome": "NOT_EXECUTED", "reason": reason}
                 if reason

@@ -75,6 +75,11 @@ def valid_offer(db, session, product, policy, offer, now):
     ):
         return False
     proof = db.get(GraphOfferEvidence, offer.id)
+    if session.graph_version == "negotiation-v2":
+        from app.semantic.evidence import valid_basis
+
+        if not valid_basis(db, product, offer, now):
+            return False
     try:
         current_authorization = authorize_offer(
             terms=NegotiationService._terms_from_offer(offer),
@@ -132,7 +137,9 @@ def new_offer_in_transaction(db, session, product, policy, terms, proposer, now)
     return offer
 
 
-def resolve_offer_in_transaction(db, session, product, policy, payload, now, fault):
+def resolve_offer_in_transaction(
+    db, session, product, policy, payload, now, fault, semantic_candidate=None
+):
     """新买家提案、替代、自动接受/审批/合法还价在同一事务内完成。"""
     if product.status != ProductStatus.AVAILABLE:
         raise Conflict("商品当前不可协商")
@@ -162,10 +169,23 @@ def resolve_offer_in_transaction(db, session, product, policy, payload, now, fau
         and terms_hash(current) == terms_hash(candidate)
     ):
         proof = db.get(GraphOfferEvidence, current.id)
+        same_semantics = session.graph_version != "negotiation-v2"
+        if semantic_candidate is not None:
+            from app.db.models.semantic import SemanticOfferBasis
+            from app.semantic.contracts import Candidate
+            from app.semantic.evidence import valid_basis
+
+            basis = db.get(SemanticOfferBasis, current.id)
+            same_semantics = bool(
+                basis
+                and Candidate.model_validate(basis.candidate) == semantic_candidate
+                and valid_basis(db, product, current, now)
+            )
         if (
             proof
             and proof.policy_version == policy.version
             and proof.product_hash == product_hash(product)
+            and same_semantics
         ):
             approval = db.scalar(
                 select(ApprovalRequest).where(ApprovalRequest.offer_id == current.id)

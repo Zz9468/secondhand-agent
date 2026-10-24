@@ -90,6 +90,7 @@ class NegotiationService:
         *,
         product_id: int,
         buyer_id: str,
+        graph_version: str | None = None,
     ) -> tuple[int, bool]:
         """为已登录且启用的统一账号创建或复用当前商品的会话。"""
 
@@ -138,6 +139,7 @@ class NegotiationService:
             negotiation = NegotiationSession(
                 product_id=product_id,
                 buyer_id=buyer_id,
+                graph_version=graph_version,
                 status=NegotiationStatus.ACTIVE,
                 round_count=0,
                 version=1,

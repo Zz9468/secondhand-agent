@@ -24,9 +24,19 @@ if __name__ == "__main__":
             os._exit(73)
 
     try:
-        result = GraphRunner(factory, os.environ["P0_POSTGRES_URL"], queue=queue, fault=fault).run(
-            spec["run_id"]
-        )
+        provider = None
+        if "semantic_frames" in spec:
+            from tests.graph.test_semantic import FakeSemanticModel
+
+            provider = FakeSemanticModel()
+            provider.values = spec["semantic_frames"]
+        result = GraphRunner(
+            factory,
+            os.environ["P0_POSTGRES_URL"],
+            queue=queue,
+            fault=fault,
+            semantic_provider=provider,
+        ).run(spec["run_id"])
         print(json.dumps(result))
     finally:
         factory.kw["bind"].dispose()

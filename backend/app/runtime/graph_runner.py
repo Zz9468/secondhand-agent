@@ -20,9 +20,12 @@ from app.services.notification_service import NotificationService
 
 
 class GraphRunner:
-    def __init__(self, factory, postgres_url, *, queue=None, fault=lambda point: None):
+    def __init__(
+        self, factory, postgres_url, *, queue=None, fault=lambda point: None, semantic_provider=None
+    ):
         self.queue = queue or InputQueue(factory)
         self.factory, self.postgres_url, self.fault = factory, postgres_url, fault
+        self.semantic_provider = semantic_provider
 
     def run(self, run_id):
         run = self.queue.read(run_id)
@@ -39,14 +42,23 @@ class GraphRunner:
                 return None
             try:
                 self.fault("after_claim")
-                if run["graph_version"] != GRAPH_VERSION:
+                from app.semantic.contracts import VERSION
+
+                if run["graph_version"] not in {GRAPH_VERSION, VERSION}:
                     raise RecoveryConflict("当前 Worker 不支持该图版本")
                 if (
                     digest(run["payload"]) != run["input_hash"]
                     or digest(run["config"]) != run["config_hash"]
                 ):
                     raise RecoveryConflict("不可变输入或配置已损坏")
-                graph = build_graph(saver, self.queue, owner, fault=self.fault)
+                if run["graph_version"] == VERSION:
+                    from app.graphs.negotiation.semantic_graph import build_semantic_graph
+
+                    graph = build_semantic_graph(
+                        saver, self.queue, owner, fault=self.fault, provider=self.semantic_provider
+                    )
+                else:
+                    graph = build_graph(saver, self.queue, owner, fault=self.fault)
                 snapshot = graph.get_state(config)
                 with self.factory() as db:
                     current = db.get(NegotiationInput, run_id)
@@ -83,7 +95,16 @@ class GraphRunner:
                     raise RecoveryConflict("历史任务不能恢复到后续轮次")
                 if entry != Entry.FINALIZE:
                     graph.invoke(
-                        new_turn(run) if entry == Entry.START else None,
+                        {
+                            **new_turn(run),
+                            **(
+                                {"semantic_reference": None}
+                                if run["graph_version"] == VERSION
+                                else {}
+                            ),
+                        }
+                        if entry == Entry.START
+                        else None,
                         config=config,
                         durability="sync",
                     )
