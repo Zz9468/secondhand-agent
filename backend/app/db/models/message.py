@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, UniqueConstraint, func
+from sqlalchemy import JSON, BigInteger, DateTime, ForeignKey, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -24,6 +24,9 @@ class Message(Base):
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    source_id: Mapped[str | None] = mapped_column(String(64), unique=True)
+    public_seq: Mapped[int | None]
+    card: Mapped[dict | None] = mapped_column(JSON)
     session_id: Mapped[int] = mapped_column(
         ForeignKey("negotiation_sessions.id", ondelete="CASCADE"),
         nullable=False,

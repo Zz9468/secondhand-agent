@@ -60,6 +60,7 @@ from app.services.model_usage_service import ModelUsageService
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, ShippingPayer
 from app.services.product_service import ProductService
+from app.services.runtime_boundary import require_legacy_runtime
 
 
 @dataclass(frozen=True, slots=True)
@@ -1181,6 +1182,8 @@ class ChatService:
         negotiation = db.scalar(statement)
         if negotiation is None:
             raise NegotiationNotFoundError("协商会话不存在或当前买家无权访问")
+        if for_update:
+            require_legacy_runtime(negotiation)
         return negotiation
 
     def _recent_history(

@@ -40,6 +40,7 @@ from app.services.pricing_service import (
     PricingService,
     ShippingPayer,
 )
+from app.services.runtime_boundary import require_legacy_runtime
 
 
 @dataclass(frozen=True, slots=True)
@@ -418,6 +419,8 @@ class NegotiationService:
         negotiation = db.scalar(statement)
         if negotiation is None:
             raise NegotiationNotFoundError("协商会话不存在或当前买家无权访问")
+        if for_update:
+            require_legacy_runtime(negotiation)
         return negotiation
 
     @staticmethod

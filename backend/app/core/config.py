@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
 
     database_url: str
+    checkpoint_database_url: str | None = None
 
     # 身份令牌没有源码内默认密钥；未配置时认证接口会明确拒绝服务。
     auth_secret: SecretStr | None = None

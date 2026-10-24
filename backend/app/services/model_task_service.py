@@ -316,6 +316,8 @@ class ModelTaskService:
             now=now,
         )
         task = self._locked_task(db, task_id=task_id)
+        if task.runtime_kind == "LANGGRAPH":
+            return None
         if not self._is_lease_eligible(task, now=leased_at):
             return None
         if task.attempt_count >= task.max_attempts:
@@ -365,7 +367,7 @@ class ModelTaskService:
         with self._session_factory() as db, db.begin():
             statement = (
                 select(ModelExecutionTask)
-                .where(eligible)
+                .where(eligible, ModelExecutionTask.runtime_kind != "LANGGRAPH")
                 .order_by(
                     case(
                         (ModelExecutionTask.status == ModelTaskStatus.PENDING, 0),

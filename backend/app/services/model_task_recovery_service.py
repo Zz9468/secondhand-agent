@@ -228,6 +228,8 @@ class ModelTaskRecoveryService:
         ).one_or_none()
         if ownership is None:
             raise ModelExecutionTaskNotFoundError("模型任务不存在或当前卖家无权访问")
+        if for_update and task.runtime_kind == "LANGGRAPH":
+            raise ModelExecutionTaskConflictError("新版图任务必须通过 GraphRunner 恢复")
         product_id, product_title, buyer_display_name = ownership
         return task, product_id, product_title, buyer_display_name
 

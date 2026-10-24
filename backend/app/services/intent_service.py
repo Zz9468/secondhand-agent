@@ -29,6 +29,7 @@ from app.services.errors import (
     ServiceError,
 )
 from app.services.negotiation_service import NegotiationService
+from app.services.runtime_boundary import require_legacy_runtime
 
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 
@@ -325,6 +326,8 @@ class IntentService:
         negotiation = db.scalar(statement)
         if negotiation is None:
             raise NegotiationNotFoundError("协商会话不存在或当前买家无权访问")
+        if for_update:
+            require_legacy_runtime(negotiation)
         return negotiation
 
     @staticmethod

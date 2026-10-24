@@ -116,6 +116,7 @@ class ModelExecutionTask(TimestampMixin, Base):
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    ownership_epoch: Mapped[int] = mapped_column(default=0, server_default="0")
     task_type: Mapped[ModelTaskType] = mapped_column(
         stored_enum(ModelTaskType, name="model_task_type"),
         nullable=False,

@@ -33,6 +33,7 @@ from app.services.errors import (
 )
 from app.services.negotiation_service import NegotiationService, OfferSnapshot
 from app.services.pricing_service import PricingService
+from app.services.runtime_boundary import require_legacy_runtime
 
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 
@@ -459,6 +460,7 @@ class ApprovalService:
             )
             if negotiation is None:
                 raise ApprovalNotFoundError("审批所属会话不存在")
+            require_legacy_runtime(negotiation)
             approval = self._get_approval(
                 db,
                 approval_id=approval_id,
@@ -490,9 +492,11 @@ class ApprovalService:
             approval_ids = tuple(
                 db.scalars(
                     select(ApprovalRequest.id)
+                    .join(NegotiationSession, NegotiationSession.id == ApprovalRequest.session_id)
                     .where(
                         ApprovalRequest.status == ApprovalStatus.PENDING,
                         ApprovalRequest.expires_at <= comparison_time,
+                        NegotiationSession.graph_version.is_(None),
                     )
                     .order_by(ApprovalRequest.id)
                     .limit(limit)
@@ -607,6 +611,7 @@ class ApprovalService:
                     Product.seller_id == seller_id,
                     ApprovalRequest.status == ApprovalStatus.PENDING,
                     ApprovalRequest.expires_at <= now,
+                    NegotiationSession.graph_version.is_(None),
                 )
                 .order_by(ApprovalRequest.id)
             )
@@ -696,6 +701,8 @@ class ApprovalService:
         )
         if negotiation is None or approval is None:
             raise ApprovalNotFoundError("审批请求不存在")
+        if for_update:
+            require_legacy_runtime(negotiation)
         product = db.get(
             Product,
             negotiation.product_id,
@@ -727,6 +734,8 @@ class ApprovalService:
         negotiation = db.scalar(statement)
         if negotiation is None:
             raise NegotiationNotFoundError("协商会话不存在或当前买家无权访问")
+        if for_update:
+            require_legacy_runtime(negotiation)
         return negotiation
 
     @staticmethod
