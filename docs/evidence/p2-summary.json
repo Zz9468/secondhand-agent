@@ -1,0 +1,94 @@
+{
+  "stage": "17.3 P2",
+  "status": "implementation_and_deterministic_tests_passed_live_semantics_pending",
+  "recorded_at": "2026-10-25T00:34:12.629069+08:00",
+  "baseline_commit": "607e614",
+  "implementation_commit": "fe77b15a92eb632eaf6e8c6cd258ba45e22489e8",
+  "tests": {
+    "graph-final.xml": {
+      "tests": 103,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 117.736,
+      "sha256": "712cd584719497f7f87f0c01202d63735dada86b00de1f336b2ac8527715d44e"
+    },
+    "legacy-mysql.xml": {
+      "tests": 355,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 86.596,
+      "sha256": "1e40e1befaa345c1f13f2e9bc988d9d4bc6e5e659dd065f8a32372547962af9e"
+    },
+    "legacy-targeted.xml": {
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 5.561,
+      "sha256": "29d1740a38a760f57bbf9988c06730a66fee1ff67074dc3b3073580c4e15c59d"
+    },
+    "model-unit.xml": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.096,
+      "sha256": "91615d7b49cf5b4c348fba46aebb830ae3b3593e02ae93c2aa4e372b7adbcc64"
+    },
+    "p1-business.xml": {
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 29.156,
+      "sha256": "7246e39c26c2fccbfa485cdd626b32f4043bbe949acd6b43f422011c9f0646f6"
+    },
+    "protocol.xml": {
+      "tests": 127,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 165.084,
+      "sha256": "43736acc6226fd894b00ea4014fe41ddd8b8e930e9a4bd176f67e5b22cedd9c5"
+    },
+    "semantic-final.xml": {
+      "tests": 49,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 83.058,
+      "sha256": "a7a46fb53aca8ca8596159fc6c6975814e72dbd4a0ba0fa35de224ba6f4c5a90"
+    },
+    "semantic-initial.xml": {
+      "tests": 36,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 43.435,
+      "sha256": "e30ec1c244ce3fa53fb4c5c52d585f26aad5ee33ec23b2a863575ffae0ea1c16"
+    }
+  },
+  "real_model_calls": 0,
+  "real_model_gate": "pending user budget authorization",
+  "browser_qa": "local synthetic API fixture, no production database or model calls",
+  "checks": {
+    "ruff": "passed",
+    "pip_check": "passed",
+    "frontend_build": "passed",
+    "migration_upgrade_downgrade_upgrade": "passed",
+    "development_alembic_check": "passed",
+    "worker_once": {
+      "completed": 0,
+      "notified": 0,
+      "busy": 0,
+      "failed": 0
+    }
+  },
+  "ui_evidence": {
+    "ui-calls.json": "2e7245d0366bb9a7dc041f034f1d8005d239288799b26a236ddbda4b18671bdd",
+    "ui-chat.png": "506d524feb92f693030fb0b2e9633136db3e7d4af1fb2f3f4ecad54903ffcd32",
+    "ui-seller.png": "c76fba200e8cd14f68fd9bd420ff4a591aee22715b8cbfbf9430d852fd8680b3"
+  }
+}
