@@ -59,6 +59,14 @@ def upgrade():
 
 
 def downgrade():
+    bind = op.get_bind()
+    if any(bind.scalar(sa.text(query)) for query in (
+        "SELECT COUNT(*) FROM graph_turn_quality",
+        "SELECT COUNT(*) FROM graph_recovery_actions",
+        "SELECT COUNT(*) FROM negotiation_sessions WHERE graph_version='negotiation-v3'",
+        "SELECT COUNT(*) FROM negotiation_inputs WHERE active_ms>0 OR active_since IS NOT NULL",
+    )):
+        raise RuntimeError("P4 已有运行、预算或恢复审计，不能通过降级删除这些证据")
     op.drop_table("graph_recovery_actions")
     op.drop_table("graph_turn_quality")
     for name in ("purpose", "model_name", "finished_at", "error_category", "request_snapshot"):

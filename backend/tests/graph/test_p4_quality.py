@@ -485,3 +485,16 @@ def test_p4_end_finalization_after_original_deadline_does_not_reset_budget(quali
     assert len(ledger_rows(c, run)) == calls
     with c.factory() as db:
         assert db.get(NegotiationSession, c.sid).last_resolved_input_seq == 1
+
+
+def test_p4_downgrade_cannot_erase_paid_artifacts_or_runtime_budget(quality_case):
+    c = quality_case
+    run = turn(c, "900自提")
+    result = subprocess.run([sys.executable, "-m", "alembic", "downgrade", "d34a8b9c71f0"],
+                            env={**os.environ, "DATABASE_URL": c.factory.kw["bind"].url
+                                 .render_as_string(hide_password=False)},
+                            capture_output=True, timeout=30)
+    assert result.returncode != 0 and b"P4" in result.stderr
+    assert ledger_rows(c, run)
+    with c.factory() as db:
+        assert db.get(GraphTurnQuality, run).approved
