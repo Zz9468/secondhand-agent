@@ -161,6 +161,19 @@ def test_model_cannot_turn_rejection_into_withdrawal(semantic_case):
         assert db.get(NegotiationSession, c.sid).current_offer_id == card["offer_id"]
 
 
+@pytest.mark.parametrize("patch", [None, {}])
+def test_change_terms_without_current_patch_cannot_resubmit_previous_terms(semantic_case, patch):
+    c = semantic_case
+    first = turn(c, "900自提")
+    card, ack = show(c, first)
+    text = "行，但是得包邮"
+    changed = turn(c, text, [intent(text, "CHANGE_TERMS", candidate=patch)], display_receipt_id=ack)
+    assert result(c, changed) is None
+    with c.factory() as db:
+        session = db.get(NegotiationSession, c.sid)
+        assert session.current_offer_id == card["offer_id"] and session.round_count == 1
+
+
 @pytest.mark.parametrize("omit_condition", [False, True])
 @pytest.mark.parametrize("whole_quote", [False, True])
 def test_branch_local_condition_is_preserved_without_affecting_other_choice(

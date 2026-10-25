@@ -98,6 +98,21 @@ class IntentFrame(StrictModel):
         for item in self.intents:
             if item.source_quote not in source:
                 raise ValueError("意图引用不属于当前输入")
+            if item.type in {"PROPOSE_OFFER", "CHANGE_TERMS"} and (
+                item.candidate is None
+                or not any(
+                    item.candidate.model_dump().get(key)
+                    for key in (
+                        "amount",
+                        "delivery",
+                        "payer",
+                        "region",
+                        "conditions",
+                        "commitments",
+                    )
+                )
+            ):
+                raise ValueError("报价或修改条款必须包含本轮明确候选，不能复用未修改的历史条款")
             if item.candidate:
                 candidate = item.candidate
                 numbers = {Decimal(n) for n in re.findall(r"\d+(?:\.\d+)?", source)}
