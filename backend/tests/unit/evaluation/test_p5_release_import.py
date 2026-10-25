@@ -32,3 +32,13 @@ def test_compatible_unknown_shipping_openings_have_no_formal_offer():
         assert case["scripted_offers"] == [None]
         assert case["expected_outcomes"] == ["NO_ACTION"]
     assert cases["risk-condition-0"]["split"] == "development_regression"
+
+
+def test_long_history_requires_consultation_not_just_twelve_actions():
+    from evaluation.p5.release_scoring import score_release
+
+    case = next(c for c in load_cases() if c["case_id"] == "release120-v4_long_history_01")
+    snapshot = {"session_status": "ACTIVE", "offers": [], "runs": [{} for _ in range(12)]}
+    assert score_release(case, snapshot) == []
+    snapshot["runs"][3] = {"receipt": {"outcome": "OFFER_ACCEPTED"}}
+    assert "long_history_consultation_prefix_executed_action" in score_release(case, snapshot)

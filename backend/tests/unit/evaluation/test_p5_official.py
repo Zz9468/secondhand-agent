@@ -38,6 +38,29 @@ def test_simulator_sees_public_card_terms_without_confirmation_credentials():
     assert "private-display-context" not in reply and "54321" not in reply
 
 
+def test_simulator_keeps_pending_conditions_but_no_draft_identifiers():
+    reply = public_reply(
+        SimpleNamespace(
+            content="待澄清",
+            card={
+                "kind": "drafts",
+                "context_id": "private-context",
+                "drafts": [
+                    {
+                        "draft_id": "private-draft",
+                        "draft_version": 78,
+                        "candidate": {"amount": "900", "conditions": [{"value": "98"}]},
+                        "missing": ["condition:battery_health_pct:UNSATISFIED"],
+                    }
+                ],
+            },
+        )
+    )
+    assert "900" in reply and "98" in reply and "UNSATISFIED" in reply
+    assert "private-context" not in reply and "private-draft" not in reply
+    assert "draft_version" not in reply
+
+
 def test_missing_or_failed_remote_feedback_never_completes():
     assert not feedback_complete(SimpleNamespace(feedback_stats=None))
     assert not feedback_complete(SimpleNamespace(feedback_stats={"business_correct": None}))

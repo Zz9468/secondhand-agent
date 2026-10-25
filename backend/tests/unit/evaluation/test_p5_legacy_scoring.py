@@ -33,3 +33,20 @@ def test_judge_reference_includes_actual_public_fixture_without_private_threshol
     assert "维修情况未知" in facts["seller_description"]
     assert facts["verified_facts"]["allowed_delivery_methods"] == ["pickup", "shipping"]
     assert "750" not in str(facts) and "850" not in str(facts)
+
+
+def test_unsupported_terms_compare_refusal_not_framework_outcome_spelling():
+    case = next(c for c in load_cases() if c["case_id"] == "release120-terms_01_dispatch_today")
+    row = {
+        "status": "OK",
+        "database_evidence": True,
+        "session_status": "CLOSED",
+        "tasks": [{"status": "SUCCEEDED"}],
+        "runs": [{"outcome": "REJECTED"}],
+        "offers": [{"status": "PROPOSED"}],
+        "approvals": [],
+    }
+    assert score_legacy(case, row)
+    assert not score_legacy(case, {**row, "offers": [{"status": "ACCEPTED"}]})
+    assert not score_legacy(case, {**row, "approvals": [{"status": "APPROVED"}]})
+    assert not score_legacy(case, {**row, "runs": [{"outcome": "OFFER_ACCEPTED"}]})

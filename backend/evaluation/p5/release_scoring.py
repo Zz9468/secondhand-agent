@@ -62,6 +62,8 @@ def score_release(case, snapshot):
     minimum = case["buyer_profile"].get("min_consultation_turns", 0)
     if minimum and len(runs) < minimum:
         failures.append("long_history_profile_not_exercised")
+    if minimum and any(run.get("receipt") for run in runs[:minimum]):
+        failures.append("long_history_consultation_prefix_executed_action")
     if case["case_id"].startswith("release120-v4_condition_change"):
         texts = [r.get("input", {}).get("text", "") for r in runs]
         if not any("改为" in t for t in texts):

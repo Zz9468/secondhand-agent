@@ -47,6 +47,11 @@ def public_reply(message):
         for key, value in (message.card or {}).items()
         if key in {"kind", "amount", "shipping_paid_by", "terms", "can_confirm"}
     }
+    if (message.card or {}).get("drafts"):
+        card["drafts"] = [
+            {k: draft[k] for k in ("candidate", "missing") if k in draft}
+            for draft in message.card["drafts"]
+        ]
     return message.content + (
         "\n公开报价卡片：" + json.dumps(card, ensure_ascii=False) if card else ""
     )
@@ -181,7 +186,9 @@ class GraphTarget:
             reply = db.scalar(select(Message).where(Message.source_id == f"turn:{run}:reply"))
             if not reply:
                 raise RuntimeError("graph did not publish a result")
-            self.card = reply.card
+            displayed_context = (self.card or {}).get("context_id")
+            if reply.card:
+                self.card = reply.card
             output = {"role": "assistant", "content": public_reply(reply)}
         self.outputs.append(output)
         # Replacement may invalidate a previous approval and enqueue a separate notice.
@@ -219,8 +226,12 @@ class GraphTarget:
                 self.card = latest.card if latest else self.card
                 if latest:
                     output["content"] += "\n卖家审批通知：" + public_reply(latest)
-        self.ack = None
-        if self.case.get("show_cards", True) and self.card and self.card.get("context_id"):
+        if (
+            self.case.get("show_cards", True)
+            and self.card
+            and self.card.get("context_id")
+            and self.card["context_id"] != displayed_context
+        ):
             self.ack = NotificationService(self.factory).display(
                 self.sid, self.buyer, self.card["context_id"], "p5", uuid4().hex
             )

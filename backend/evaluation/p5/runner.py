@@ -304,8 +304,12 @@ def run(factory, postgres_url, options):
                 comparable, options["repetitions"], directory, options["concurrency"]
             )
             by_id = {c["case_id"]: c for c in comparable}
-            for old in report["legacy_results"]:
+
+            def judge_old(old):
                 old["judge"] = judge(by_id[old["case_id"]], old["messages"], old["auxiliary_calls"])
+
+            with ThreadPoolExecutor(max_workers=options["concurrency"]) as pool:
+                list(pool.map(judge_old, report["legacy_results"]))
         except Exception as exc:
             report["legacy_error"] = type(exc).__name__
         save()

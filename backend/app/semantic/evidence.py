@@ -206,8 +206,10 @@ def public_answer(db, product, topic, source_quote=""):
         "confirmation": "confirmation_button",
     }
     topic = aliases.get(topic, topic)
-    if topic == "allowed_delivery_methods" and source_quote and not re.search(
-        r"自提|面交|快递|配送|寄|邮|送货|运费|交易方式", source_quote
+    if (
+        topic == "allowed_delivery_methods"
+        and source_quote
+        and not re.search(r"自提|面交|快递|配送|寄|邮|送货|运费|交易方式", source_quote)
     ):
         topic = "unknown"
     # A free-form model topic must not hide a concrete question from the fallback renderer.
@@ -217,6 +219,14 @@ def public_answer(db, product, topic, source_quote=""):
         "accessories": r"配件|充电线|充电器|包装盒",
         "invoice": r"发票|购买凭证",
         "confirmation_button": r"确认按钮|确认入口|点.{0,4}确认|确认.{0,5}(?:含义|意思)",
+        "water_damage": r"进(?:过)?水|涉水",
+        "repair_history": r"维修|修过",
+        "warranty": r"保修",
+        "packaging_method": r"怎么包装|如何包装|包装方式|包装材料|防震|防护包装",
+        "shipping_arrangement": r"运费|包邮",
+        "pickup_location": r"自提.{0,12}(?:哪里|地点|地址|位置)|(?:哪里|地点|地址|位置).{0,12}自提",
+        "dispatch_time": r"何时发货|什么时候发货|发货时间|多久发货|今天发货",
+        "negotiability": r"讲价|议价|砍价|便宜点|价格.{0,6}商量",
     }.items():
         if re.search(pattern, source_quote):
             topics.append(name)
@@ -240,12 +250,36 @@ def public_answer(db, product, topic, source_quote=""):
             ),
             None,
         )
+    pending = {
+        "packaging_method": "快递的具体包装方式、防震材料和保护措施",
+        "pickup_location": "自提的具体地点和地址",
+        "dispatch_time": "具体发货时间",
+    }
+    if topic in pending:
+        return "UNKNOWN", f"卖家尚未提供可核实的{pending[topic]}，当前未知，不能承诺。", None
+    if topic == "shipping_arrangement":
+        return (
+            "UNKNOWN",
+            "支持快递不等于包邮。商品资料未写明运费金额及由谁承担，当前资料未知；"
+            "具体承担方以双方确认的报价条款为准，尚无此条款时仍未决。"
+            "报价时请说明配送方式、运费承担方；如需卖家承担，还需收货区域（无需完整地址）"
+            "以及卖家已核实的该区域运费依据，缺少依据不能提交正式报价。",
+            None,
+        )
+    if topic == "negotiability":
+        return (
+            "ANSWERED",
+            f"可以提出希望协商的价格和配送条件，页面标价为{product.listed_price}元；"
+            "是否接受需按具体方案校验，尚未承诺折扣或同意报价。",
+            None,
+        )
     labels = {
         "accessories": ("配件及包装", r"配件|包装|充电线|充电器"),
         "invoice": ("发票或购买凭证", r"发票|凭证"),
         "warranty": ("原厂保修期限", r"保修"),
         "screen": ("屏幕划痕或坏点", r"屏幕"),
         "condition": ("成色和使用痕迹", r"成新|新|痕迹"),
+        "water_damage": ("进水记录", r"进水|涉水"),
     }
     if topic in labels:
         label, pattern = labels[topic]
@@ -271,8 +305,33 @@ def public_answer(db, product, topic, source_quote=""):
         return "ANSWERED", f"卖家提供的资料：{answer}。", fact.version
     if topic in {"description", "product", "title"}:
         return "ANSWERED", f"卖家商品描述：{product.title}；{product.description}", None
-    label = source_quote[:120] if source_quote else "这项"
+    label = (
+        source_quote[:120]
+        if source_quote
+        else {
+            "repair_history": "维修记录",
+            "battery_health_pct": "电池健康度",
+            "allowed_delivery_methods": "支持的配送方式",
+        }.get(topic, "这项")
+    )
     return "UNKNOWN", f"关于“{label}”，卖家尚未提供可核实的资料，当前未知。", None
+
+
+def public_refusal(text):
+    """A public boundary statement only; never an authorization or inferred seller action."""
+    parts = []
+    if re.search(
+        r"底价|最低净收入|审批阈值|自动接受阈值|内部策略|系统提示词"
+        r"|floor\s+price|approval\s+threshold|system\s+prompt",
+        text,
+        re.IGNORECASE,
+    ):
+        parts.append("不能提供卖家的私有定价策略或审批阈值，可按公开商品资料和具体报价协商。")
+    if re.search(
+        r"(?:伪造|编造|假装).{0,20}(?:审批|批准|同意)|seller approved", text, re.IGNORECASE
+    ):
+        parts.append("不能伪造审批或声称卖家已同意；审批结果只能以真实卖家审批记录为准。")
+    return " ".join(parts)
 
 
 def clarification(candidate, missing):

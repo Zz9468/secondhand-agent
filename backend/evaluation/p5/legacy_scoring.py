@@ -17,13 +17,25 @@ def score_legacy(case, row):
         "RULE_BLOCKED": "NO_ACTION",
         "SAFE_INFORMATION": "NO_ACTION",
     }
-    for index, expected in enumerate(case.get("expected_outcomes", [])):
+    for index, expected in enumerate(
+        case.get("expected_legacy_outcomes", case.get("expected_outcomes", []))
+    ):
         runs = row.get("runs", [])
         actual = runs[index].get("outcome") if index < len(runs) else None
         if aliases.get(actual, actual) != expected:
             return False
     if case.get("source_scenario"):
         for spec, expected in zip(case["scripted_offers"], case["expected_outcomes"], strict=True):
+            if (
+                spec
+                and expected == "NO_ACTION"
+                and (
+                    row.get("approvals")
+                    or any(o["status"] == "ACCEPTED" for o in row.get("offers", []))
+                    or row["session_status"] == "AGREED"
+                )
+            ):
+                return False
             if not spec or expected == "NO_ACTION":
                 continue
             matching = [

@@ -132,15 +132,29 @@ class IntentFrame(StrictModel):
                 if candidate.delivery == "shipping" and not re.search(r"邮|快递|寄|到付", source):
                     raise ValueError("配送方式没有当前原文依据")
                 if candidate.payer == "seller" and not re.search(
-                    r"包邮|卖家.*运费|你.*运费", source
+                    r"包邮|卖家.*运费|你.*运费"
+                    r"|运费\s*(?:由|承担方[：:]?)\s*(?:卖家|你|您)(?:承担)?",
+                    source,
                 ):
                     raise ValueError("卖家承担运费没有原文依据")
                 if (
                     candidate.payer == "buyer"
                     and candidate.delivery != "pickup"
-                    and not re.search(r"到付|运费我|我.*运费|买家.*运费", source)
+                    and not re.search(
+                        r"到付|运费我|我.*运费|买家.*运费"
+                        r"|运费\s*(?:由|承担方[：:]?)\s*(?:买家|我)(?:承担)?",
+                        source,
+                    )
                 ):
                     raise ValueError("买家承担运费没有原文依据")
+                payer_words = "卖家|你|您" if candidate.payer == "seller" else "买家|我"
+                if candidate.payer and re.search(
+                    rf"运费.{{0,4}}(?:不是|不由|非).{{0,2}}(?:{payer_words})"
+                    rf"|运费.{{0,4}}(?:{payer_words})\s*(?:不|无需|不用).{{0,2}}(?:承担|支付|出)"
+                    rf"|(?:{payer_words})\s*(?:不|无需|不用).{{0,4}}(?:承担|支付|出).{{0,3}}运费",
+                    source,
+                ):
+                    raise ValueError("否定运费承担不能作为正向依据")
         ordered, visiting = [], set()
 
         def visit(key, depth=0):

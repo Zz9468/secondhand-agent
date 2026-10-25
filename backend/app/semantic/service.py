@@ -13,7 +13,13 @@ from app.db.models.semantic import OfferDraft, SemanticOfferBasis, SemanticTurn,
 from app.runtime.contracts import Conflict, TypedInput
 from app.runtime.input_queue import lock_owner
 from app.semantic.contracts import Candidate, ChatInput, IntentFrame
-from app.semantic.evidence import assess, clarification, public_answer, quote_in_transaction
+from app.semantic.evidence import (
+    assess,
+    clarification,
+    public_answer,
+    public_refusal,
+    quote_in_transaction,
+)
 
 NEGATIVE_BATTERY_FLOOR = re.compile(
     r"电池[^，。；！？!?]{0,30}?(?:不到|低于|少于|小于)\s*(\d+(?:\.\d+)?)\s*%"
@@ -448,6 +454,9 @@ def plan_turn(factory, run_id, owner, frame_value, now):
             results.append(
                 {"id": intent.id, "status": status, "text": answer, "fact_version": evidence}
             )
+        refusal = public_refusal(payload.text)
+        if refusal:
+            results.append({"id": "public-boundary", "status": "REFUSED", "text": refusal})
         db.add(
             SemanticTurn(
                 input_id=run.id,

@@ -198,3 +198,35 @@ def test_negative_purchase_condition_applies_to_both_alternatives():
     assert safe_frame(frame, text)[1] is False
     frame.intents[1].candidate.conditions = frame.intents[0].candidate.conditions
     assert safe_frame(frame, text)[1] is True
+
+
+@pytest.mark.parametrize(
+    "text,payer,valid",
+    [
+        ("900快递到上海，运费由卖家承担", "seller", True),
+        ("900快递，运费承担方：卖家（您）承担", "seller", True),
+        ("900快递，运费由买家承担", "buyer", True),
+        ("900快递，运费不是卖家承担", "seller", False),
+        ("900快递，卖家不承担运费", "seller", False),
+        ("900快递，运费由卖家不承担", "seller", False),
+        ("900快递，运费不是买家承担", "buyer", False),
+    ],
+)
+def test_explicit_reversed_shipping_payer_does_not_drop_negation(text, payer, valid):
+    frame = IntentFrame.model_validate(
+        {
+            "intents": [
+                {
+                    "id": "i",
+                    "type": "PROPOSE_OFFER",
+                    "source_quote": text,
+                    "candidate": {"amount": "900", "delivery": "shipping", "payer": payer},
+                }
+            ]
+        }
+    )
+    if valid:
+        assert frame.validated_for(text)
+    else:
+        with pytest.raises(ValueError):
+            frame.validated_for(text)
