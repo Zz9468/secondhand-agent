@@ -1,6 +1,8 @@
 import hashlib
 import json
 
+import pytest
+
 from app.runtime.contracts import digest
 from evaluation.p5.datasets import DATA, load_cases
 from evaluation.p5.import_release import adapt
@@ -42,3 +44,15 @@ def test_long_history_requires_consultation_not_just_twelve_actions():
     assert score_release(case, snapshot) == []
     snapshot["runs"][3] = {"receipt": {"outcome": "OFFER_ACCEPTED"}}
     assert "long_history_consultation_prefix_executed_action" in score_release(case, snapshot)
+
+
+def test_session_status_cannot_be_mislabeled_as_an_action_outcome():
+    from evaluation.p5.datasets import validate_case_expectations
+
+    with pytest.raises(ValueError, match="action outcome"):
+        validate_case_expectations({"expected_status": "AGREED", "expected_outcomes": ["AGREED"]})
+    validate_case_expectations(
+        {"expected_status": "AGREED", "expected_outcomes": ["INTENT_CONFIRMED"]}
+    )
+    with pytest.raises(ValueError, match="forbidden"):
+        validate_case_expectations({"expected_status": "AGREED", "forbidden": ["AGREED"]})

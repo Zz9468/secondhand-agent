@@ -64,6 +64,7 @@ def metadata(cases):
             for p in ("langgraph", "langsmith", "openevals", "agentevals", "langchain-openai")
         },
         "model": settings.model_name,
+        "model_endpoint_sha256": digest(settings.model_base_url),
         "temperature": 0,
         "enable_thinking": False,
         "sdk_retries": 0,
@@ -78,9 +79,16 @@ def metadata(cases):
 def runtime_files():
     paths = [
         p
-        for folder in ("app", "evaluation/p5", "evaluation/datasets", "scripts", "migrations")
+        for folder in (
+            "app",
+            "evaluation/p5",
+            "evaluation/datasets",
+            "evaluation/holdouts",
+            "scripts",
+            "migrations",
+        )
         for p in (ROOT / "backend" / folder).rglob("*")
-        if p.is_file() and p.suffix in {".py", ".json"}
+        if p.is_file() and p.suffix in {".py", ".json", ".jsonl"}
     ]
     paths.append(ROOT / "backend/requirements.lock")
     return {str(p.relative_to(ROOT)).replace("\\", "/"): sha(p) for p in sorted(paths)}

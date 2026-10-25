@@ -8,6 +8,16 @@ from app.runtime.contracts import digest
 DATA = Path(__file__).resolve().parents[1] / "datasets" / "p5"
 
 
+def validate_case_expectations(case):
+    from app.services.notification_service import TEXT
+
+    allowed = set(TEXT) | {"NO_ACTION", "NO_AGREEMENT", "NOT_EXECUTED"}
+    if set(case.get("expected_outcomes", [])) - allowed:
+        raise ValueError("unknown action outcome label; session status is a separate field")
+    if case.get("expected_status") in case.get("forbidden", []):
+        raise ValueError("expected terminal state is also forbidden")
+
+
 def load_cases():
     cases = []
     for path in sorted(DATA.glob("*.json")):
@@ -20,6 +30,7 @@ def load_cases():
     registry = DATA.parent / "p5_development_regressions.json"
     excluded = {c["case_id"] for c in json.loads(registry.read_text(encoding="utf-8"))["cases"]}
     for case in cases:
+        validate_case_expectations(case)
         if case["case_id"] in excluded:
             case["split"] = "development_regression"
             case["used_for_tuning"] = True
