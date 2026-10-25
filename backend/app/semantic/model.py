@@ -9,7 +9,7 @@ from openai import OpenAI
 
 from app.semantic.contracts import IntentFrame
 
-PROMPT_VERSION = "p2-intents-v6"
+PROMPT_VERSION = "p2-intents-v7"
 LEGACY_PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，不作业务决定。
 逐项提取所有问题、报价、条件、纠正、撤回与关闭。source_quote必须逐字来自当前输入。
 800可以吗/800包邮可以吗是PROPOSE_OFFER；别人卖800、预算800先看看是PROVIDE_INFO，不能报价。
@@ -97,7 +97,7 @@ payer自提/到付/运费我出为buyer，包邮/你出运费为seller；region�
 "conditions":[],"commitments":[]}}],"ambiguous":false}
 金额、方式、条件都从当前输入提取，不复制例子。输出schema如下：
 """
-PROMPTS[PROMPT_VERSION] = (
+PROMPTS["p2-intents-v6"] = (
     PROMPTS["p2-intents-v4"]
     + """
 修改条款也必须提取candidate，不能仅输出CHANGE_TERMS而candidate=null，否则会遗漏买家的修改。
@@ -108,6 +108,37 @@ PROMPTS[PROMPT_VERSION] = (
 “先看看”不能结束协商；“不行/不同意”不能确认或撤回报价。
 """
 )
+PROMPTS[PROMPT_VERSION] = (
+    PROMPTS["p2-intents-v6"]
+    + """
+上下文优先规则：has_displayed_offer=true时，改寄/改成/但是得等明确改条款用CHANGE_TERMS；
+例如“改寄北京”candidate.delivery=shipping、region=北京，未提金额及承担方为null。
+只有补充已绑定草案（has_bound_draft=true）的缺失信息才用PROVIDE_INFO。
+"""
+)
+
+
+def output_format(prompt_version):
+    if prompt_version != "p2-intents-v7":
+        return {"type": "json_object"}
+    schema = IntentFrame.model_json_schema()
+    schema["$defs"]["Intent"]["allOf"] = [
+        {
+            "if": {"properties": {"type": {"enum": ["PROPOSE_OFFER", "CHANGE_TERMS"]}}},
+            "then": {
+                "properties": {"candidate": {"$ref": "#/$defs/Candidate"}},
+                "required": ["candidate"],
+            },
+        }
+    ]
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "buyer_intent_frame",
+            "strict": True,
+            "schema": schema,
+        },
+    }
 
 
 class SemanticResponseError(ValueError):
@@ -153,7 +184,11 @@ class SemanticModel:
         return None
 
     def reserve(self, text, context):
-        tokens = len(json.dumps(model_messages(text, context), ensure_ascii=False).encode()) + 3072
+        tokens = (
+            len(json.dumps(model_messages(text, context), ensure_ascii=False).encode())
+            + len(json.dumps(output_format(PROMPT_VERSION), ensure_ascii=False).encode())
+            + 3072
+        )
         prices = self.prices()
         if prices is None or tokens > 32768:
             return tokens, None
@@ -179,7 +214,7 @@ class SemanticModel:
                 temperature=0,
                 max_tokens=2048,
                 extra_body={"enable_thinking": False},
-                response_format={"type": "json_object"},
+                response_format=output_format(config["prompt_version"]),
                 messages=model_messages(text, context, config["prompt_version"]),
             )
         usage = response.usage

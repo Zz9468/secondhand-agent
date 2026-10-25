@@ -54,6 +54,7 @@ def test_known_endpoint_cost_bound_and_unknown_price_refusal():
         "p2-intents-v3",
         "p2-intents-v4",
         "p2-intents-v5",
+        "p2-intents-v6",
         PROMPT_VERSION,
     ],
 )
@@ -104,6 +105,13 @@ def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch, prompt_vers
     assert captured["client"]["max_retries"] == 0
     assert captured["request"]["max_tokens"] == 2048
     assert captured["request"]["extra_body"] == {"enable_thinking": False}
+    response_format = captured["request"]["response_format"]
+    assert response_format["type"] == (
+        "json_schema" if prompt_version == PROMPT_VERSION else "json_object"
+    )
+    if prompt_version == PROMPT_VERSION:
+        assert response_format["json_schema"]["strict"] is True
+        assert response_format["json_schema"]["schema"]["$defs"]["Intent"]["allOf"]
     assert "synthetic-not-real" not in str(captured["request"])
     value["intents"][0]["source_quote"] = "not in source"
     with pytest.raises(SemanticResponseError) as rejected:
