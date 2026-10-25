@@ -55,6 +55,7 @@ def test_known_endpoint_cost_bound_and_unknown_price_refusal():
         "p2-intents-v4",
         "p2-intents-v5",
         "p2-intents-v6",
+        "p2-intents-v7",
         PROMPT_VERSION,
     ],
 )
@@ -107,7 +108,7 @@ def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch, prompt_vers
     assert captured["request"]["extra_body"] == {"enable_thinking": False}
     response_format = captured["request"]["response_format"]
     assert response_format["type"] == (
-        "json_schema" if prompt_version == PROMPT_VERSION else "json_object"
+        "json_schema" if prompt_version in {"p2-intents-v7", PROMPT_VERSION} else "json_object"
     )
     if prompt_version == PROMPT_VERSION:
         assert response_format["json_schema"]["strict"] is True

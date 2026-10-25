@@ -194,6 +194,56 @@ def test_negated_confirmation_or_close_cannot_mutate_session(semantic_case, text
         assert session.status.value == "ACTIVE" and session.current_offer_id == card["offer_id"]
 
 
+def test_explicit_not_buying_is_a_valid_close(semantic_case):
+    c = semantic_case
+    text = "不买了，结束吧"
+    run = turn(c, text, [intent(text, "CLOSE_SESSION")])
+    assert result(c, run)["outcome"] == "SESSION_CLOSED"
+
+
+@pytest.mark.parametrize("repair_succeeds", [False, True])
+def test_structural_repair_is_bounded_recorded_and_replayable(semantic_case, repair_succeeds):
+    c = semantic_case
+    text = "900自提"
+
+    class Provider(FakeSemanticModel):
+        def __call__(self, text, context, config):
+            self.calls += 1
+            if self.calls == 2:
+                assert "validation_feedback" in context
+            frame = {
+                "intents": [
+                    intent(
+                        text if repair_succeeds and self.calls == 2 else "not in current input",
+                        candidate=candidate(),
+                    )
+                ]
+            }
+            return frame, 100, Decimal("0")
+
+    provider = Provider()
+    c.runner.semantic_provider = provider
+    run = turn(c, text, execute=False)
+    if repair_succeeds:
+
+        def crash(point):
+            if point == "after_semantics":
+                raise RuntimeError("exit after accepted repair")
+
+        c.runner.fault = crash
+        with pytest.raises(RuntimeError):
+            c.runner.run(run)
+        c.runner.fault = lambda point: None
+        c.clock.advance()
+    c.runner.run(run)
+    assert provider.calls == 2
+    assert (result(c, run) is not None) == repair_succeeds
+    with c.factory() as db:
+        rows = list(db.scalars(select(ModelCallLedger).where(ModelCallLedger.input_id == run)))
+        assert len(rows) == 2
+        assert sum(row.status == "ACCEPTED" for row in rows) == int(repair_succeeds)
+
+
 @pytest.mark.parametrize("omit_condition", [False, True])
 @pytest.mark.parametrize("whole_quote", [False, True])
 def test_branch_local_condition_is_preserved_without_affecting_other_choice(

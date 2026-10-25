@@ -7,7 +7,7 @@ from app.graphs.negotiation.graph import TurnState
 from app.runtime.contracts import BudgetExhausted, Conflict, thread_id
 from app.runtime.input_queue import lock_owner
 from app.semantic.contracts import ChatInput, IntentFrame
-from app.semantic.model import SemanticModel
+from app.semantic.model import SemanticModel, parsing_contexts
 from app.semantic.service import load_command, parser_context, plan_turn
 from app.services.business_command_service import BUSINESS_ERRORS, BusinessCommandService
 from app.services.model_call_ledger_service import ModelCallLedgerService
@@ -51,24 +51,31 @@ def build_semantic_graph(saver, queue, owner, *, provider=None, fault=lambda poi
             }
             plan_turn(queue.factory, state["run_id"], owner, frame, queue.clock())
             return {"semantic_reference": None}
-        tokens, cost = model.reserve(payload.text, context)
+        reference = None
+        for attempt_context in parsing_contexts(context, config["prompt_version"]):
+            tokens, cost = model.reserve(payload.text, attempt_context)
 
-        def invoke():
-            value, used, actual_cost = model(payload.text, context, config)
-            frame = IntentFrame.model_validate(value)
-            frame.validated_for(payload.text)
-            return frame.model_dump(mode="json"), used, actual_cost
+            def invoke(call_context=attempt_context):
+                value, used, actual_cost = model(payload.text, call_context, config)
+                frame = IntentFrame.model_validate(value)
+                frame.validated_for(payload.text)
+                return frame.model_dump(mode="json"), used, actual_cost
 
-        try:
-            reference = ledger.call(
-                state["run_id"],
-                owner,
-                "parse-intents-v1",
-                invoke,
-                reserved_tokens=tokens,
-                reserved_cost=cost,
-            )
-        except (ValueError, BudgetExhausted):
+            try:
+                reference = ledger.call(
+                    state["run_id"],
+                    owner,
+                    "parse-intents-v1",
+                    invoke,
+                    reserved_tokens=tokens,
+                    reserved_cost=cost,
+                )
+                break
+            except ValueError:
+                continue
+            except BudgetExhausted:
+                break
+        if reference is None:
             # Invalid semantics become a no-action clarification, never a guessed proposal.
             frame = {
                 "ambiguous": True,

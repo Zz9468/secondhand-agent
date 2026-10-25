@@ -9,7 +9,7 @@ from openai import OpenAI
 
 from app.semantic.contracts import IntentFrame
 
-PROMPT_VERSION = "p2-intents-v7"
+PROMPT_VERSION = "p2-intents-v8"
 LEGACY_PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，不作业务决定。
 逐项提取所有问题、报价、条件、纠正、撤回与关闭。source_quote必须逐字来自当前输入。
 800可以吗/800包邮可以吗是PROPOSE_OFFER；别人卖800、预算800先看看是PROVIDE_INFO，不能报价。
@@ -108,7 +108,7 @@ PROMPTS["p2-intents-v6"] = (
 “先看看”不能结束协商；“不行/不同意”不能确认或撤回报价。
 """
 )
-PROMPTS[PROMPT_VERSION] = (
+PROMPTS["p2-intents-v7"] = (
     PROMPTS["p2-intents-v6"]
     + """
 上下文优先规则：has_displayed_offer=true时，改寄/改成/但是得等明确改条款用CHANGE_TERMS；
@@ -116,10 +116,23 @@ PROMPTS[PROMPT_VERSION] = (
 只有补充已绑定草案（has_bound_draft=true）的缺失信息才用PROVIDE_INFO。
 """
 )
+PROMPTS[PROMPT_VERSION] = PROMPTS["p2-intents-v7"]
+
+
+def parsing_contexts(context, prompt_version):
+    yield context
+    if prompt_version == "p2-intents-v8":
+        yield {
+            **context,
+            "validation_feedback": (
+                "上次输出未通过结构或原文依据校验。请重新提取，只使用schema声明的字段；"
+                "禁止source_quote_full等额外字段。条件放candidate.conditions；引用须连续来自当前输入。"
+            ),
+        }
 
 
 def output_format(prompt_version):
-    if prompt_version != "p2-intents-v7":
+    if prompt_version not in {"p2-intents-v7", "p2-intents-v8"}:
         return {"type": "json_object"}
     schema = IntentFrame.model_json_schema()
     schema["$defs"]["Intent"]["allOf"] = [

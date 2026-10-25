@@ -10,7 +10,12 @@ from decimal import Decimal
 from pathlib import Path
 
 from app.semantic.contracts import IntentFrame
-from app.semantic.model import PROMPT_VERSION, SemanticModel, SemanticResponseError
+from app.semantic.model import (
+    PROMPT_VERSION,
+    SemanticModel,
+    SemanticResponseError,
+    parsing_contexts,
+)
 from app.semantic.service import safe_frame
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -107,56 +112,66 @@ def main():
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    report["case_results"] = {}
     for case in cases:
         context = case.get(
             "context",
             {"has_bound_draft": False, "missing_fields": [], "has_displayed_offer": False},
         )
-        token_bound, cost_bound = model.reserve(case["text"], context)
-        if cost_bound is None:
-            raise RuntimeError("CNY pricing is unknown for this model/endpoint; no call made")
-        if (args.max_calls and len(report["attempts"]) >= args.max_calls) or (
-            cap and reserved + cost_bound > cap
-        ):
-            report["stopped"] = "BUDGET_LIMIT"
-            break
-        reserved += cost_bound
-        tokens += token_bound
-        attempt = {
-            "id": case["id"],
-            "status": "RESERVED",
-            "reserved_cny": str(cost_bound),
-            "reserved_tokens": token_bound,
-        }
-        report["attempts"].append(attempt)
-        save()
-        started = time.monotonic()
-        try:
-            frame, actual_tokens, actual_cost = model(
-                case["text"],
-                context,
-                {"model_name": model.settings.model_name, "prompt_version": PROMPT_VERSION},
-            )
-            attempt.update(
-                value=frame,
-                tokens=actual_tokens,
-                estimated_cost=str(actual_cost) if actual_cost is not None else None,
-            )
-            validate_case(case, frame)
-            attempt["status"] = "PASSED"
-        except Exception as exc:
-            attempt.update(status="FAILED", error_type=type(exc).__name__)
-            if isinstance(exc, SemanticResponseError):
-                attempt.update(
-                    raw_content=exc.raw_content,
-                    tokens=exc.tokens,
-                    estimated_cost=str(exc.cost) if exc.cost is not None else None,
-                    validation_error=exc.reason,
+        for attempt_index, call_context in enumerate(parsing_contexts(context, PROMPT_VERSION)):
+            token_bound, cost_bound = model.reserve(case["text"], call_context)
+            if cost_bound is None:
+                raise RuntimeError("CNY pricing is unknown for this model/endpoint; no call made")
+            if (args.max_calls and len(report["attempts"]) >= args.max_calls) or (
+                cap and reserved + cost_bound > cap
+            ):
+                report["stopped"] = "BUDGET_LIMIT"
+                break
+            reserved += cost_bound
+            tokens += token_bound
+            attempt = {
+                "id": case["id"],
+                "attempt_index": attempt_index,
+                "status": "RESERVED",
+                "reserved_cny": str(cost_bound),
+                "reserved_tokens": token_bound,
+            }
+            report["attempts"].append(attempt)
+            save()
+            started = time.monotonic()
+            retryable = False
+            try:
+                frame, actual_tokens, actual_cost = model(
+                    case["text"],
+                    call_context,
+                    {"model_name": model.settings.model_name, "prompt_version": PROMPT_VERSION},
                 )
-        attempt["seconds"] = round(time.monotonic() - started, 3)
-        save()
-    report["passed"] = len(report["attempts"]) == len(cases) and all(
-        a["status"] == "PASSED" for a in report["attempts"]
+                attempt.update(
+                    value=frame,
+                    tokens=actual_tokens,
+                    estimated_cost=str(actual_cost) if actual_cost is not None else None,
+                )
+                validate_case(case, frame)
+                attempt["status"] = "PASSED"
+            except Exception as exc:
+                attempt.update(status="FAILED", error_type=type(exc).__name__)
+                if isinstance(exc, SemanticResponseError):
+                    retryable = True
+                    attempt.update(
+                        raw_content=exc.raw_content,
+                        tokens=exc.tokens,
+                        estimated_cost=str(exc.cost) if exc.cost is not None else None,
+                        validation_error=exc.reason,
+                    )
+            attempt["seconds"] = round(time.monotonic() - started, 3)
+            report["case_results"][case["id"]] = attempt["status"]
+            save()
+            if not retryable:
+                break
+        if report.get("stopped"):
+            break
+    report["passed"] = len(report["case_results"]) == len(cases) and all(
+        status == "PASSED" for status in report["case_results"].values()
     )
     report["finished_at"] = datetime.now(UTC).isoformat()
     save()

@@ -204,7 +204,8 @@ def safe_frame(frame, text):
         if item.type == "CLOSE_SESSION" and (
             not re.search(r"结束|关闭|终止|不买", item.source_quote)
             or re.search(
-                r"(?:不|不要|不用|不想|不必|别|不能|不是).{0,4}(?:结束|关闭|终止|不买)",
+                r"(?:不要|不用|不想|不必|别|不能|不是要).{0,2}(?:结束|关闭|终止)"
+                r"|不(?:结束|关闭|终止)|(?:不是|没说)不买",
                 item.source_quote,
             )
         ):
