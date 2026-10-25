@@ -103,8 +103,8 @@ def test_official_adapter_replays_identical_payload_after_display(quality_case):
 
 @pytest.mark.parametrize("operator", ["<=", "==", None, ">="])
 def test_failed_risk_case_negative_battery_condition_never_accepts_92(
-    semantic_case,
-    operator,  # noqa: F811
+    semantic_case,  # noqa: F811
+    operator,
 ):
     from app.db.models import Offer
     from tests.graph.test_semantic import candidate, fact, intent, turn
