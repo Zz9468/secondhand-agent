@@ -116,6 +116,31 @@ def build(report, cases, tests):
         "risk": risks,
         "metadata": report["metadata"],
         "summary": summarize(rows),
+        "stratified_metrics": {
+            "new_business": summarize(
+                [r for r in rows if cases_by_id[r["case_id"]]["group"] == "business_preserving"]
+            ),
+            "old_business": summarize(report.get("legacy_results", [])),
+            "new_behavior": summarize(
+                [
+                    r
+                    for r in rows
+                    if cases_by_id[r["case_id"]]["group"] != "business_preserving"
+                    and not cases_by_id[r["case_id"]].get("smoke")
+                ]
+            ),
+            "development_smoke": summarize(smoke),
+        },
+        "per_case": {
+            cid: summarize([r for r in rows if r["case_id"] == cid])
+            for cid in cases_by_id
+            if not cases_by_id[cid].get("smoke")
+        },
+        "judge_failures": [
+            {"case_id": r["case_id"], "repeat": r["repeat"], "comment": r["judge"].get("comment")}
+            for r in rows
+            if r.get("judge", {}).get("score") is False
+        ],
         "quality": quality,
         "tests": tests,
         "missing_repetitions": missing_repetitions,

@@ -69,6 +69,7 @@ def metadata(cases):
 def summarize(rows):
     times = [v for row in rows for v in row.get("latency_seconds", [])]
     calls = [c for row in rows for run in row.get("runs", []) for c in run.get("calls", [])]
+    calls += [c for row in rows for c in row.get("recorded_calls", [])]
     auxiliary = [c for row in rows for c in row.get("auxiliary_calls", [])]
     known = [
         Decimal(c["estimated_cny"]) for c in calls + auxiliary if c.get("estimated_cny") is not None

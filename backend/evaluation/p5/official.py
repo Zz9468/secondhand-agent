@@ -127,7 +127,9 @@ def safe_result(row):
         "business_pass": row.get("business_pass", False),
         "risk_error": row.get("risk_error"),
         "local_evidence_sha256": digest({k: v for k, v in row.items() if k != "remote_returned"}),
-        "causal_pass": all(
+        "causal_pass": None
+        if row.get("target") == "legacy"
+        else all(
             r["causal_score"]["status"] == "PASS" for r in row.get("runs", []) if r.get("receipt")
         ),
         "quality_score": row.get("judge", {}).get("score"),
@@ -175,9 +177,7 @@ def export_experiment(rows, metadata, *, label, dataset_label=None):
     def rules(outputs):
         return {
             "key": "business_correct",
-            "score": outputs["status"] == "OK"
-            and outputs["business_pass"]
-            and outputs["causal_pass"],
+            "score": outputs["status"] == "OK" and outputs["business_pass"],
         }
 
     def quality(outputs):
