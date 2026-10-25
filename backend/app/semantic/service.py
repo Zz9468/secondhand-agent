@@ -106,6 +106,33 @@ def merge_candidate(original, patch):
     return Candidate.model_validate(base)
 
 
+def condition_scope(intent, actions, text):
+    """Narrow only an unambiguous local alternative; shared/unclear scope stays conservative."""
+    parts = re.split(r"或者|或是", text)
+    if (
+        len(parts) == len(actions) > 1
+        and all(i.alternative_group == intent.alternative_group for i in actions)
+        and intent.alternative_group
+        and not re.search(r"如果|只要|前提|的话", parts[0])
+        and not re.search(r"都|均|共同|两个方案|两种方案", text)
+    ):
+        matching = [part for part in parts if intent.source_quote in part]
+        if len(matching) == 1:
+            return matching[0]
+        # Some valid model quotes cover the entire alternatives sentence. A unique explicit
+        # amount can still locate the branch; repeated amounts remain conservative.
+        if intent.candidate and intent.candidate.amount is not None:
+            matching = [
+                part
+                for part in parts
+                if intent.candidate.amount
+                in {Decimal(n) for n in re.findall(r"\d+(?:\.\d+)?", part)}
+            ]
+            if len(matching) == 1:
+                return matching[0]
+    return text
+
+
 def safe_frame(frame, text):
     ordered = frame.validated_for(text)
     actions = [
@@ -123,18 +150,21 @@ def safe_frame(frame, text):
     candidates = [i.candidate for i in ordered if i.candidate]
     if frame.ambiguous:
         return ordered, False
-    conditional = bool(re.search(r"如果|只要|前提|的话", text))
-    for candidate in candidates:
-        if conditional:
+    for item in ordered:
+        candidate = item.candidate
+        if candidate is None:
+            continue
+        scope = condition_scope(item, actions, text)
+        if re.search(r"如果|只要|前提|的话", scope):
             if not candidate.conditions and not candidate.commitments:
                 return ordered, False
-            if re.search(r"没修|未修|无维修|没有维修", text) and not any(
+            if re.search(r"没修|未修|无维修|没有维修", scope) and not any(
                 p.fact == "repair_history" and p.operator == "==" and p.value == "NO"
                 for p in candidate.conditions
             ):
                 return ordered, False
             threshold = re.search(
-                r"电池.*?(至少|不低于|>=|不超过|至多|<=|等于)\s*(\d+(?:\.\d+)?)\s*%", text
+                r"电池.*?(至少|不低于|>=|不超过|至多|<=|等于)\s*(\d+(?:\.\d+)?)\s*%", scope
             )
             if threshold:
                 operator = (
@@ -164,8 +194,18 @@ def safe_frame(frame, text):
         return ordered, False
     if "预算" in text and not re.search(r"可以吗|行吗|报价|我出", text) and candidates:
         return ordered, False
-    if re.search(r"不(?:接受|考虑|同意|想要|愿意).*(?:自提|包邮|报价)", text) and candidates:
+    if re.search(r"不(?:接受|考虑|同意|想要|愿意).*(?:自提|包邮|报价)", text) and actions:
         return ordered, False
+    for item in actions:
+        if item.type == "WITHDRAW_OFFER" and (
+            not re.search(r"撤回|撤销|收回|取消.{0,8}(?:报价|提议|方案)", item.source_quote)
+            or re.search(
+                r"(?:不|不要|不用|不想|不必|别|不能|不可以|不需要|没有要求|不是).{0,4}"
+                r"(?:撤回|撤销|收回|取消)",
+                item.source_quote,
+            )
+        ):
+            return ordered, False
     if (
         re.search(r"(?:今天.*发货|保修|保真|赠送)", text)
         and candidates

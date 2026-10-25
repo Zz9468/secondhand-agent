@@ -150,6 +150,58 @@ def test_clear_chat_proposal_needs_no_formal_checkbox(semantic_case, amount, out
     assert c.model.calls == 1
 
 
+def test_model_cannot_turn_rejection_into_withdrawal(semantic_case):
+    c = semantic_case
+    first = turn(c, "900自提")
+    card, ack = show(c, first)
+    text = "我不接受900自提"
+    rejected = turn(c, text, [intent(text, "WITHDRAW_OFFER")], display_receipt_id=ack)
+    assert result(c, rejected) is None
+    with c.factory() as db:
+        assert db.get(NegotiationSession, c.sid).current_offer_id == card["offer_id"]
+
+
+@pytest.mark.parametrize("omit_condition", [False, True])
+@pytest.mark.parametrize("whole_quote", [False, True])
+def test_branch_local_condition_is_preserved_without_affecting_other_choice(
+    semantic_case, omit_condition, whole_quote
+):
+    c = semantic_case
+    text = "900自提，或者如果电池至少90%就950包邮到上海"
+    frame = [
+        {
+            **intent(
+                text if whole_quote else "900自提",
+                candidate=candidate(),
+                alternative_group="choices",
+            ),
+            "id": "a",
+        },
+        {
+            **intent(
+                "如果电池至少90%就950包邮到上海",
+                alternative_group="choices",
+                candidate=candidate(
+                    "950",
+                    "shipping",
+                    region="上海",
+                    conditions=[] if omit_condition else [battery_condition()],
+                ),
+            ),
+            "id": "b",
+        },
+    ]
+    first = turn(c, text, frame)
+    assert result(c, first) is None
+    if omit_condition:
+        assert not (message(c, first).card or {}).get("drafts")
+    else:
+        card, ack = show(c, first)
+        assert card["drafts"][0]["candidate"]["conditions"] == []
+        chosen = turn(c, "选第一个", [intent("选第一个", "PROVIDE_INFO")], display_receipt_id=ack)
+        assert result(c, chosen)["outcome"] == "OFFER_ACCEPTED"
+
+
 @pytest.mark.parametrize("text", ["别人卖900", "预算900，先看看", "只是比价900，不报价"])
 def test_budget_comparison_is_not_a_proposal(semantic_case, text):
     c = semantic_case

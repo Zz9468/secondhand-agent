@@ -9,8 +9,8 @@ from openai import OpenAI
 
 from app.semantic.contracts import IntentFrame
 
-PROMPT_VERSION = "p2-intents-v1"
-PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，不作业务决定。
+PROMPT_VERSION = "p2-intents-v3"
+LEGACY_PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，不作业务决定。
 逐项提取所有问题、报价、条件、纠正、撤回与关闭。source_quote必须逐字来自当前输入。
 800可以吗/800包邮可以吗是PROPOSE_OFFER；别人卖800、预算800先看看是PROVIDE_INFO，不能报价。
 不是800我说900只提取纠正后的900。含两个备选用两个意图且相同alternative_group，不能替买家选。
@@ -28,12 +28,44 @@ PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，�
 以下是输出schema：
 """
 
+PROMPTS = {
+    "p2-intents-v1": LEGACY_PROMPT,
+    "p2-intents-v2": LEGACY_PROMPT
+    + """
+补充约束：不接受/不考虑/嫌贵某报价只是PROVIDE_INFO，不是撤回或最终确认。
+WITHDRAW_OFFER仅用于明确说撤回、撤销、收回或取消报价；不要撤回属于PROVIDE_INFO。
+条件只是报价前提，不要据此虚构ASK_PRODUCT问题；仅买家实际提出的问题单独提取。
+多个备选各自保留条件作用范围：前置共同条件作用于全部备选；只在某个备选内的条件仅属于该项。
+例如“900自提，或者如果电池至少90%就950包邮到上海”：第一项无条件，第二项保留电池条件。
+每个备选的source_quote引用自身完整子句，前置共同条件仍须复制到每个candidate.conditions。
+""",
+}
+PROMPTS[PROMPT_VERSION] = (
+    PROMPTS["p2-intents-v2"]
+    + """
+引用严格使用原输入中连续出现的子串，不能把共同前提与后面的备选拼接成不存在的句子。
+例：如果没修过，900自提或者950包邮到上海。
+两个意图source_quote分别是“900自提”和“950包邮到上海”；两者条件source_quote都是“没修过”。
+例：900自提，或者如果电池至少90%就950包邮到上海。
+两个意图source_quote分别是“900自提”和“如果电池至少90%就950包邮到上海”。
+"""
+)
 
-def model_messages(text, context):
+
+class SemanticResponseError(ValueError):
+    """Keep invalid responses locally inspectable without putting raw content in exception text."""
+
+    def __init__(self, raw_content, tokens, cost, reason):
+        super().__init__("invalid semantic response")
+        self.raw_content, self.tokens, self.cost, self.reason = raw_content, tokens, cost, reason
+
+
+def model_messages(text, context, prompt_version=PROMPT_VERSION):
     return [
         {
             "role": "system",
-            "content": PROMPT + json.dumps(IntentFrame.model_json_schema(), ensure_ascii=False),
+            "content": PROMPTS[prompt_version]
+            + json.dumps(IntentFrame.model_json_schema(), ensure_ascii=False),
         },
         {
             "role": "user",
@@ -74,7 +106,7 @@ class SemanticModel:
         settings = self.settings
         if not settings.model_is_configured:
             raise RuntimeError("semantic model is not configured")
-        if config.get("prompt_version") != PROMPT_VERSION:
+        if config.get("prompt_version") not in PROMPTS:
             raise RuntimeError("unsupported frozen semantic prompt")
         if config["model_name"] != settings.model_name:
             raise RuntimeError("frozen semantic model configuration has changed")
@@ -90,12 +122,8 @@ class SemanticModel:
                 max_tokens=2048,
                 extra_body={"enable_thinking": False},
                 response_format={"type": "json_object"},
-                messages=model_messages(text, context),
+                messages=model_messages(text, context, config["prompt_version"]),
             )
-        if response.choices[0].finish_reason != "stop":
-            raise ValueError("incomplete semantic response")
-        frame = IntentFrame.model_validate_json(response.choices[0].message.content)
-        frame.validated_for(text)
         usage = response.usage
         cost = None
         prices = self.prices()
@@ -104,4 +132,13 @@ class SemanticModel:
                 Decimal(usage.prompt_tokens) * prices[0]
                 + Decimal(usage.completion_tokens) * prices[1]
             ) / 1_000_000
-        return frame.model_dump(mode="json"), usage.total_tokens if usage else None, cost
+        tokens = usage.total_tokens if usage else None
+        content = response.choices[0].message.content
+        try:
+            if response.choices[0].finish_reason != "stop":
+                raise ValueError("incomplete semantic response")
+            frame = IntentFrame.model_validate_json(content)
+            frame.validated_for(text)
+        except ValueError as exc:
+            raise SemanticResponseError(content, tokens, cost, type(exc).__name__) from None
+        return frame.model_dump(mode="json"), tokens, cost

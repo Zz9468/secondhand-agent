@@ -6,7 +6,13 @@ import pytest
 
 from app.core.config import Settings
 from app.semantic.contracts import IntentFrame
-from app.semantic.model import PROMPT_VERSION, SemanticModel
+from app.semantic.model import (
+    LEGACY_PROMPT,
+    PROMPT_VERSION,
+    SemanticModel,
+    SemanticResponseError,
+    model_messages,
+)
 from app.semantic.service import safe_frame
 
 
@@ -40,7 +46,8 @@ def test_known_endpoint_cost_bound_and_unknown_price_refusal():
     assert workspace.prices() == model.prices()
 
 
-def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch):
+@pytest.mark.parametrize("prompt_version", ["p2-intents-v1", "p2-intents-v2", PROMPT_VERSION])
+def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch, prompt_version):
     captured = {}
     value = {
         "intents": [
@@ -80,7 +87,7 @@ def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch):
     frame, tokens, cost = model(
         "900自提",
         {"has_bound_draft": False},
-        {"model_name": "qwen3.7-flash", "prompt_version": PROMPT_VERSION},
+        {"model_name": "qwen3.7-flash", "prompt_version": prompt_version},
     )
     assert frame["intents"][0]["candidate"]["amount"] == "900"
     assert tokens == 150 and cost == Decimal("0.00006")
@@ -88,6 +95,11 @@ def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch):
     assert captured["request"]["max_tokens"] == 2048
     assert captured["request"]["extra_body"] == {"enable_thinking": False}
     assert "synthetic-not-real" not in str(captured["request"])
+    value["intents"][0]["source_quote"] = "not in source"
+    with pytest.raises(SemanticResponseError) as rejected:
+        model("900自提", {}, {"model_name": "qwen3.7-flash", "prompt_version": prompt_version})
+    assert rejected.value.tokens == 150 and rejected.value.cost == Decimal("0.00006")
+    assert "not in source" not in str(rejected.value)
 
 
 @pytest.mark.parametrize("text", ["我不接受900自提", "我不考虑900包邮报价"])
@@ -103,5 +115,20 @@ def test_explicit_negated_offer_is_not_authorized(text):
                 }
             ]
         }
+    )
+    assert safe_frame(frame, text)[1] is False
+
+
+def test_frozen_v1_prompt_remains_replayable():
+    old = model_messages("900自提", {}, "p2-intents-v1")
+    new = model_messages("900自提", {})
+    assert old[0]["content"].startswith(LEGACY_PROMPT)
+    assert "补充约束" not in old[0]["content"] and "补充约束" in new[0]["content"]
+
+
+@pytest.mark.parametrize("text", ["我不接受900自提", "900太贵了", "不要撤回报价", "不撤回"])
+def test_withdrawal_requires_positive_explicit_instruction(text):
+    frame = IntentFrame.model_validate(
+        {"intents": [{"id": "i", "type": "WITHDRAW_OFFER", "source_quote": text}]}
     )
     assert safe_frame(frame, text)[1] is False

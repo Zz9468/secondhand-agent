@@ -3,11 +3,14 @@
 import argparse
 import hashlib
 import json
+import subprocess
+import time
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
 from app.semantic.contracts import IntentFrame
-from app.semantic.model import PROMPT_VERSION, SemanticModel
+from app.semantic.model import PROMPT_VERSION, SemanticModel, SemanticResponseError
 from app.semantic.service import safe_frame
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -63,27 +66,48 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--allow-real-model", action="store_true", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--dataset", type=Path, default=DATASET)
+    parser.add_argument("--max-calls", type=int, default=30, help="0 disables this batch limit")
+    parser.add_argument(
+        "--max-cny", type=Decimal, default=Decimal("1"), help="0 disables batch limit"
+    )
     args = parser.parse_args()
+    if args.max_calls < 0 or args.max_cny < 0:
+        parser.error("limits must be non-negative")
     if args.output.exists():
         raise RuntimeError("refusing to overwrite prior evidence")
     model = SemanticModel()
     # This upper reservation is deliberately conservative; unknown calls keep it.
-    cap, reserved, tokens = Decimal("1.00"), Decimal(0), 0
+    cap, reserved, tokens = args.max_cny, Decimal(0), 0
+    cases = json.loads(args.dataset.read_text(encoding="utf-8"))
     report = {
-        "dataset_sha256": hashlib.sha256(DATASET.read_bytes()).hexdigest(),
+        "dataset_sha256": hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
         "prompt_version": PROMPT_VERSION,
         "model": model.settings.model_name,
-        "max_calls": 30,
+        "started_at": datetime.now(UTC).isoformat(),
+        "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+        "max_calls": args.max_calls,
         "max_reserved_cny": str(cap),
         "attempts": [],
     }
 
     def save():
         report.update(reserved_cny=str(reserved), reserved_tokens=tokens)
+        report["actual_tokens"] = sum(a.get("tokens") or 0 for a in report["attempts"])
+        report["estimated_cny"] = str(
+            sum(
+                (
+                    Decimal(a["estimated_cost"])
+                    for a in report["attempts"]
+                    if a.get("estimated_cost")
+                ),
+                Decimal(0),
+            )
+        )
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    for case in json.loads(DATASET.read_text(encoding="utf-8")):
+    for case in cases:
         context = case.get(
             "context",
             {"has_bound_draft": False, "missing_fields": [], "has_displayed_offer": False},
@@ -91,14 +115,22 @@ def main():
         token_bound, cost_bound = model.reserve(case["text"], context)
         if cost_bound is None:
             raise RuntimeError("CNY pricing is unknown for this model/endpoint; no call made")
-        if len(report["attempts"]) >= 30 or reserved + cost_bound > cap:
+        if (args.max_calls and len(report["attempts"]) >= args.max_calls) or (
+            cap and reserved + cost_bound > cap
+        ):
             report["stopped"] = "BUDGET_LIMIT"
             break
         reserved += cost_bound
         tokens += token_bound
-        attempt = {"id": case["id"], "status": "RESERVED"}
+        attempt = {
+            "id": case["id"],
+            "status": "RESERVED",
+            "reserved_cny": str(cost_bound),
+            "reserved_tokens": token_bound,
+        }
         report["attempts"].append(attempt)
         save()
+        started = time.monotonic()
         try:
             frame, actual_tokens, actual_cost = model(
                 case["text"],
@@ -114,10 +146,19 @@ def main():
             attempt["status"] = "PASSED"
         except Exception as exc:
             attempt.update(status="FAILED", error_type=type(exc).__name__)
+            if isinstance(exc, SemanticResponseError):
+                attempt.update(
+                    raw_content=exc.raw_content,
+                    tokens=exc.tokens,
+                    estimated_cost=str(exc.cost) if exc.cost is not None else None,
+                    validation_error=exc.reason,
+                )
+        attempt["seconds"] = round(time.monotonic() - started, 3)
         save()
-    report["passed"] = len(report["attempts"]) == len(
-        json.loads(DATASET.read_text(encoding="utf-8"))
-    ) and all(a["status"] == "PASSED" for a in report["attempts"])
+    report["passed"] = len(report["attempts"]) == len(cases) and all(
+        a["status"] == "PASSED" for a in report["attempts"]
+    )
+    report["finished_at"] = datetime.now(UTC).isoformat()
     save()
     print(
         json.dumps(
