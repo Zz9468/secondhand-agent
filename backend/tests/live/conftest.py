@@ -31,6 +31,9 @@ class LiveEvidence:
             "attempts": [],
             "cases": [],
         }
+        self.report["working_tree_dirty"] = bool(
+            subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()
+        )
 
     def save(self):
         attempts = self.report["attempts"]

@@ -57,6 +57,7 @@ def lock_owner(db, run_id, owner, now):
     if run is None:
         raise Conflict("运行不存在")
     task = db.get(ModelExecutionTask, run.task_id, with_for_update=True)
+    run = db.get(NegotiationInput, run_id, with_for_update=True, populate_existing=True)
     if (
         task.runtime_kind != "LANGGRAPH"
         or task.status != ModelTaskStatus.RUNNING
@@ -85,16 +86,16 @@ class InputQueue:
                     select(func.count()).select_from(model).where(model.session_id == sid)
                 ):
                     raise Conflict("只允许新空会话启用图")
-            from app.semantic.contracts import VERSION
+            from app.semantic.contracts import SEMANTIC_VERSIONS
 
-            if version not in {GRAPH_VERSION, VERSION}:
+            if version not in {GRAPH_VERSION, *SEMANTIC_VERSIONS}:
                 raise Conflict("不支持的图版本")
             session.graph_version = version
 
     def enqueue(self, sid, buyer_id, request_id, payload: TypedInput, *, config=None):
         if not request_id or len(request_id) > 64:
             raise Conflict("请求标识无效")
-        from app.semantic.contracts import VERSION, ChatInput
+        from app.semantic.contracts import QUALITY_VERSION, SEMANTIC_VERSIONS, ChatInput
 
         semantic = isinstance(payload, ChatInput)
         payload = (ChatInput if semantic else TypedInput).model_validate(
@@ -105,7 +106,9 @@ class InputQueue:
         with self.factory() as db, db.begin():
             bounded_transaction(db)
             session = owned_session(db, sid, buyer_id, lock=True)
-            if session.graph_version != (VERSION if semantic else GRAPH_VERSION):
+            if session.archived_at:
+                raise Conflict("会话已归档，历史请求不能重新执行")
+            if session.graph_version not in (SEMANTIC_VERSIONS if semantic else {GRAPH_VERSION}):
                 raise Conflict("会话未启用当前图版本")
             old = db.scalar(
                 select(NegotiationInput).where(
@@ -153,15 +156,42 @@ class InputQueue:
                     "model_name": settings.model_name,
                     "prompt_version": PROMPT_VERSION,
                 }
+                if session.graph_version == QUALITY_VERSION:
+                    config.update(
+                        schema="p4-v1",
+                        max_calls=10,
+                        max_tokens=180000,
+                        max_cost=None,
+                        active_seconds=120,
+                        quality_version="p4-v1",
+                    )
             frozen_config = dict(CONFIG if config is None else config)
             if (
                 set(frozen_config)
-                - {"schema", "max_calls", "max_tokens", "max_cost", "model_name", "prompt_version"}
-                or frozen_config.get("schema") != ("p2-v1" if semantic else CONFIG["schema"])
+                - {
+                    "schema",
+                    "max_calls",
+                    "max_tokens",
+                    "max_cost",
+                    "model_name",
+                    "prompt_version",
+                    "active_seconds",
+                    "quality_version",
+                }
+                or frozen_config.get("schema")
+                != (
+                    "p4-v1"
+                    if session.graph_version == QUALITY_VERSION
+                    else "p2-v1"
+                    if semantic
+                    else CONFIG["schema"]
+                )
                 or not isinstance(frozen_config.get("max_calls"), int)
                 or frozen_config["max_calls"] < 0
                 or not isinstance(frozen_config.get("max_tokens"), int)
                 or frozen_config["max_tokens"] < 0
+                or not isinstance(frozen_config.get("active_seconds", 120), (int, float))
+                or not 0 < frozen_config.get("active_seconds", 120) <= 120
             ):
                 raise Conflict("运行配置无效")
             run_id = uuid4().hex
@@ -225,6 +255,7 @@ class InputQueue:
             now = self.clock()
             if (
                 run.input_seq != session.last_resolved_input_seq + 1
+                or session.archived_at
                 or run.recovery_required
                 or task.status
                 in {
@@ -237,6 +268,18 @@ class InputQueue:
                 or (task.next_retry_at and task.next_retry_at > now)
             ):
                 return None
+            from app.runtime.activity import lease_deadline, settle
+
+            settle(run, now)
+            deadline = lease_deadline(db, run, now, lease_seconds)
+            cleanup_only = task.last_manual_action == "TERMINATE"
+            if cleanup_only:
+                deadline = now + timedelta(seconds=15)
+            if deadline <= now:
+                task.status = ModelTaskStatus.FAILED
+                task.lease_token = task.lease_owner = task.lease_expires_at = None
+                run.recovery_required = True
+                return None
             if task.attempt_count >= task.max_attempts:
                 task.status = ModelTaskStatus.FAILED
                 task.next_retry_at = None
@@ -246,7 +289,8 @@ class InputQueue:
             task.ownership_epoch += 1
             task.lease_token = uuid4().hex
             task.lease_owner = f"graph:{run_id}"
-            task.lease_expires_at = now + timedelta(seconds=lease_seconds)
+            task.lease_expires_at = deadline
+            run.active_since, run.active_until = now, deadline
             task.status = ModelTaskStatus.RUNNING
             task.next_retry_at = None
             task.attempt_count += 1
@@ -255,10 +299,23 @@ class InputQueue:
     def release(self, run_id, owner, *, recovery_required=False):
         with self.factory() as db, db.begin():
             run, task = lock_owner(db, run_id, owner, self.clock())
+            from app.runtime.activity import settle
+
+            settle(run, self.clock())
             task.status = ModelTaskStatus.RETRY_WAIT
             task.next_retry_at = self.clock() + timedelta(seconds=1)
             task.lease_token = task.lease_owner = task.lease_expires_at = None
             run.recovery_required = recovery_required
+
+    def heartbeat(self, run_id, owner):
+        from app.runtime.activity import lease_deadline
+
+        with self.factory() as db, db.begin():
+            run, task = lock_owner(db, run_id, owner, self.clock())
+            deadline = lease_deadline(db, run, self.clock())
+            if deadline <= self.clock():
+                raise StaleOwner("无模型收尾期限已结束")
+            task.lease_expires_at = run.active_until = deadline
 
     def finalize(self, run_id, owner, values, pending):
         from app.db.models.graph import NotificationDelivery
@@ -285,6 +342,9 @@ class InputQueue:
             if session.last_resolved_input_seq + 1 != run.input_seq:
                 raise Conflict("不能回拨历史输入")
             session.last_resolved_input_seq = run.input_seq
+            from app.runtime.activity import settle
+
+            settle(run, self.clock())
             task.status = ModelTaskStatus.SUCCEEDED
             task.completed_at = self.clock()
             task.result_snapshot = {"public_message_id": delivery.public_message_id}

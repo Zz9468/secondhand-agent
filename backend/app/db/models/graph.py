@@ -33,6 +33,10 @@ class NegotiationInput(Base):
     seen_public_message_seq: Mapped[int] = mapped_column(default=0)
     checkpoint_ref: Mapped[str | None] = mapped_column(String(100))
     recovery_required: Mapped[bool] = mapped_column(default=False)
+    active_ms: Mapped[int] = mapped_column(BigInteger, default=0, server_default="0")
+    active_since: Mapped[datetime | None] = mapped_column(TIME)
+    active_until: Mapped[datetime | None] = mapped_column(TIME)
+    closing_deadline: Mapped[datetime | None] = mapped_column(TIME)
 
 
 class BusinessActionReceipt(Base):
@@ -141,4 +145,32 @@ class ModelCallLedger(Base):
     actual_cost: Mapped[Decimal | None] = mapped_column(Numeric(18, 8))
     value: Mapped[dict | None] = mapped_column(JSON)
     value_hash: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(TIME)
+    purpose: Mapped[str | None] = mapped_column(String(64))
+    model_name: Mapped[str | None] = mapped_column(String(100))
+    finished_at: Mapped[datetime | None] = mapped_column(TIME)
+    error_category: Mapped[str | None] = mapped_column(String(64))
+    request_snapshot: Mapped[dict | None] = mapped_column(JSON)
+
+
+class GraphTurnQuality(Base):
+    __tablename__ = "graph_turn_quality"
+    input_id: Mapped[str] = mapped_column(ForeignKey("negotiation_inputs.id"), primary_key=True)
+    context: Mapped[dict] = mapped_column(JSON)
+    context_hash: Mapped[str] = mapped_column(String(64))
+    evidence_hash: Mapped[str | None] = mapped_column(String(64))
+    reply: Mapped[str | None] = mapped_column(String(4000))
+    approved: Mapped[bool] = mapped_column(default=False)
+    review_count: Mapped[int] = mapped_column(default=0)
+    stop_reason: Mapped[str | None] = mapped_column(String(64))
+
+
+class GraphRecoveryAction(Base):
+    __tablename__ = "graph_recovery_actions"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey("negotiation_sessions.id"), index=True)
+    actor_id: Mapped[str] = mapped_column(ForeignKey("user_accounts.id"))
+    target: Mapped[str] = mapped_column(String(100))
+    action: Mapped[str] = mapped_column(String(24))
+    reason: Mapped[str] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(TIME)

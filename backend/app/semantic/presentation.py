@@ -23,12 +23,24 @@ def decorate(db, run, session, result, content, card, now):
         for i in turn.frame.get("parsed", {}).get("intents", [])
         if i.get("topic") == "approval_status"
     }
+    questions = {
+        i["id"]: i.get("topic")
+        for i in turn.frame.get("parsed", {}).get("intents", [])
+        if i["type"] in {"ASK_PRODUCT", "ASK_TERMS"}
+    }
     for item in turn.results:
         if item["id"] in progress_ids:
             from app.services.approval_lifecycle import public_approval_status
 
             status, text, _ = public_approval_status(db, session, now)
             items.append({**item, "status": status, "text": text})
+        elif run.graph_version == "negotiation-v3" and item["id"] in questions:
+            from app.semantic.evidence import public_answer
+
+            status, answer, version = public_answer(
+                db, db.get(Product, session.product_id), questions[item["id"]]
+            )
+            items.append({**item, "status": status, "text": answer, "fact_version": version})
         elif item["status"] == "READY":
             items.append({**item, "status": result["outcome"], "text": content})
         else:

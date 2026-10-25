@@ -29,7 +29,7 @@ from app.schemas.negotiation import (
     SendMessageRequest,
     SendMessageResponse,
 )
-from app.semantic.contracts import VERSION, ChatInput, ChatRequest
+from app.semantic.contracts import QUALITY_VERSION, SEMANTIC_VERSIONS, ChatInput, ChatRequest
 from app.services.chat_service import BuyerOfferSubmission, ChatService
 from app.services.errors import (
     IncompleteRequestError,
@@ -68,7 +68,7 @@ def create_negotiation(
         session_id, created = NegotiationService(session_factory).create_or_get_active_session(
             product_id=payload.product_id,
             buyer_id=user.id,
-            graph_version=VERSION if settings.graph_chat_enabled else None,
+            graph_version=QUALITY_VERSION if settings.graph_chat_enabled else None,
         )
     except ServiceError as exc:
         _raise_http_error(exc)
@@ -101,7 +101,9 @@ def get_negotiation(
         for offer in body["negotiation"]["recent_offers"]:
             offer.pop("shipping_cost", None)
             offer.pop("seller_borne_discount", None)
-        return JSONResponse(content={**body, "graph_version": VERSION})
+        with session_factory() as db:
+            version = owned_session(db, session_id, user.id).graph_version
+        return JSONResponse(content={**body, "graph_version": version})
     return NegotiationDetailResponse.model_validate(body)
 
 
@@ -276,7 +278,7 @@ def send_message(
 def is_semantic(factory, sid, buyer):
     try:
         with factory() as db:
-            return owned_session(db, sid, buyer).graph_version == VERSION
+            return owned_session(db, sid, buyer).graph_version in SEMANTIC_VERSIONS
     except Conflict as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 

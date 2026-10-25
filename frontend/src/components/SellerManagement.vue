@@ -36,6 +36,7 @@ import {
 } from '../api/sellerNegotiations'
 import { useAuth } from '../state/auth'
 import ProductEvidence from './ProductEvidence.vue'
+import GraphRecovery from './GraphRecovery.vue'
 
 interface ProductForm {
   title: string
@@ -598,6 +599,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <GraphRecovery v-if="activeSection === 'model-tasks'" />
   <section class="seller-page">
     <div v-if="loading" class="loading-card">正在读取卖家信息…</div>
 

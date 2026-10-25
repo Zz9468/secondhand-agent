@@ -7,6 +7,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 VERSION = "negotiation-v2"
+QUALITY_VERSION = "negotiation-v3"
+SEMANTIC_VERSIONS = {VERSION, QUALITY_VERSION}
 
 
 class StrictModel(BaseModel):

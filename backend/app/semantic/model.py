@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 from openai import OpenAI
 
+from app.observability.graph_tracing import traced_openai
 from app.semantic.contracts import IntentFrame
 
 PROMPT_VERSION = "p3-intents-v1"
@@ -226,9 +227,10 @@ class SemanticModel:
         with OpenAI(
             api_key=settings.model_api_key.get_secret_value(),
             base_url=settings.model_base_url,
-            timeout=20,
+            timeout=config.get("request_timeout", 20),
             max_retries=0,
         ) as client:
+            client = traced_openai(client)
             response = client.chat.completions.create(
                 model=config["model_name"],
                 temperature=0,

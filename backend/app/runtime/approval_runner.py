@@ -41,6 +41,12 @@ class ApprovalRunner:
             raise
 
     def run(self, approval_id):
+        from app.observability.graph_tracing import graph_trace
+
+        with graph_trace():
+            return self._run(approval_id)
+
+    def _run(self, approval_id):
         tid = approval_thread(approval_id)
         config = {"configurable": {"thread_id": tid}}
         with locked_saver(self.postgres_url, tid, instance=f"approval-{approval_id}") as (saver, _):

@@ -24,7 +24,7 @@ def approval_thread(approval_id):
 
 def event_in_transaction(db, approval, suffix, kind):
     key = f"approval:{approval.id}:{suffix}"
-    if not db.get(OutboxEvent, key):
+    if not db.get(OutboxEvent, key, with_for_update=True):
         db.add(
             OutboxEvent(
                 id=key,
@@ -44,7 +44,9 @@ def start_approval(db, approval):
 
 def effect_notice(db, session, approval, outcome, now):
     source = f"approval:{approval.id}:result:{approval.effect_revision}"
-    if not db.get(NotificationDelivery, source):
+    # A prior non-locking read may have established an older REPEATABLE READ snapshot.
+    # The session lock serializes writers; this must still be a current read.
+    if not db.get(NotificationDelivery, source, with_for_update=True):
         result = {
             "outcome": outcome,
             "offer_id": approval.offer_id,

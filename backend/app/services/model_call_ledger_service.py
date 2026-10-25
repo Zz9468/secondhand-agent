@@ -14,17 +14,32 @@ class ModelCallLedgerService:
     def __init__(self, factory, *, clock=utcnow):
         self.factory, self.clock = factory, clock
 
-    def call(self, run_id, owner, step_id, invoke, *, reserved_tokens, reserved_cost=None):
+    def call(
+        self,
+        run_id,
+        owner,
+        step_id,
+        invoke,
+        *,
+        reserved_tokens,
+        reserved_cost=None,
+        request_snapshot=None,
+    ):
         if reserved_tokens <= 0 or (reserved_cost is not None and reserved_cost < 0):
             raise Conflict("调用预算预留无效")
         with self.factory() as db, db.begin():
-            run, _ = lock_owner(db, run_id, owner, self.clock())
+            run, task = lock_owner(db, run_id, owner, self.clock())
+            if task.last_manual_action == "TERMINATE":
+                raise BudgetExhausted("人工终止仅允许无模型收尾")
             key = digest([run_id, step_id, run.input_hash, run.config_hash])
             old = db.scalar(select(ModelCallLedger).where(ModelCallLedger.accepted_key == key))
             if old:
                 if digest(old.value) != old.value_hash:
                     raise Conflict("模型产物内容哈希不一致")
                 return {"artifact_id": old.id, "value_hash": old.value_hash}
+            from app.runtime.activity import model_timeout
+
+            model_timeout(db, run, self.clock())
             calls = list(
                 db.scalars(select(ModelCallLedger).where(ModelCallLedger.input_id == run_id))
             )
@@ -57,6 +72,9 @@ class ModelCallLedgerService:
                     reserved_tokens=reserved_tokens,
                     reserved_cost=reserved_cost,
                     created_at=self.clock(),
+                    purpose=step_id,
+                    model_name=run.config.get("model_name"),
+                    request_snapshot=request_snapshot,
                 )
             )
         # callback 返回 (已验证结构, 实际 token 或 None, 实际费用或 None)。SDK 不得隐式重试。
@@ -67,10 +85,15 @@ class ModelCallLedgerService:
                 raise Conflict("模型产物或用量无效")
             if actual_cost is not None and actual_cost < 0:
                 raise Conflict("模型费用无效")
-        except Exception:
+        except Exception as exc:
             with self.factory() as db, db.begin():
                 attempt = db.get(ModelCallLedger, attempt_id, with_for_update=True)
                 attempt.status = "UNKNOWN"
+                attempt.finished_at = self.clock()
+                attempt.error_category = type(exc).__name__[:64]
+                # Structural failures with returned usage are paid attempts too.
+                attempt.actual_tokens = getattr(exc, "tokens", None)
+                attempt.actual_cost = getattr(exc, "cost", None)
             raise
         try:
             with self.factory() as db, db.begin():
@@ -79,11 +102,13 @@ class ModelCallLedgerService:
                 attempt.value, attempt.value_hash = value, value_hash
                 attempt.actual_tokens, attempt.actual_cost = actual_tokens, actual_cost
                 attempt.accepted_key, attempt.status = key, "ACCEPTED"
+                attempt.finished_at = self.clock()
         except StaleOwner:
             with self.factory() as db, db.begin():
                 attempt = db.get(ModelCallLedger, attempt_id, with_for_update=True)
                 attempt.status = "STALE"
                 attempt.actual_tokens, attempt.actual_cost = actual_tokens, actual_cost
+                attempt.finished_at = self.clock()
             raise
         return {"artifact_id": attempt_id, "value_hash": value_hash}
 

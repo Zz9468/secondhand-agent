@@ -22,7 +22,7 @@ const busy = ref(false)
 const loading = ref(true)
 const messageList = ref<HTMLElement | null>(null)
 const terminal = computed(() => ['AGREED', 'CLOSED'].includes(detail.value?.negotiation.status ?? ''))
-const unified = computed(() => detail.value?.graph_version === 'negotiation-v2')
+const unified = computed(() => ['negotiation-v2', 'negotiation-v3'].includes(detail.value?.graph_version ?? ''))
 let pending: { sid: number; payload: SendMessagePayload } | null = null
 let pendingButton: { key: string; request: string; receipt: string } | null = null
 let timer: number | undefined

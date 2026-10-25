@@ -5,11 +5,27 @@ are exported. Richer redaction can be introduced in P4 with boundary regressions
 """
 
 import os
+import re
+from uuid import UUID
 
 from langsmith import Client
 from urllib3.util.retry import Retry
 
 SAFE_NAMES = {
+    "wait_for_seller", "apply_result", "publish_notice",
+    "prepare_context",
+    "parse_intents",
+    "plan_intents",
+    "commit_business",
+    "publish_reply",
+    "compose_reply",
+    "review_reply",
+    "load_approval",
+    "await_decision",
+    "apply_decision",
+    "publish_approval",
+    "p4_error",
+    "p4_attachment",
     "LangGraph",
     "p0_trace",
     "query_product",
@@ -23,6 +39,16 @@ SAFE_NAMES = {
     "p0_attachment",
 }
 SAFE_VALUES = {
+    "negotiation-v1",
+    "negotiation-v2",
+    "negotiation-v3",
+    "approval-v1",
+    "p4-v1",
+    "ACCEPTED",
+    "UNKNOWN",
+    "STALE",
+    "REVIEW_REJECTED",
+    "BUDGET_EXHAUSTED",
     "ASK_PRODUCT",
     "PROPOSE_OFFER",
     "NONE",
@@ -44,7 +70,7 @@ COUNTERS = {
     "output_tokens",
     "review_count",
 }
-CONTENT_KEYS = COUNTERS | {"intent", "model", "graph_version", "status", "delivery"}
+CONTENT_KEYS = COUNTERS | {"intent", "model", "graph_version", "status", "delivery", "run_ref"}
 ENVELOPE = {
     "id",
     "trace_id",
@@ -65,6 +91,9 @@ def safe_content(value):
     result = {}
     for key in CONTENT_KEYS & value.keys():
         item = value[key]
+        if key == "run_ref" and isinstance(item, str) and re.fullmatch(r"[0-9a-f]{64}", item):
+            result[key] = item
+            continue
         if (
             key in COUNTERS
             and isinstance(item, int)
@@ -76,10 +105,32 @@ def safe_content(value):
     return result
 
 
+def safe_envelope(key, value):
+    if key in {"id", "trace_id", "parent_run_id", "session_id", "reference_example_id"}:
+        try:
+            UUID(str(value))
+            return True
+        except (ValueError, TypeError):
+            return False
+    if key in {"project_name", "session_name"}:
+        return value in {"secondhand-agent-langgraph-dev", "secondhand-agent-langgraph-test"}
+    if key == "dotted_order":
+        return isinstance(value, str) and bool(re.fullmatch(r"[0-9a-fTZ.:-]+", value))
+    if key in {"start_time", "end_time"}:
+        from datetime import datetime
+
+        return isinstance(value, datetime) or (
+            isinstance(value, str) and bool(re.fullmatch(r"[0-9TZ.+:-]+", value))
+        )
+    return False
+
+
 def safe_run(value):
     if hasattr(value, "model_dump"):
         value = value.model_dump()
-    result = {key: item for key, item in value.items() if key in ENVELOPE}
+    result = {
+        key: item for key, item in value.items() if key in ENVELOPE and safe_envelope(key, item)
+    }
     for key in ("inputs", "outputs"):
         if key in value:
             result[key] = safe_content(value[key])

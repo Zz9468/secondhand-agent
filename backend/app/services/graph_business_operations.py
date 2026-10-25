@@ -75,7 +75,7 @@ def basis_valid(db, session, product, policy, offer, now):
     ):
         return False
     proof = db.get(GraphOfferEvidence, offer.id)
-    if session.graph_version == "negotiation-v2":
+    if session.graph_version in {"negotiation-v2", "negotiation-v3"}:
         from app.semantic.evidence import valid_basis
 
         if not valid_basis(db, product, offer, now):
@@ -195,7 +195,7 @@ def resolve_offer_in_transaction(
         and terms_hash(current) == terms_hash(candidate)
     ):
         proof = db.get(GraphOfferEvidence, current.id)
-        same_semantics = session.graph_version != "negotiation-v2"
+        same_semantics = session.graph_version not in {"negotiation-v2", "negotiation-v3"}
         if semantic_candidate is not None:
             from app.db.models.semantic import SemanticOfferBasis
             from app.semantic.contracts import Candidate

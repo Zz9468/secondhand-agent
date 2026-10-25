@@ -178,6 +178,11 @@ class NotificationService:
             draft_refs = None
             if run:
                 content, card, draft_refs = decorate(db, run, session, result, content, card, now)
+                from app.services.graph_reply_service import reviewed_reply
+
+                natural = reviewed_reply(db, run, now)
+                if natural and not historical:
+                    content = natural + "\n" + content
             if draft_refs and card and card.get("kind") == "drafts":
                 context_id = card["context_id"]
             message = Message(

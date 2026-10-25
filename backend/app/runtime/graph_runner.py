@@ -21,20 +21,39 @@ from app.services.notification_service import NotificationService
 
 class GraphRunner:
     def __init__(
-        self, factory, postgres_url, *, queue=None, fault=lambda point: None, semantic_provider=None
+        self,
+        factory,
+        postgres_url,
+        *,
+        queue=None,
+        fault=lambda point: None,
+        semantic_provider=None,
+        quality_provider=None,
     ):
         self.queue = queue or InputQueue(factory)
         self.factory, self.postgres_url, self.fault = factory, postgres_url, fault
         self.semantic_provider = semantic_provider
+        self.quality_provider = quality_provider
 
     def run(self, run_id):
+        from app.observability.graph_tracing import graph_trace
+
+        with graph_trace():
+            return self._run(run_id)
+
+    def _run(self, run_id):
         run = self.queue.read(run_id)
-        config = {"configurable": {"thread_id": thread_id(run["session_id"])}}
+        config = {
+            "configurable": {"thread_id": thread_id(run["session_id"])},
+            "metadata": {"run_ref": digest(run_id), "graph_version": run["graph_version"]},
+        }
         with locked_saver(
             self.postgres_url, config["configurable"]["thread_id"], instance=run_id
         ) as (saver, _):
             with self.factory() as db:
                 task = db.get(ModelExecutionTask, run["task_id"])
+                if db.get(NegotiationSession, run["session_id"]).archived_at:
+                    raise Conflict("会话已归档，历史请求不能重新执行")
                 if task.status == ModelTaskStatus.SUCCEEDED:
                     return task.result_snapshot
             owner = self.queue.claim(run_id)
@@ -42,24 +61,53 @@ class GraphRunner:
                 return None
             try:
                 self.fault("after_claim")
-                from app.semantic.contracts import VERSION
+                from app.semantic.contracts import QUALITY_VERSION, SEMANTIC_VERSIONS
 
-                if run["graph_version"] not in {GRAPH_VERSION, VERSION}:
+                if run["graph_version"] not in {GRAPH_VERSION, *SEMANTIC_VERSIONS}:
                     raise RecoveryConflict("当前 Worker 不支持该图版本")
                 if (
                     digest(run["payload"]) != run["input_hash"]
                     or digest(run["config"]) != run["config_hash"]
                 ):
                     raise RecoveryConflict("不可变输入或配置已损坏")
-                if run["graph_version"] == VERSION:
+                if run["graph_version"] in SEMANTIC_VERSIONS:
                     from app.graphs.negotiation.semantic_graph import build_semantic_graph
 
                     graph = build_semantic_graph(
-                        saver, self.queue, owner, fault=self.fault, provider=self.semantic_provider
+                        saver,
+                        self.queue,
+                        owner,
+                        fault=self.fault,
+                        provider=self.semantic_provider,
+                        quality=run["graph_version"] == QUALITY_VERSION,
+                        quality_provider=self.quality_provider,
                     )
                 else:
                     graph = build_graph(saver, self.queue, owner, fault=self.fault)
                 snapshot = graph.get_state(config)
+                with self.factory() as db:
+                    terminate = db.get(ModelExecutionTask, run["task_id"]).last_manual_action
+                if terminate == "TERMINATE":
+                    from app.services.business_command_service import BusinessCommandService
+
+                    if snapshot.next and snapshot.values.get("run_id") != run_id:
+                        raise RecoveryConflict("不能终止其他输入的 checkpoint")
+                    # Explicit seller termination writes a terminal checkpoint without replaying
+                    # a semantic/action node. Existing committed receipts remain authoritative.
+                    BusinessCommandService(self.factory, clock=self.queue.clock).abort_or_query(
+                        run_id, owner, reason="卖家已停止本次处理，请根据当前结果继续协商。"
+                    )
+                    message_id = NotificationService(self.factory, clock=self.queue.clock).publish(
+                        run_id, owner=owner
+                    )
+                    graph.update_state(
+                        config,
+                        {**new_turn(run), "published_message_id": message_id},
+                        as_node="publish_reply",
+                    )
+                    final = graph.get_state(config)
+                    self.queue.finalize(run_id, owner, final.values, final.next)
+                    return {"public_message_id": message_id}
                 with self.factory() as db:
                     current = db.get(NegotiationInput, run_id)
                     session = db.get(NegotiationSession, run["session_id"])
@@ -94,20 +142,29 @@ class GraphRunner:
                 if entry == Entry.HISTORY:
                     raise RecoveryConflict("历史任务不能恢复到后续轮次")
                 if entry != Entry.FINALIZE:
-                    graph.invoke(
-                        {
-                            **new_turn(run),
-                            **(
-                                {"semantic_reference": None}
-                                if run["graph_version"] == VERSION
-                                else {}
-                            ),
-                        }
-                        if entry == Entry.START
-                        else None,
-                        config=config,
-                        durability="sync",
-                    )
+                    from app.runtime.heartbeat import keep_lease
+
+                    with keep_lease(self.queue, run_id, owner):
+                        graph.invoke(
+                            {
+                                **new_turn(run),
+                                **(
+                                    {
+                                        "semantic_reference": None,
+                                        "context_reference": None,
+                                        "repair_count": 0,
+                                        "candidate_valid": False,
+                                        "reply_approved": False,
+                                    }
+                                    if run["graph_version"] in SEMANTIC_VERSIONS
+                                    else {}
+                                ),
+                            }
+                            if entry == Entry.START
+                            else None,
+                            config=config,
+                            durability="sync",
+                        )
                 final = graph.get_state(config)
                 self.fault("after_end")
                 self.queue.finalize(run_id, owner, final.values, final.next)
