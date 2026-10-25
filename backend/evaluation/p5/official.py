@@ -1,6 +1,7 @@
 """Pinned official OpenEvals buyer/judge and LangSmith experiment import/readback."""
 
 import asyncio
+import json
 import time
 from decimal import Decimal
 
@@ -88,19 +89,46 @@ def model(purpose, usage):
 def simulate(target, case, usage):
     user = case["turns"]
     if case.get("dynamic"):
+        goal = case["buyer_goal"]
+        fixed = list(case["turns"])
+        if case.get("buyer_profile"):
+            profile = case["buyer_profile"]
+            goal = json.dumps({"buyer_goal": goal, "profile": profile}, ensure_ascii=False) + (
+                "。遵守maximum_price和required_terms。先完成min_consultation_turns轮咨询，再讨论报价。"
+                "只对已展示且可确认、符合目标的报价说确认；没有合法报价时继续询问或结束。"
+                "不得假装对方已经展示报价。明确表述报价的配送方式和运费承担方。"
+            )
+            if case["case_id"].startswith("release120-v4_condition_change"):
+                final = case["buyer_goal"]["required_terms"]["delivery_method"]
+                fixed += [
+                    "我先考虑" + ("快递" if final == "pickup" else "自提") + "，暂不报价。",
+                    "现在改为"
+                    + ("自提" if final == "pickup" else "快递到付，运费我出")
+                    + "，这是后续交易的必要条件，先不报价。",
+                ]
         user = create_llm_simulated_user(
-            system=BUYER_PROMPT.format(goal=case["buyer_goal"]),
+            system=BUYER_PROMPT.format(goal=goal),
             client=model("openevals_buyer", usage),
-            fixed_responses=case["turns"],
+            fixed_responses=fixed,
         )
     # Disable implicit tracing: only the explicit safe dataset/experiment export is allowed.
     with tracing_context(enabled=False):
-        return run_multiturn_simulation(
+        result = run_multiturn_simulation(
             app=target,
             user=user,
             thread_id=target.thread_id,
             max_turns=case.get("max_turns", len(case["turns"])),
+            stopping_condition=lambda *args, **kwargs: target.terminal(),
         )
+        if case.get("final_action"):
+            result["trajectory"].append(
+                {
+                    "role": "user",
+                    "content": "确认" if case["final_action"] == "CONFIRM" else "结束协商",
+                }
+            )
+            result["trajectory"].append(target.finish_script())
+        return result
 
 
 def judge(case, trajectory, usage):
@@ -117,6 +145,11 @@ def judge(case, trajectory, usage):
             reference_outputs={
                 "public_facts": public_fixture_reference(case),
                 "expected_outcomes": case["expected_outcomes"],
+                "protocol": (
+                    "AGREED requires a separate buyer confirmation of a displayed valid offer. "
+                    "A vague assent without a displayed offer must be clarified. "
+                    "Unknown facts remain unknown; no promise of follow-up contact is supported."
+                ),
             },
         )
 

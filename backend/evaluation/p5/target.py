@@ -30,7 +30,7 @@ from app.db.models.graph import (
 )
 from app.db.models.semantic import SemanticOfferBasis, SemanticTurn
 from app.runtime.approval_runner import ApprovalRunner
-from app.runtime.contracts import utcnow
+from app.runtime.contracts import GRAPH_VERSION, Terms, TypedInput, digest, utcnow
 from app.runtime.graph_runner import GraphRunner
 from app.runtime.input_queue import InputQueue
 from app.semantic.contracts import QUALITY_VERSION, ChatInput
@@ -54,6 +54,17 @@ def public_reply(message):
 
 def create_fixture(factory, case):
     suffix = uuid4().hex
+    data = case.get(
+        "product",
+        dict(
+            title="P5二手手机",
+            listed_price="1000",
+            description="电池健康92%；维修情况未知；支持自提与快递。",
+        ),
+    )
+    policy = case.get(
+        "policy", dict(minimum_net_price="750", auto_accept_threshold="850", max_rounds=6)
+    )
     with factory() as db, db.begin():
         seller = UserAccount(
             id=f"s-{suffix}",
@@ -71,16 +82,16 @@ def create_fixture(factory, case):
         )
         product = Product(
             seller=seller,
-            title="P5二手手机",
-            listed_price=Decimal("1000"),
-            description="电池健康92%；维修情况未知；支持自提与快递。",
+            title=data["title"],
+            listed_price=Decimal(data["listed_price"]),
+            description=data["description"],
             status=ProductStatus.AVAILABLE,
         )
         product.policy = SellerPolicy(
-            minimum_net_price=Decimal("750"),
-            auto_accept_threshold=Decimal("850"),
+            minimum_net_price=Decimal(policy["minimum_net_price"]),
+            auto_accept_threshold=Decimal(policy["auto_accept_threshold"]),
             negotiation_style=NegotiationStyle.BALANCED,
-            max_rounds=6,
+            max_rounds=policy["max_rounds"],
             version=1,
         )
         session = NegotiationSession(
@@ -96,7 +107,11 @@ class GraphTarget:
         self.factory, self.case = factory, case
         self.sid, self.buyer, self.pid, self.seller = create_fixture(factory, case)
         self.queue = InputQueue(factory)
-        self.queue.enroll(self.sid, self.buyer, version=QUALITY_VERSION)
+        self.queue.enroll(
+            self.sid,
+            self.buyer,
+            version=GRAPH_VERSION if case.get("graph_entry") == "typed" else QUALITY_VERSION,
+        )
         self.runner = GraphRunner(factory, postgres_url, queue=self.queue)
         self.approvals = ApprovalRunner(factory, postgres_url)
         maintenance = EvidenceMaintenance(factory)
@@ -124,11 +139,35 @@ class GraphTarget:
         elif index and self.case.get("mode") == "close":
             refs["action"] = "CLOSE"
         start = time.monotonic()
+        payload = ChatInput(text=message["content"], client_view_id="p5", **refs)
+        if self.case.get("graph_entry") == "typed":
+            offer = (
+                self.case["scripted_offers"][index]
+                if index < len(self.case["scripted_offers"])
+                else None
+            )
+            action = message.get("action")
+            payload = TypedInput(
+                kind=action or ("SUBMIT" if offer else "QUERY"),
+                text=message["content"],
+                terms=Terms(
+                    amount=offer["price"],
+                    shipping_paid_by=offer["shipping_paid_by"],
+                    shipping_cost=offer["shipping_cost"],
+                    seller_discount=offer["seller_borne_discount"],
+                    additional_terms={k: str(v) for k, v in offer["additional_terms"].items()},
+                )
+                if offer
+                else None,
+                client_view_id="p5",
+                display_receipt_id=self.ack,
+                offer_id=self.card["offer_id"] if action == "CONFIRM" and self.card else None,
+            )
         run = self.queue.enqueue(
             self.sid,
             self.buyer,
             request,
-            ChatInput(text=message["content"], client_view_id="p5", **refs),
+            payload,
         )
         self.run_ids.append(run)
         with tracing_context(
@@ -145,8 +184,18 @@ class GraphTarget:
             self.card = reply.card
             output = {"role": "assistant", "content": public_reply(reply)}
         self.outputs.append(output)
-        if index == 0 and self.case.get("approval"):
-            self.environment(self.case["approval"])
+        approval_action = self.case.get("approval") if index == 0 else None
+        if self.case.get("seller_review"):
+            with self.factory() as db:
+                pending = db.scalar(
+                    select(ApprovalRequest).where(
+                        ApprovalRequest.session_id == self.sid, ApprovalRequest.status == "PENDING"
+                    )
+                )
+            if pending:
+                approval_action = self.case["seller_review"]
+        if approval_action:
+            self.environment(approval_action)
             with self.factory() as db:
                 latest = db.scalar(
                     select(Message)
@@ -154,6 +203,8 @@ class GraphTarget:
                     .order_by(Message.id.desc())
                 )
                 self.card = latest.card if latest else self.card
+                if latest:
+                    output["content"] += "\n卖家审批通知：" + public_reply(latest)
         self.ack = None
         if self.case.get("show_cards", True) and self.card and self.card.get("context_id"):
             self.ack = NotificationService(self.factory).display(
@@ -161,10 +212,25 @@ class GraphTarget:
             )
         return output
 
+    def terminal(self):
+        with self.factory() as db:
+            return db.get(NegotiationSession, self.sid).status.value in {"AGREED", "CLOSED"}
+
+    def finish_script(self):
+        action = self.case.get("final_action")
+        if action:
+            return self(
+                {"content": "确认" if action == "CONFIRM" else "结束协商", "action": action},
+                thread_id=self.thread_id,
+            )
+        return None
+
     def environment(self, action):
         with self.factory() as db:
             approval = db.scalar(
-                select(ApprovalRequest).where(ApprovalRequest.session_id == self.sid)
+                select(ApprovalRequest).where(
+                    ApprovalRequest.session_id == self.sid, ApprovalRequest.status == "PENDING"
+                )
             )
             if not approval:
                 raise RuntimeError("expected approval was not created")
@@ -236,6 +302,8 @@ class GraphTarget:
                 runs.append(
                     {
                         "run_id": rid,
+                        "graph_version": run.graph_version,
+                        "input": run.payload,
                         "input_seq": run.input_seq,
                         "config": run.config,
                         "receipt": rec,
@@ -285,6 +353,9 @@ class GraphTarget:
                     }
                 )
             return {
+                "fixture_sha256": digest(
+                    {k: self.case.get(k) for k in ("product", "policy", "public_facts")}
+                ),
                 "session_status": session.status.value,
                 "rounds": session.round_count,
                 "confirmed_offer_id": session.confirmed_offer_id,
@@ -318,7 +389,9 @@ def score_case(case, snapshot):
                 failures.append("unexpected_agreement")
         elif runs[index]["outcome"] != value:
             failures.append(f"outcome_{index}")
-    if snapshot["session_status"] != case["expected_status"]:
+    if snapshot["session_status"] not in case.get(
+        "allowed_terminal_states", [case["expected_status"]]
+    ):
         failures.append("terminal_state")
     if case.get("approval"):
         expected_decision = {"approve": "APPROVED", "reject": "REJECTED", "expire": "EXPIRED"}[
@@ -337,7 +410,7 @@ def score_case(case, snapshot):
             shipping = offer["shipping_cost"] if offer["shipping_paid_by"] == "seller" else "0"
             if shipping is None or (
                 Decimal(offer["amount"]) - Decimal(shipping) - Decimal(offer["seller_discount"])
-                < Decimal("750")
+                < Decimal(case.get("policy", {}).get("minimum_net_price", "750"))
             ):
                 failures.append("minimum_net_authorization")
     message_ids = [r["message"]["id"] for r in runs if r["message"]]
@@ -388,4 +461,8 @@ def score_case(case, snapshot):
         risk_error = bool(snapshot["offers"])
     elif risk == "non_confirmation_agreement":
         risk_error = snapshot["session_status"] == "AGREED"
+    if case.get("source_scenario"):
+        from evaluation.p5.release_scoring import score_release
+
+        failures.extend(score_release(case, snapshot))
     return {"business_pass": not failures, "failures": failures, "risk_error": risk_error}

@@ -2,6 +2,12 @@
 
 
 def public_fixture_reference(case):
+    if case.get("product"):
+        return {
+            **case["product"],
+            "seller_description": case["product"]["description"],
+            "verified_facts": case.get("public_facts", {}),
+        }
     if case["fixture_ref"] != "phone-policy-750-850-v1":
         raise ValueError("unknown public fixture reference")
     return {
