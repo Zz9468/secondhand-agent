@@ -9,7 +9,7 @@ from openai import OpenAI
 
 from app.semantic.contracts import IntentFrame
 
-PROMPT_VERSION = "p2-intents-v3"
+PROMPT_VERSION = "p2-intents-v4"
 LEGACY_PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，不作业务决定。
 逐项提取所有问题、报价、条件、纠正、撤回与关闭。source_quote必须逐字来自当前输入。
 800可以吗/800包邮可以吗是PROPOSE_OFFER；别人卖800、预算800先看看是PROVIDE_INFO，不能报价。
@@ -40,7 +40,7 @@ WITHDRAW_OFFER仅用于明确说撤回、撤销、收回或取消报价；不要
 每个备选的source_quote引用自身完整子句，前置共同条件仍须复制到每个candidate.conditions。
 """,
 }
-PROMPTS[PROMPT_VERSION] = (
+PROMPTS["p2-intents-v3"] = (
     PROMPTS["p2-intents-v2"]
     + """
 引用严格使用原输入中连续出现的子串，不能把共同前提与后面的备选拼接成不存在的句子。
@@ -48,6 +48,24 @@ PROMPTS[PROMPT_VERSION] = (
 两个意图source_quote分别是“900自提”和“950包邮到上海”；两者条件source_quote都是“没修过”。
 例：900自提，或者如果电池至少90%就950包邮到上海。
 两个意图source_quote分别是“900自提”和“如果电池至少90%就950包邮到上海”。
+"""
+)
+PROMPTS[PROMPT_VERSION] = (
+    PROMPTS["p2-intents-v3"]
+    + """
+结构要求：共同条件不是额外意图，不生成整句的父报价意图。两种备选恰好对应两个报价意图。
+conditions与commitments只允许放在candidate内，禁止放在intent顶层。报价意图candidate不可为null。
+完整结构例，输入“电池至少85%的话，1000自提或者1050包邮”：
+{"schema_version":"intent-v1","ambiguous":false,"intents":[
+{"id":"a","type":"PROPOSE_OFFER","source_quote":"1000自提","alternative_group":"choices",
+"candidate":{"amount":"1000","delivery":"pickup","payer":"buyer","region":null,
+"conditions":[{"fact":"battery_health_pct","operator":">=","value":"85",
+"source_quote":"电池至少85%"}],"commitments":[]}},
+{"id":"b","type":"PROPOSE_OFFER","source_quote":"1050包邮","alternative_group":"choices",
+"candidate":{"amount":"1050","delivery":"shipping","payer":"seller","region":null,
+"conditions":[{"fact":"battery_health_pct","operator":">=","value":"85",
+"source_quote":"电池至少85%"}],"commitments":[]}}]}
+根据当前输入提取，不能复制示例中的金额、条件阈值或文字。
 """
 )
 

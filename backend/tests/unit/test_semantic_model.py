@@ -46,7 +46,9 @@ def test_known_endpoint_cost_bound_and_unknown_price_refusal():
     assert workspace.prices() == model.prices()
 
 
-@pytest.mark.parametrize("prompt_version", ["p2-intents-v1", "p2-intents-v2", PROMPT_VERSION])
+@pytest.mark.parametrize(
+    "prompt_version", ["p2-intents-v1", "p2-intents-v2", "p2-intents-v3", PROMPT_VERSION]
+)
 def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch, prompt_version):
     captured = {}
     value = {
