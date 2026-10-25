@@ -18,7 +18,7 @@ def traced_openai(client):
 @lru_cache(maxsize=1)
 def configured_client():
     settings = get_settings()
-    if not settings.langsmith_tracing or not settings.langsmith_api_key:
+    if not settings.graph_langsmith_tracing or not settings.langsmith_api_key:
         return None
     return trace_client(
         api_url=settings.langsmith_endpoint, api_key=settings.langsmith_api_key.get_secret_value()

@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     database_url: str
     checkpoint_database_url: str | None = None
     graph_chat_enabled: bool = True
-    langsmith_tracing: bool = False
+    graph_langsmith_tracing: bool = False
     langsmith_api_key: SecretStr | None = None
     langsmith_endpoint: str = "https://api.smith.langchain.com"
 
