@@ -12,7 +12,12 @@ import pytest
 from sqlalchemy import select
 
 from app.db.models import ApprovalRequest, Message, NegotiationSession
-from app.db.models.graph import BusinessActionReceipt, ModelCallLedger, NegotiationInput
+from app.db.models.graph import (
+    BusinessActionReceipt,
+    GraphTurnQuality,
+    ModelCallLedger,
+    NegotiationInput,
+)
 from app.db.models.semantic import SemanticTurn
 from app.semantic.model import PROMPT_VERSION, SemanticModel, SemanticResponseError
 from tests.graph.conftest import graph_factory  # noqa: F401
@@ -118,6 +123,7 @@ def live_case(live_evidence, semantic_case, request):  # noqa: F811
         )
         records = []
         for item in inputs:
+            quality = db.get(GraphTurnQuality, item.id)
             turn = db.get(SemanticTurn, item.id)
             receipt = db.get(BusinessActionReceipt, f"turn:{item.id}:action")
             ledgers = list(
@@ -129,6 +135,20 @@ def live_case(live_evidence, semantic_case, request):  # noqa: F811
                     "run_id": item.id,
                     "text": item.payload["text"],
                     "sequence": item.input_seq,
+                    "graph_version": item.graph_version,
+                    "prompt_version": item.config["prompt_version"],
+                    "quality_version": item.config.get("quality_version"),
+                    "active_ms": item.active_ms,
+                    "quality": {
+                        "approved": quality.approved,
+                        "review_count": quality.review_count,
+                        "stop_reason": quality.stop_reason,
+                        "context_bytes": len(
+                            json.dumps(quality.context, ensure_ascii=False).encode()
+                        ),
+                    }
+                    if quality
+                    else None,
                     "semantic_results": turn.results if turn else None,
                     "command": turn.command["kind"] if turn else None,
                     "outcome": receipt.result["outcome"] if receipt else None,
@@ -137,6 +157,7 @@ def live_case(live_evidence, semantic_case, request):  # noqa: F811
                     "ledger": [
                         {
                             "status": row.status,
+                            "purpose": row.purpose,
                             "tokens": row.actual_tokens,
                             "estimated_cny": str(row.actual_cost),
                         }
