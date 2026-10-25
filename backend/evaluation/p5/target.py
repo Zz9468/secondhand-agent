@@ -320,6 +320,18 @@ def score_case(case, snapshot):
             failures.append(f"outcome_{index}")
     if snapshot["session_status"] != case["expected_status"]:
         failures.append("terminal_state")
+    if case.get("approval"):
+        expected_decision = {"approve": "APPROVED", "reject": "REJECTED", "expire": "EXPIRED"}[
+            case["approval"]
+        ]
+        approvals = snapshot.get("approvals", [])
+        if not approvals or any(
+            a["status"] != expected_decision
+            or a["notification_status"] != "PUBLISHED"
+            or a["effect_status"] != ("INVALIDATED" if case["approval"] == "expire" else "APPLIED")
+            for a in approvals
+        ):
+            failures.append("approval_effect_or_notification")
     for offer in snapshot["offers"]:
         if offer["status"] == "ACCEPTED":
             shipping = offer["shipping_cost"] if offer["shipping_paid_by"] == "seller" else "0"

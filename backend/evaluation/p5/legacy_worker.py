@@ -196,6 +196,8 @@ def main():
                     )
                 )
             ]
+            if any(t.status.value != "SUCCEEDED" for t in tasks):
+                row["business_pass"] = False
             for index, expected in enumerate(case.get("expected_outcomes", [])):
                 actual = row["runs"][index]["outcome"] if index < len(row["runs"]) else None
                 mapped = {"NEEDS_SELLER_CONFIRMATION": "WAITING_APPROVAL"}.get(actual, actual)
