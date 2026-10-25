@@ -1,0 +1,132 @@
+{
+  "stage": "17.4 P3",
+  "status": "passed",
+  "recorded_at": "2026-10-25T10:23:07.665813+08:00",
+  "baseline_commit": "17f2759",
+  "implementation_commit": "0eba2b554f6a7b696d5171ab0ae8b6b7ab32ab2f",
+  "migration": "d34a8b9c71f0",
+  "tests": {
+    "approval-final.xml": {
+      "tests": 59,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 154.391,
+      "sha256": "2579b7693b99d6ef7e6dbcf20d679913f7efb5781477976ab504ac89c5479cba"
+    },
+    "approval-first.xml": {
+      "tests": 38,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 88.927,
+      "sha256": "db595b1bb80fa15812f88121760bbf9b3bb76ce0c2f956da26e4cea26a4e241d"
+    },
+    "approval-second.xml": {
+      "tests": 23,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0,
+      "seconds": 54.271,
+      "sha256": "eb3b175c4b7cc8d27ea6136d86a7f53aff4662f8c96a97b8d72fd4041c87be24"
+    },
+    "approval-third.xml": {
+      "tests": 8,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 40.555,
+      "sha256": "59fb4dbb59cefb7d51233ed7bec7c7a8d96ecc1b5cda49f5a306548337842f40"
+    },
+    "initial.xml": {
+      "tests": 25,
+      "failures": 0,
+      "errors": 25,
+      "skipped": 0,
+      "seconds": 18.278,
+      "sha256": "6840a6a8f1f9741cc740376c3203698686f0995ef03be50e706a4370fd13f9fb"
+    },
+    "legacy-first.xml": {
+      "tests": 372,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 99.145,
+      "sha256": "43d4a4e39889f4ff90f95081aa95d563f10d9fd1d9ad8bdb9dfec83064a3679a"
+    },
+    "live-first.xml": {
+      "tests": 31,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 169.865,
+      "sha256": "e4f254cc836f4fe78feffcd37ccf6b55a385753a651e62dabbe473f90e60312d"
+    },
+    "model-unit.xml": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.354,
+      "sha256": "1973b1d138f0b8e12cc5fa22f9f38b123ba2bedf60e33d95c7f502a788b11eb1"
+    },
+    "protocol-first.xml": {
+      "tests": 200,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 292.23,
+      "sha256": "8cdebe6ae399caea6ca38e4a701ed72150a9ab54baae7da1dd4c45dbb2ce3a40"
+    },
+    "audit-final.xml": {
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 72.187,
+      "sha256": "4cab446d800c9fc782c9db1bef334a6fd0b748df1d8d8b544ee31f3230f9f649"
+    }
+  },
+  "live": {
+    "source_commit": "5ec8d7c0b9fb13f265cbf6efcecabf6da0ec7170",
+    "prompt_version": "p3-intents-v1",
+    "calls": 53,
+    "actual_tokens": 123606,
+    "estimated_cny": "0.0288036",
+    "unknown_usage_calls": 0
+  },
+  "live_cases": 31,
+  "live_failed_cases": [],
+  "artifacts": {
+    "approval-final.log": "b5eb4ae5f88d4b03695760e3e766c260193cc92eae0c5bf041ae27f81bdf6086",
+    "approval-first.log": "e4d7777b154724766308c62a8a327205aad4dd00f160a68b2412ebf0fd23aad4",
+    "approval-second.log": "1f56239ad5933865b25262635f36b26ac0b21dca50bf7cd2fd76666d7646e872",
+    "approval-third.log": "eeeb8cd4e5a0b20c18b04ff01405029452886dd755c5e2091ebf1ff291e1c084",
+    "audit-final.log": "336b87264c079b29261e3b352e7536bd1597a4483b81f6262518051d51848738",
+    "development-status.log": "c964262bcc7ecce27aed36cefcaedd9234510a123892353dfbcd13da6bf131cc",
+    "frontend-build.log": "41dd8b0d3c35b83ebadd4b7325182fef56b353d2f09ea8a00de5b4996e2e7121",
+    "frontend-final.log": "2476add4fa93d6f5ef1880fc5c956a18624945d260b058bb21dbeb7145817521",
+    "legacy-first.log": "74413b1cdc925459e3ddb870ce19f78d1e1188c7a590a36a0eed9ba38cd53223",
+    "live-first.json": "5034d7f9c8bbccef557f8a25dc9e5f17f6ca14212169dc7b1e9593979b1f3017",
+    "live-first.log": "37bb5b7f2de9638e3dcc3981cb9436ac96511191d943e765eec6cab8b8e8d2ea",
+    "migration-dev.log": "bea43bafc94a33f1806070ea482b6072f40b3b40394b7714218c85acbab0b7e2",
+    "model-unit.log": "97538e3d72eb5a06c53c5a4df9c6cd936cbb683d452892ca7e38e8bf5ee27ee3",
+    "protocol-first.log": "b6795b510bcd989c96caa19e7fa034558cd93df4575c6aec31b3254b37398ea1",
+    "ruff-first.log": "cce9509db400f0cf071de36963d613054b44959d15db003b02eba67945e0f0dc",
+    "worker-once.log": "111cabcbeda0c6235134d3955f121549203004f54575698974f339e925fab859"
+  },
+  "scope_notes": [
+    "59 final tests = 53 P3 + 6 inherited boundaries; overlaps 200 protocol checks.",
+    "372 legacy tests include 17 semantic-model unit tests.",
+    "31 real-model cases = 26 P2 regressions + 5 P3 scenarios; development acceptance only.",
+    "Initial failing batches are retained and do not represent final acceptance.",
+    "Final receipt-version audit fix is covered by 19 targeted lifecycle regressions; these overlap the 59-test suite. Real-model evidence was collected on the initial implementation commit."
+  ],
+  "remaining": [
+    "P4 context, cumulative activity budget, tracing, recovery UI and timing",
+    "P5 independent risk holdout and official evaluations",
+    "P6 supervisor deployment, CI, capacity and archival"
+  ],
+  "next_stage": "17.5 P4",
+  "initial_implementation_commit": "5ec8d7c0b9fb13f265cbf6efcecabf6da0ec7170"
+}
