@@ -75,13 +75,18 @@ def answer_question(db, run, session, product, topic, source_quote, now):
         from app.services.approval_lifecycle import public_approval_status
 
         return public_approval_status(db, session, now)
-    if topic in {
+    price_question = topic in {
         "price",
         "listing_price",
         "listed_price",
         "current_price",
         "offer_price",
-    } and not re.search(r"标价|页面|挂牌|公开价格", source_quote):
+    } or re.search(
+        r"(?:问(?:的)?(?:是)?|核对)(?:价格|金额|报价)?(?:是否|是不是|是)?\s*\d+(?:\.\d+)?"
+        r"|(?:价格|金额|报价).{0,8}(?:是不是|是否|为|是)\s*\d+(?:\.\d+)?",
+        source_quote,
+    )
+    if price_question and not re.search(r"标价|页面|挂牌|公开价格", source_quote):
         context = frozen_context(db, run, session, now)
         offer = db.get(Offer, context.offer_id) if context and context.offer_id else None
         if (

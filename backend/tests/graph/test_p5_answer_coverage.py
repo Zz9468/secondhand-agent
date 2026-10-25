@@ -112,7 +112,8 @@ def test_refusal_covers_requests_missed_by_model(quality_case, text, kind, topic
         assert not db.scalar(select(Offer).where(Offer.session_id == c.sid))
 
 
-def test_price_question_uses_displayed_offer_without_confirming(quality_case):  # noqa: F811
+@pytest.mark.parametrize("topic", ["listed_price", "confirmation_button", "unknown"])
+def test_price_question_uses_displayed_offer_without_confirming(quality_case, topic):  # noqa: F811
     from app.db.models import NegotiationSession
 
     c = quality_case
@@ -121,7 +122,7 @@ def test_price_question_uses_displayed_offer_without_confirming(quality_case):  
     _, receipt = show(c, first)
     text = "我是在问是否900，不是在确认购买。"
     run = turn(
-        c, text, [intent(text, kind="ASK_TERMS", topic="listed_price")], display_receipt_id=receipt
+        c, text, [intent(text, kind="ASK_TERMS", topic=topic)], display_receipt_id=receipt
     )
     answer = message(c, run).content
     assert "900" in answer and "独立确认" in answer
