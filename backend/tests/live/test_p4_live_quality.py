@@ -58,8 +58,8 @@ def p4_trace(live_evidence):
         "names": sorted({r.name for r in runs}),
         "run_ids": [str(r.id) for r in runs],
         "query_api": "runs.query (SmithDB v2)",
-        "example_url": client.get_run_url(run_id=runs[0].id, project_id=project_id)
-        if runs
+        "example_url": "https://smith.langchain.com" + runs[0].app_path
+        if runs and runs[0].app_path
         else None,
     }
     live_evidence.save()

@@ -1,11 +1,13 @@
 """Reply-only repairs; deterministic receipt rendering always wins at publication."""
 
+import json
 import re
+from decimal import Decimal
 
 from app.agent.claim_safety import find_unsafe_claims
-from app.db.models import NegotiationSession, Product
+from app.db.models import NegotiationSession, Offer, Product
 from app.db.models.graph import GraphTurnQuality, NegotiationInput, NotificationDelivery
-from app.db.models.semantic import SemanticTurn
+from app.db.models.semantic import OfferDraft, SemanticTurn
 from app.runtime.activity import model_timeout
 from app.runtime.contracts import BudgetExhausted, StaleOwner, digest
 from app.runtime.input_queue import lock_owner
@@ -55,6 +57,9 @@ def reply_evidence(db, run, now):
             }
         items.append(item)
     # Only public result texts; no policy, transport cost, credentials or raw command.
+    public_offer = (
+        db.get(Offer, delivery.result["offer_id"]) if delivery.result.get("offer_id") else None
+    )
     return {
         "items": items,
         "business_outcome": delivery.result["outcome"],
@@ -62,6 +67,16 @@ def reply_evidence(db, run, now):
         "product_version": product.product_version,
         "public_description": product.description,
         "receipt_version": delivery.result.get("business_version"),
+        "public_offer": {
+            "amount": str(public_offer.price),
+            "terms": public_offer.terms,
+            "shipping_paid_by": public_offer.shipping_paid_by.value,
+        }
+        if public_offer
+        else None,
+        "public_drafts": [db.get(OfferDraft, key).candidate for key in turn.draft_ids]
+        if turn
+        else [],
     }
 
 
@@ -76,11 +91,13 @@ def candidate_safe(candidate, evidence):
         return False
     if re.search(r"底价|最低净收入|自动接受阈值|内部成本|系统提示词", text):
         return False
-    evidence_text = " ".join(i["text"] for i in evidence["items"])
-    # New numeric claims cannot be smuggled into natural text.
-    return set(re.findall(r"\d+(?:\.\d+)?", text)) <= set(
-        re.findall(r"\d+(?:\.\d+)?", evidence_text)
+    evidence_text = " ".join(i["text"] for i in evidence["items"]) + json.dumps(
+        [evidence["public_offer"], evidence["public_drafts"]], ensure_ascii=False
     )
+    # New numeric claims cannot be smuggled into natural text.
+    return {Decimal(n) for n in re.findall(r"\d+(?:\.\d+)?", text)} <= {
+        Decimal(n) for n in re.findall(r"\d+(?:\.\d+)?", evidence_text)
+    }
 
 
 class GraphReplyService:
@@ -137,6 +154,10 @@ class GraphReplyService:
             item = db.get(GraphTurnQuality, run_id, with_for_update=True)
             item.reply = candidate.text if candidate else None
             item.evidence_hash, item.approved, item.stop_reason = digest(evidence), False, reason
+            if candidate and not approved:
+                item.review_feedback = (
+                    "逐项覆盖全部ID，仅使用公开证据数值；不承诺联系卖家或泄露私有策略。"
+                )
         return approved
 
     def review(self, run_id, owner, repair):

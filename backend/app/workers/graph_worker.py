@@ -140,7 +140,9 @@ def run_batch(factory, postgres_url, *, limit=20):
             if runner.queue.read(run_id)["graph_version"] == "negotiation-v3":
                 from app.runtime.supervisor import run_supervised
 
-                result["completed"] += int(run_supervised(factory, postgres_url, run_id))
+                completed = run_supervised(factory, postgres_url, run_id)
+                result["completed"] += int(completed)
+                result["failed"] += int(not completed)
             else:
                 result["completed"] += int(runner.run(run_id) is not None)
         except ThreadBusy:

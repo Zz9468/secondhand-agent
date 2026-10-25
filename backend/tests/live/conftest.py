@@ -72,7 +72,7 @@ def live_case(live_evidence, semantic_case, request):  # noqa: F811
 
     class RecordedModel(SemanticModel):
         def __call__(self, text, context, config):
-            tokens, cost = self.reserve(text, context)
+            tokens, cost = self.reserve_for_config(text, context, config)
             attempt = {
                 "case": request.node.name,
                 "text": text,

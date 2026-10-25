@@ -11,6 +11,7 @@ from app.observability.graph_tracing import traced_openai
 from app.semantic.contracts import IntentFrame
 
 PROMPT_VERSION = "p3-intents-v1"
+P4_PROMPT_VERSION = "p4-intents-v1"
 LEGACY_PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，不作业务决定。
 逐项提取所有问题、报价、条件、纠正、撤回与关闭。source_quote必须逐字来自当前输入。
 800可以吗/800包邮可以吗是PROPOSE_OFFER；别人卖800、预算800先看看是PROVIDE_INFO，不能报价。
@@ -125,11 +126,22 @@ PROMPTS[PROMPT_VERSION] = (
 这是状态查询，不能从买家说法判断卖家已批准；真实状态由服务查询。
 """
 )
+PROMPTS[P4_PROMPT_VERSION] = (
+    PROMPTS[PROMPT_VERSION]
+    + """
+带来源历史只用于理解对象。本次candidate是当前输入的增量，不能复用历史承担方、金额、区域、条件。
+例如历史草案是900包邮到上海，当前输入“改寄北京”，本轮没有说包邮，所以payer必须为null。
+has_bound_draft=true且has_displayed_offer=false时，补充或改动草案用PROVIDE_INFO，程序保留旧条件。
+该例的完整candidate为
+{"amount":null,"delivery":"shipping","payer":null,"region":"北京","conditions":[],"commitments":[]}。
+has_displayed_offer=true时才用CHANGE_TERMS修改正式报价。不要复制示例中本轮没提的字段。
+"""
+)
 
 
 def parsing_contexts(context, prompt_version):
     yield context
-    if prompt_version in {"p2-intents-v8", "p3-intents-v1"}:
+    if prompt_version in {"p2-intents-v8", "p3-intents-v1", P4_PROMPT_VERSION}:
         yield {
             **context,
             "validation_feedback": (
@@ -140,7 +152,7 @@ def parsing_contexts(context, prompt_version):
 
 
 def output_format(prompt_version):
-    if prompt_version not in {"p2-intents-v7", "p2-intents-v8", "p3-intents-v1"}:
+    if prompt_version not in {"p2-intents-v7", "p2-intents-v8", "p3-intents-v1", P4_PROMPT_VERSION}:
         return {"type": "json_object"}
     schema = IntentFrame.model_json_schema()
     schema["$defs"]["Intent"]["allOf"] = [
@@ -204,10 +216,14 @@ class SemanticModel:
             return Decimal("0.2"), Decimal("0.8")
         return None
 
-    def reserve(self, text, context):
+    def reserve(self, text, context, *, prompt_version=PROMPT_VERSION):
         tokens = (
-            len(json.dumps(model_messages(text, context), ensure_ascii=False).encode())
-            + len(json.dumps(output_format(PROMPT_VERSION), ensure_ascii=False).encode())
+            len(
+                json.dumps(
+                    model_messages(text, context, prompt_version), ensure_ascii=False
+                ).encode()
+            )
+            + len(json.dumps(output_format(prompt_version), ensure_ascii=False).encode())
             + 3072
         )
         prices = self.prices()
@@ -215,6 +231,9 @@ class SemanticModel:
             return tokens, None
         rate, output_rate = prices
         return tokens, (Decimal(tokens) * rate + Decimal(2048) * output_rate) * 10 / 1_000_000
+
+    def reserve_for_config(self, text, context, config):
+        return self.reserve(text, context, prompt_version=config["prompt_version"])
 
     def __call__(self, text, context, config):
         settings = self.settings

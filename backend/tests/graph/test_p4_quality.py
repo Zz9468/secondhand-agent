@@ -437,3 +437,17 @@ def test_context_artifact_without_checkpoint_requires_recovery(quality_case):
         c.runner.run(run)
     assert c.queue.read(run)["recovery_required"]
     assert not ledger_rows(c, run)
+
+
+def test_public_receipt_numbers_accept_equivalent_decimal_but_reject_invented_price(quality_case):
+    from app.semantic.quality import ReplyCandidate
+    from app.services.graph_reply_service import candidate_safe, reply_evidence
+
+    c = quality_case
+    run = turn(c, "900自提")
+    with c.factory() as db:
+        evidence = reply_evidence(db, db.get(NegotiationInput, run), c.clock())
+    ids = [i["id"] for i in evidence["items"]]
+    assert candidate_safe(ReplyCandidate(text="900元报价已接受，等待最终确认。", covered_ids=ids),
+                          evidence)
+    assert not candidate_safe(ReplyCandidate(text="950元报价已接受。", covered_ids=ids), evidence)

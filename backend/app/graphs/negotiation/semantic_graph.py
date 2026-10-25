@@ -83,7 +83,13 @@ def build_semantic_graph(
         for attempt_context in (
             [] if state.get("stop_reason") else parsing_contexts(context, config["prompt_version"])
         ):
-            tokens, cost = model.reserve(payload.text, attempt_context)
+            tokens, cost = (
+                model.reserve_for_config(payload.text, attempt_context, config)
+                if hasattr(model, "reserve_for_config")
+                else model.reserve(payload.text, attempt_context)
+            )
+            if quality and tokens > 32768:
+                break  # No request beyond the verified model context tariff/window.
 
             def invoke(call_context=attempt_context):
                 from app.runtime.activity import model_timeout
