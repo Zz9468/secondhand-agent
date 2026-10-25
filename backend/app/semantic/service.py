@@ -225,6 +225,7 @@ def safe_frame(frame, text):
                 r"|不(?:结束|关闭|终止)|(?:不是|没说)不买",
                 item.source_quote,
             )
+            or re.search(r"(?:如果|假如|若|等到|后续).{0,100}(?:结束|关闭|终止|不买)", text)
         ):
             return ordered, False
         if item.type == "WITHDRAW_OFFER" and (
@@ -311,6 +312,16 @@ def plan_turn(factory, run_id, owner, frame_value, now):
                     )
             elif not safe or conflict:
                 answer = "输入有冲突或条件不完整，请明确要保留的方案和条件。"
+                requirements = [
+                    word
+                    for word in ("发票", "维修", "电池", "保修", "原装", "运费")
+                    if word in payload.text
+                ]
+                if requirements:
+                    answer = (
+                        "、".join(requirements)
+                        + "等必要条件尚未完整核实，未提交报价。请明确要保留的方案及条件。"
+                    )
             elif intent.type in {"PROPOSE_OFFER", "CHANGE_TERMS"} or intent in changes:
                 bound = bound_draft(db, run, session, now)
                 candidate = intent.candidate or Candidate()
@@ -373,6 +384,8 @@ def plan_turn(factory, run_id, owner, frame_value, now):
                     verification.status, verification.reasons = "OPEN", missing
                 if alternatives:
                     status, answer = "CHOICE_REQUIRED", "已保留此备选及原条件，请选择一个方案。"
+                    if missing:
+                        answer += clarification(candidate, missing)
                 elif missing:
                     status = "WAITING_INFO"
                     answer = clarification(candidate, missing)

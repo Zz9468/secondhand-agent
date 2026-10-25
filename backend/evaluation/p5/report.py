@@ -98,6 +98,8 @@ def build(report, cases, tests):
         "business_cases": "FAIL" if business_failures else "PASS",
         "three_repetitions": "INSUFFICIENT_EVIDENCE" if missing_repetitions else "PASS",
         "judge_completeness": "INSUFFICIENT_EVIDENCE" if judge_incomplete else "PASS",
+        "frozen_runtime": report.get("frozen_runtime", {}).get("status", "INSUFFICIENT_EVIDENCE"),
+        "human_quality_and_commitment_review": "INSUFFICIENT_EVIDENCE",
     }
     overall = acceptance(
         risks,
@@ -162,7 +164,7 @@ def main():
     args = parser.parse_args()
     value = build(
         json.loads(args.report.read_text(encoding="utf-8")),
-        load_cases(),
+        json.loads(args.report.read_text(encoding="utf-8")).get("cases") or load_cases(),
         [junit_record(p) for p in args.junit],
     )
     value["report_sha256"] = sha(args.report)

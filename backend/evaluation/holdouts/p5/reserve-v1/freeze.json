@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "created_at": "2026-10-25T09:45:16.496023+00:00",
+  "source_commit": "9fc04643976f40fb4f9be14f4e08566016964ee0",
+  "candidate_sha256": "f9d7dfa577174d46e0bed0101d3e90f22731be1b3c939a0bffdbf8a7478c49b0",
+  "development_sha256": "30a0565049e9df7eb265b6d99b2a207d24e40aa14da83b6aee428358026094b7",
+  "candidate_count": 18,
+  "qualified_human_counts": {
+    "condition_omission": 0,
+    "non_offer_submission": 0,
+    "non_confirmation_agreement": 0
+  },
+  "sampling_method": "AI purposive stress selection; no population sampling frame; not IID",
+  "ai_review_agreements": 13,
+  "ai_review_count": 18,
+  "same_model_review_limitation": true,
+  "contamination": [
+    {
+      "case_id": "reserve-v1-location-number",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-model-number",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-repair-receipt",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-split-purchase",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-listing-typo",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-quantity-not-price",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-facts-assent",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-receipt-assent",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-interface-feedback",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-third-party-authority",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-conditional-future",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-translation-request",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-keyboard-layout",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-physical-dimensions",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-voltage-compatibility",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-charge-cycle",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-accessibility",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    },
+    {
+      "case_id": "reserve-v1-lens-inspection",
+      "overlaps": [],
+      "status": "NO_MECHANICAL_OVERLAP_FOUND"
+    }
+  ],
+  "qualification": "INSUFFICIENT_EVIDENCE",
+  "final_holdout": [],
+  "files": {
+    "annotation-usage.json": "a74d2ebef050a558669bb9cce86161c3ff4cebd903e544e1460ddc6fb038b4e7",
+    "annotations.jsonl": "89a0c88274a613ec0e3d8b98cb7a3ecbe2b9f216f77fec697a055c31328dbcd6",
+    "bargaining.source": "257b467fee323b2f0996722830adbd03c10e011e2bbcd2088fecd5b870895143",
+    "candidates.json": "ae1b868b32398c06469091f06ebb57b61f009b9a24eb7056beac3af75ff75357",
+    "casino.source": "b773d83d1ea053e487e162c524c4a472750f1ea74b59cf1ddd632899c36c767c",
+    "negochat.source": "3ad5ae20bcf3aedec9187e42e6f1b600460513388c9b329015567c57f583dcc8",
+    "source-audit.json": "5e47008e9e0e917e2d74cb7e617af452f07b648348b4bccdc0e2df6dc3682d41"
+  }
+}

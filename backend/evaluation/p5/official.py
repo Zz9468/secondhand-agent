@@ -106,11 +106,23 @@ def simulate(target, case, usage):
                     + ("自提" if final == "pickup" else "快递到付，运费我出")
                     + "，这是后续交易的必要条件，先不报价。",
                 ]
-        user = create_llm_simulated_user(
-            system=BUYER_PROMPT.format(goal=goal),
-            client=model("openevals_buyer", usage),
-            fixed_responses=fixed,
-        )
+        client = model("openevals_buyer", usage)
+
+        def user(trajectory, *, turn_counter, **kwargs):
+            minimum = case.get("buyer_profile", {}).get("min_consultation_turns", 0)
+            stage = f"当前第{turn_counter + 1}轮。"
+            if turn_counter < minimum:
+                stage += (
+                    f"本压力场景必须完成{minimum}轮咨询，"
+                    "本轮只问具体商品问题，不结束、不报价、不确认。"
+                )
+            simulator = create_llm_simulated_user(
+                system=BUYER_PROMPT.format(goal=goal) + stage,
+                client=client,
+                fixed_responses=fixed,
+            )
+            return simulator(trajectory, turn_counter=turn_counter, **kwargs)
+
     # Disable implicit tracing: only the explicit safe dataset/experiment export is allowed.
     with tracing_context(enabled=False):
         result = run_multiturn_simulation(

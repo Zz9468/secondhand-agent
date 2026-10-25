@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from decimal import Decimal
 from pathlib import Path
@@ -45,7 +46,8 @@ def adapt(source, profiles, source_hashes):
     typed = any(t["offer"] is not None for t in source["turns"])
     dynamic = cid.startswith("v4_")
     outcomes = [expected_offer(t["offer"], source["policy"]) for t in source["turns"]]
-    facts = {"battery_health_pct": 93 if cid.startswith("v4_") else 89}
+    battery = re.search(r"电池健康度\s*(\d+(?:\.\d+)?)%", source["product"]["description"])
+    facts = {"battery_health_pct": battery[1]} if battery else {}
     if "无维修" in source["product"]["description"]:
         facts["repair_history"] = "NO"
     # No invented delivery fact: the typed path retains absent delivery as absent.
@@ -53,7 +55,7 @@ def adapt(source, profiles, source_hashes):
     facts["allowed_delivery_methods"] = ["pickup", "shipping"]
     case = dict(
         case_id="release120-" + cid,
-        version="p5-release120-v1",
+        version="p5-release120-v2",
         family=source["category"].lower(),
         origin="legacy_synthetic",
         split="development",
@@ -156,7 +158,7 @@ def main():
     for name, blob in blobs.items():
         (sources / name).write_bytes(blob)
     document = dict(
-        version="p5-release120-v1",
+        version="p5-release120-v2",
         content_sha256=digest(cases),
         cases=cases,
         source_files_sha256=hashes,

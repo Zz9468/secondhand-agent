@@ -64,3 +64,13 @@ def test_unmet_condition_identifies_original_requirement(quality_case):  # noqa:
     assert "电池至少98%" in answer and "不满足" in answer and "尚未提交" in answer
     with c.factory() as db:
         assert not db.scalar(select(Offer).where(Offer.session_id == c.sid))
+
+
+def test_future_conditional_close_does_not_close_now(quality_case):  # noqa: F811
+    from app.db.models import NegotiationSession
+
+    c = quality_case
+    text = "若后续仍无法获得清晰报价，我将结束本次咨询。"
+    turn(c, text, [intent("结束本次咨询", kind="CLOSE_SESSION")])
+    with c.factory() as db:
+        assert db.get(NegotiationSession, c.sid).status.value == "ACTIVE"

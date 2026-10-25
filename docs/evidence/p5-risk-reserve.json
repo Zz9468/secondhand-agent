@@ -1,0 +1,18 @@
+{
+  "status": "INSUFFICIENT_EVIDENCE",
+  "qualified_final_holdout": [],
+  "qualified_counts": {
+    "non_offer_submission": 0,
+    "non_confirmation_agreement": 0,
+    "condition_omission": 0
+  },
+  "candidate_files": {
+    "annotation-usage.json": "a74d2ebef050a558669bb9cce86161c3ff4cebd903e544e1460ddc6fb038b4e7",
+    "annotations.jsonl": "89a0c88274a613ec0e3d8b98cb7a3ecbe2b9f216f77fec697a055c31328dbcd6",
+    "candidates.json": "ae1b868b32398c06469091f06ebb57b61f009b9a24eb7056beac3af75ff75357",
+    "freeze.json": "882309aa9b3c5f348f813f0138e91d594c8c34e72587d5f3ff0242e943f6492c",
+    "human-review-blank.jsonl": "026fbc1474610476b5a6f6e299d6da2dbb52e1b4b57f4f723f0ea51f51928608"
+  },
+  "source_audit_path": "artifacts/p5/risk-source-audit-v2/source-audit.json",
+  "source_audit_sha256": "faa1a1e35680146cd5d06526ffea3ba2fec3263c399cafa5ffd1f9941467c411"
+}

@@ -206,6 +206,10 @@ def public_answer(db, product, topic, source_quote=""):
         "confirmation": "confirmation_button",
     }
     topic = aliases.get(topic, topic)
+    if topic == "allowed_delivery_methods" and source_quote and not re.search(
+        r"自提|面交|快递|配送|寄|邮|送货|运费|交易方式", source_quote
+    ):
+        topic = "unknown"
     # A free-form model topic must not hide a concrete question from the fallback renderer.
     topics = []
     for name, pattern in {

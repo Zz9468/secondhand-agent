@@ -1,1 +1,2 @@
 backend/evaluation/datasets/p5_sources/** -text
+backend/evaluation/holdouts/** -text

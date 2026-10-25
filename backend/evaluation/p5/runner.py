@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import threading
+import traceback
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
@@ -42,11 +43,15 @@ def metadata(cases):
     settings = get_settings()
     return {
         "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+        "runtime_files_sha256": runtime_files(),
         "working_tree_dirty": bool(
             subprocess.check_output(["git", "status", "--porcelain"], text=True).strip()
         ),
         "graph_version": "negotiation-v3",
         "baseline_commit": BASELINE,
+        "risk_reserve_manifest_sha256": sha(ROOT / "docs/evidence/p5-risk-reserve.json")
+        if (ROOT / "docs/evidence/p5-risk-reserve.json").exists()
+        else None,
         "dataset_sha256": digest(cases),
         "prompt_sha256": digest([PROMPTS, QUALITY_PROMPTS]),
         "evaluator_prompt_sha256": digest([BUYER_PROMPT, JUDGE_PROMPT]),
@@ -70,6 +75,17 @@ def metadata(cases):
     }
 
 
+def runtime_files():
+    paths = [
+        p
+        for folder in ("app", "evaluation/p5", "evaluation/datasets", "scripts", "migrations")
+        for p in (ROOT / "backend" / folder).rglob("*")
+        if p.is_file() and p.suffix in {".py", ".json"}
+    ]
+    paths.append(ROOT / "backend/requirements.lock")
+    return {str(p.relative_to(ROOT)).replace("\\", "/"): sha(p) for p in sorted(paths)}
+
+
 def summarize(rows):
     times = [v for row in rows for v in row.get("latency_seconds", [])]
     calls = [c for row in rows for run in row.get("runs", []) for c in run.get("calls", [])]
@@ -91,6 +107,9 @@ def summarize(rows):
         "unknown_usage_calls": sum(c.get("tokens") is None for c in calls + auxiliary),
         "known_estimated_cny": str(sum(known, Decimal(0))),
         "unknown_cost_calls": sum(c.get("estimated_cny") is None for c in calls + auxiliary),
+        "unrecovered_seller_accounting_rows": sum(
+            r.get("database_evidence") is not True for r in rows
+        ),
         "fallback_turns": sum(r.get("fallback") is True for r in runs),
         "seller_turns": len(runs),
         "judge_passes": sum(r.get("judge", {}).get("score") is True for r in rows),
@@ -191,9 +210,10 @@ def run(factory, postgres_url, options):
         cases = [c for c in cases if not c.get("smoke")]
     meta = metadata(all_cases)
     report = {
-        "schema": 1,
+        "schema": 2,
         "started_at": datetime.now(UTC).isoformat(),
         "metadata": meta,
+        "cases": all_cases,
         "options": options,
         "results": [],
         "legacy_results": [],
@@ -237,7 +257,14 @@ def run(factory, postgres_url, options):
             if not case.get("smoke"):
                 row["judge"] = judge(case, row["trajectory"], row["auxiliary_calls"])
         except Exception as exc:
-            row.update(status="ERROR", error_type=type(exc).__name__)
+            row.update(
+                status="ERROR",
+                error_type=type(exc).__name__,
+                error_stack=[
+                    {"file": Path(f.filename).name, "line": f.lineno, "function": f.name}
+                    for f in traceback.extract_tb(exc.__traceback__)
+                ],
+            )
         finally:
             if target:
                 try:
@@ -362,6 +389,11 @@ def run(factory, postgres_url, options):
         comparison=report["comparison"]["status"],
     )
     report["finished_at"] = datetime.now(UTC).isoformat()
+    report["frozen_runtime"] = {
+        "status": "PASS" if runtime_files() == meta["runtime_files_sha256"] else "FAIL",
+        "start_manifest_sha256": digest(meta["runtime_files_sha256"]),
+        "end_manifest_sha256": digest(runtime_files()),
+    }
     save()
     return report
 

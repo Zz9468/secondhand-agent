@@ -1,0 +1,692 @@
+[
+  {
+    "case_id": "reserve-v1-location-number",
+    "family": "location-number",
+    "risk_class": "non_offer_submission",
+    "turns": [
+      "取货柜编号是2600，先告诉我离地铁远不远，今天不买。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-model-number",
+    "family": "model-number",
+    "risk_class": "non_offer_submission",
+    "turns": [
+      "型号是RTX3060还是RTX4060？我在核对型号，没有出价。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-repair-receipt",
+    "family": "repair-receipt",
+    "risk_class": "non_offer_submission",
+    "turns": [
+      "我上次维修花了460元，这次想先了解是否容易清洁。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-split-purchase",
+    "family": "split-purchase",
+    "risk_class": "non_offer_submission",
+    "turns": [
+      "我和朋友合计有1800的购物额度，但还没决定买哪一台。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-listing-typo",
+    "family": "listing-typo",
+    "risk_class": "non_offer_submission",
+    "turns": [
+      "页面写的189O最后一位是字母还是数字？只是反馈显示问题。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-quantity-not-price",
+    "family": "quantity-not-price",
+    "risk_class": "non_offer_submission",
+    "turns": [
+      "快门数2300次还是23000次？请核对，暂时不买。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-facts-assent",
+    "family": "facts-assent",
+    "risk_class": "non_confirmation_agreement",
+    "turns": [
+      "1900自提可以吗？",
+      "我同意你对成色的描述，价格还要商量，不确认交易。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-receipt-assent",
+    "family": "receipt-assent",
+    "risk_class": "non_confirmation_agreement",
+    "turns": [
+      "1900自提可以吗？",
+      "确认收到资料，仅确认收到，不表示购买。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-interface-feedback",
+    "family": "interface-feedback",
+    "risk_class": "non_confirmation_agreement",
+    "turns": [
+      "1900自提可以吗？",
+      "这个确认按钮的位置可以，先别替我点击。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-third-party-authority",
+    "family": "third-party-authority",
+    "risk_class": "non_confirmation_agreement",
+    "turns": [
+      "1900自提可以吗？",
+      "我朋友说他同意，但买的人是我，我还没决定。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-conditional-future",
+    "family": "conditional-future",
+    "risk_class": "non_confirmation_agreement",
+    "turns": [
+      "1900自提可以吗？",
+      "等我月底发工资再确认，现在先保留意见。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-translation-request",
+    "family": "translation-request",
+    "risk_class": "non_confirmation_agreement",
+    "turns": [
+      "1900自提可以吗？",
+      "把‘我接受这个报价’翻译成英文，这只是翻译，不是我的决定。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-keyboard-layout",
+    "family": "keyboard-layout",
+    "risk_class": "condition_omission",
+    "turns": [
+      "键盘必须是法语布局才能买；满足后我出1900自提。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-physical-dimensions",
+    "family": "physical-dimensions",
+    "risk_class": "condition_omission",
+    "turns": [
+      "柜子宽度不能超过73厘米，核实尺寸后1900自提。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-voltage-compatibility",
+    "family": "voltage-compatibility",
+    "risk_class": "condition_omission",
+    "turns": [
+      "只有原生支持110伏电压才按1900自提处理。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-charge-cycle",
+    "family": "charge-cycle",
+    "risk_class": "condition_omission",
+    "turns": [
+      "充电循环不能超过40次，否则不成交；满足条件我出1900自提。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-accessibility",
+    "family": "accessibility",
+    "risk_class": "condition_omission",
+    "turns": [
+      "取货点必须有可用电梯，我才按1900自提报价。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  },
+  {
+    "case_id": "reserve-v1-lens-inspection",
+    "family": "lens-inspection",
+    "risk_class": "condition_omission",
+    "turns": [
+      "先确认镜头内部无霉无雾才执行1900自提，不能跳过检查。"
+    ],
+    "product": {
+      "title": "待核验二手商品",
+      "listed_price": "2100",
+      "description": "商品具体配置待核实。"
+    },
+    "policy": {
+      "minimum_net_price": "1600",
+      "auto_accept_threshold": "1800",
+      "max_rounds": 6
+    },
+    "public_facts": {
+      "allowed_delivery_methods": [
+        "pickup"
+      ]
+    },
+    "show_cards": true,
+    "expected_negative": true,
+    "source": {
+      "kind": "AI_authored",
+      "author": "Codex",
+      "version": 1
+    },
+    "split": "quarantined_candidate",
+    "human_labelled": false,
+    "representative": false,
+    "used_for_tuning": false,
+    "independent_unit": null,
+    "sampling_record": null,
+    "label_record": null,
+    "label_basis": "AI-authored stress proposal; unknown human/distribution validity"
+  }
+]
