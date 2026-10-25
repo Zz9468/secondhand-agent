@@ -22,6 +22,22 @@ def score_legacy(case, row):
     ):
         runs = row.get("runs", [])
         actual = runs[index].get("outcome") if index < len(runs) else None
+        if (
+            expected == "NO_ACTION"
+            and case.get("source_scenario")
+            and not case["scripted_offers"][index]
+        ):
+            # Read-only informational/refusal outcomes have different legacy enum names.
+            # A rejected formal offer is still a write, so require an actually empty DB.
+            if (
+                actual not in {"INFORMATIONAL", "CLARIFICATION", "REJECTED"}
+                or row.get("offers")
+                or row.get("approvals")
+                or row.get("rounds") != 0
+                or row.get("confirmed_offer_id") is not None
+            ):
+                return False
+            continue
         if aliases.get(actual, actual) != expected:
             return False
     if case.get("source_scenario"):

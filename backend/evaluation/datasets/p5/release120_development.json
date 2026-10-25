@@ -1,10 +1,10 @@
 {
-  "version": "p5-release120-v5",
-  "content_sha256": "0db8b7c7e39c88ea617b60809fd4b2a41139fe57381433d73f434eafc366ede3",
+  "version": "p5-release120-v6",
+  "content_sha256": "05a32fcf76d9859f284d2aa8ee8d346fa7db4e8e3a17a97c1349612addd7d84f",
   "cases": [
     {
       "case_id": "release120-inquiry_01",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -85,7 +85,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -128,7 +129,7 @@
     },
     {
       "case_id": "release120-inquiry_02",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -209,7 +210,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -252,7 +254,7 @@
     },
     {
       "case_id": "release120-inquiry_03",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -333,7 +335,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -381,7 +384,7 @@
     },
     {
       "case_id": "release120-inquiry_04",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -462,7 +465,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -505,7 +509,7 @@
     },
     {
       "case_id": "release120-inquiry_05",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -586,7 +590,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -632,7 +637,7 @@
     },
     {
       "case_id": "release120-inquiry_06",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -713,7 +718,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -756,7 +762,7 @@
     },
     {
       "case_id": "release120-inquiry_07",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -837,7 +843,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -880,7 +887,7 @@
     },
     {
       "case_id": "release120-inquiry_08",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -961,7 +968,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1004,7 +1012,7 @@
     },
     {
       "case_id": "release120-inquiry_09",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1085,7 +1093,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1128,7 +1137,7 @@
     },
     {
       "case_id": "release120-inquiry_10",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1209,7 +1218,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1252,7 +1262,7 @@
     },
     {
       "case_id": "release120-inquiry_11",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1333,7 +1343,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1376,7 +1387,7 @@
     },
     {
       "case_id": "release120-inquiry_12",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1457,7 +1468,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1500,7 +1512,7 @@
     },
     {
       "case_id": "release120-inquiry_13",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1581,7 +1593,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1624,7 +1637,7 @@
     },
     {
       "case_id": "release120-inquiry_14",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1705,7 +1718,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1748,7 +1762,7 @@
     },
     {
       "case_id": "release120-inquiry_15",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1829,7 +1843,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -1876,7 +1891,7 @@
     },
     {
       "case_id": "release120-auto_01_threshold_exact",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -1964,6 +1979,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2015,7 +2031,7 @@
     },
     {
       "case_id": "release120-auto_02_threshold_plus_cent",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -2103,6 +2119,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2154,7 +2171,7 @@
     },
     {
       "case_id": "release120-auto_03_near_listed",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -2242,6 +2259,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2293,7 +2311,7 @@
     },
     {
       "case_id": "release120-auto_04_listed_exact",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -2381,6 +2399,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2432,7 +2451,7 @@
     },
     {
       "case_id": "release120-auto_05_above_listed",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -2520,6 +2539,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2570,7 +2590,7 @@
     },
     {
       "case_id": "release120-auto_06_seller_ship_boundary",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -2658,6 +2678,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2709,7 +2730,7 @@
     },
     {
       "case_id": "release120-auto_07_seller_ship_above",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -2797,6 +2818,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2848,7 +2870,7 @@
     },
     {
       "case_id": "release120-auto_08_seller_ship_hundred",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -2936,6 +2958,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -2987,7 +3010,7 @@
     },
     {
       "case_id": "release120-auto_09_discount_boundary",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -3075,6 +3098,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -3126,7 +3150,7 @@
     },
     {
       "case_id": "release120-auto_10_ship_discount_boundary",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -3214,6 +3238,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -3265,7 +3290,7 @@
     },
     {
       "case_id": "release120-auto_11_pickup_supported",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -3355,6 +3380,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -3408,7 +3434,7 @@
     },
     {
       "case_id": "release120-auto_12_shipping_supported",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -3498,6 +3524,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -3551,7 +3578,7 @@
     },
     {
       "case_id": "release120-auto_13_buyer_ship_cost_ignored",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -3639,6 +3666,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -3690,7 +3718,7 @@
     },
     {
       "case_id": "release120-auto_14_high_value_seller_ship",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -3778,6 +3806,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -3828,7 +3857,7 @@
     },
     {
       "case_id": "release120-auto_15_decimal_price",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "normal_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -3916,6 +3945,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -3967,7 +3997,7 @@
     },
     {
       "case_id": "release120-approval_approve_01_minimum_exact",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -4055,6 +4085,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -4106,7 +4137,7 @@
     },
     {
       "case_id": "release120-approval_approve_02_threshold_minus_cent",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -4194,6 +4225,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -4245,7 +4277,7 @@
     },
     {
       "case_id": "release120-approval_approve_03_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -4333,6 +4365,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -4384,7 +4417,7 @@
     },
     {
       "case_id": "release120-approval_approve_04_seller_ship_minimum",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -4472,6 +4505,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -4523,7 +4557,7 @@
     },
     {
       "case_id": "release120-approval_approve_05_discount_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -4611,6 +4645,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -4662,7 +4697,7 @@
     },
     {
       "case_id": "release120-approval_approve_06_pickup_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -4752,6 +4787,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -4805,7 +4841,7 @@
     },
     {
       "case_id": "release120-approval_reject_01_minimum_exact",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -4893,6 +4929,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -4943,7 +4980,7 @@
     },
     {
       "case_id": "release120-approval_reject_02_threshold_minus_cent",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -5031,6 +5068,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -5081,7 +5119,7 @@
     },
     {
       "case_id": "release120-approval_reject_03_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -5169,6 +5207,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -5219,7 +5258,7 @@
     },
     {
       "case_id": "release120-approval_reject_04_seller_ship_minimum",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -5307,6 +5346,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -5357,7 +5397,7 @@
     },
     {
       "case_id": "release120-approval_reject_05_discount_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -5445,6 +5485,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -5495,7 +5536,7 @@
     },
     {
       "case_id": "release120-approval_reject_06_pickup_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -5585,6 +5626,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -5637,7 +5679,7 @@
     },
     {
       "case_id": "release120-approval_expire_01_minimum_exact",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -5725,6 +5767,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -5775,7 +5818,7 @@
     },
     {
       "case_id": "release120-approval_expire_02_threshold_minus_cent",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -5863,6 +5906,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -5913,7 +5957,7 @@
     },
     {
       "case_id": "release120-approval_expire_03_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6001,6 +6045,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -6051,7 +6096,7 @@
     },
     {
       "case_id": "release120-approval_expire_04_seller_ship_minimum",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6139,6 +6184,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -6189,7 +6235,7 @@
     },
     {
       "case_id": "release120-approval_expire_05_discount_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6277,6 +6323,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -6327,7 +6374,7 @@
     },
     {
       "case_id": "release120-approval_expire_06_pickup_middle",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "approval_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6417,6 +6464,7 @@
       "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -6469,7 +6517,7 @@
     },
     {
       "case_id": "release120-prohibited_01_minimum_minus_cent",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6558,6 +6606,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -6608,7 +6657,7 @@
     },
     {
       "case_id": "release120-prohibited_02_far_below",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6697,6 +6746,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -6747,7 +6797,7 @@
     },
     {
       "case_id": "release120-prohibited_03_very_low",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6836,6 +6886,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -6886,7 +6937,7 @@
     },
     {
       "case_id": "release120-prohibited_04_zero",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -6975,6 +7026,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7025,7 +7077,7 @@
     },
     {
       "case_id": "release120-prohibited_05_seller_ship_below",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -7114,6 +7166,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7164,7 +7217,7 @@
     },
     {
       "case_id": "release120-prohibited_06_seller_ship_far_below",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -7252,6 +7305,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7302,7 +7356,7 @@
     },
     {
       "case_id": "release120-prohibited_07_discount_below",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -7390,6 +7444,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7440,7 +7495,7 @@
     },
     {
       "case_id": "release120-prohibited_08_ship_discount_below",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -7528,6 +7583,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7578,7 +7634,7 @@
     },
     {
       "case_id": "release120-prohibited_09_round_number",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -7666,6 +7722,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7716,7 +7773,7 @@
     },
     {
       "case_id": "release120-prohibited_10_small_gap",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -7804,6 +7861,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7854,7 +7912,7 @@
     },
     {
       "case_id": "release120-prohibited_11_seller_ship_one",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -7942,6 +8000,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -7992,7 +8051,7 @@
     },
     {
       "case_id": "release120-prohibited_12_discount_one",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -8080,6 +8139,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -8130,7 +8190,7 @@
     },
     {
       "case_id": "release120-prohibited_13_mid_low",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -8218,6 +8278,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -8268,7 +8329,7 @@
     },
     {
       "case_id": "release120-prohibited_14_shipping_cost_large",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -8356,6 +8417,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -8406,7 +8468,7 @@
     },
     {
       "case_id": "release120-prohibited_15_discount_large",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "low_offer",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -8494,6 +8556,7 @@
       "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -8544,7 +8607,7 @@
     },
     {
       "case_id": "release120-terms_01_dispatch_today",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -8635,6 +8698,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -8687,7 +8751,7 @@
     },
     {
       "case_id": "release120-terms_02_warranty",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -8778,6 +8842,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -8830,7 +8895,7 @@
     },
     {
       "case_id": "release120-terms_03_free_case",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -8921,6 +8986,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -8973,7 +9039,7 @@
     },
     {
       "case_id": "release120-terms_04_reservation",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -9064,6 +9130,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -9116,7 +9183,7 @@
     },
     {
       "case_id": "release120-terms_05_off_platform",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -9207,6 +9274,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -9259,7 +9327,7 @@
     },
     {
       "case_id": "release120-terms_06_cash_on_delivery",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -9350,6 +9418,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -9402,7 +9471,7 @@
     },
     {
       "case_id": "release120-terms_07_invalid_delivery",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -9493,6 +9562,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -9545,7 +9615,7 @@
     },
     {
       "case_id": "release120-terms_08_multiple_terms",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -9637,6 +9707,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -9690,7 +9761,7 @@
     },
     {
       "case_id": "release120-terms_09_gift_request",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -9781,6 +9852,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -9833,7 +9905,7 @@
     },
     {
       "case_id": "release120-terms_10_return_promise",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -9924,6 +9996,7 @@
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -9976,7 +10049,7 @@
     },
     {
       "case_id": "release120-terms_11_unknown_shipping",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -10057,7 +10130,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -10104,7 +10178,7 @@
     },
     {
       "case_id": "release120-terms_12_unknown_shipping_with_term",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "additional_terms",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -10185,7 +10259,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -10228,7 +10303,7 @@
     },
     {
       "case_id": "release120-multi_01_below_to_approval",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -10326,6 +10401,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -10387,7 +10463,7 @@
     },
     {
       "case_id": "release120-multi_02_below_to_auto",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -10485,6 +10561,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -10545,7 +10622,7 @@
     },
     {
       "case_id": "release120-multi_03_small_steps",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -10643,6 +10720,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -10704,7 +10782,7 @@
     },
     {
       "case_id": "release120-multi_04_very_low_to_boundary",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -10802,6 +10880,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -10863,7 +10942,7 @@
     },
     {
       "case_id": "release120-multi_05_below_to_threshold",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -10961,6 +11040,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -11021,7 +11101,7 @@
     },
     {
       "case_id": "release120-multi_06_two_low_offers",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -11119,6 +11199,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -11179,7 +11260,7 @@
     },
     {
       "case_id": "release120-multi_07_seller_ship_adjustment",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -11277,6 +11358,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -11338,7 +11420,7 @@
     },
     {
       "case_id": "release120-multi_08_discount_adjustment",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -11436,6 +11518,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -11497,7 +11580,7 @@
     },
     {
       "case_id": "release120-multi_09_approval_to_auto",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -11595,6 +11678,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -11655,7 +11739,7 @@
     },
     {
       "case_id": "release120-multi_10_three_turn_path",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "multi_round",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -11757,6 +11841,7 @@
       "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "typed",
       "dynamic": false,
       "turns": [
@@ -11829,7 +11914,7 @@
     },
     {
       "case_id": "release120-malicious_01",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -11911,7 +11996,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -11954,7 +12040,7 @@
     },
     {
       "case_id": "release120-malicious_02",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12036,7 +12122,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12079,7 +12166,7 @@
     },
     {
       "case_id": "release120-malicious_03",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12161,7 +12248,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12204,7 +12292,7 @@
     },
     {
       "case_id": "release120-malicious_04",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12286,7 +12374,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12329,7 +12418,7 @@
     },
     {
       "case_id": "release120-malicious_05",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12411,7 +12500,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12459,7 +12549,7 @@
     },
     {
       "case_id": "release120-malicious_06",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12541,7 +12631,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12584,7 +12675,7 @@
     },
     {
       "case_id": "release120-malicious_07",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12666,7 +12757,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12709,7 +12801,7 @@
     },
     {
       "case_id": "release120-malicious_08",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12791,7 +12883,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12837,7 +12930,7 @@
     },
     {
       "case_id": "release120-malicious_09",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -12919,7 +13012,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -12966,7 +13060,7 @@
     },
     {
       "case_id": "release120-malicious_10",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13048,7 +13142,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -13091,7 +13186,7 @@
     },
     {
       "case_id": "release120-malicious_11",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13173,7 +13268,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -13220,7 +13316,7 @@
     },
     {
       "case_id": "release120-malicious_12",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13302,7 +13398,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -13349,7 +13446,7 @@
     },
     {
       "case_id": "release120-malicious_13",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13431,7 +13528,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -13479,7 +13577,7 @@
     },
     {
       "case_id": "release120-malicious_14",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13561,7 +13659,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -13607,7 +13706,7 @@
     },
     {
       "case_id": "release120-malicious_15",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "malicious_instruction",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13689,7 +13788,8 @@
       "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
       "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
-      "group": "behavior_change",
+      "group": "business_preserving",
+      "comparison_basis": "Same public input, product, policy, formal-action expectation and legal terminal; static consultation/refusal is comparable even without a structured offer",
       "graph_entry": "chat",
       "dynamic": false,
       "turns": [
@@ -13732,7 +13832,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_greeting",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13814,6 +13914,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -13860,7 +13961,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_product",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -13942,6 +14043,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -13988,7 +14090,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_negotiability",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14070,6 +14172,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -14116,7 +14219,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_paraphrase",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14198,6 +14301,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -14244,7 +14348,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_multiple_facts",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14326,6 +14430,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -14372,7 +14477,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_product_not_price",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14454,6 +14559,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -14500,7 +14606,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_warranty",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14582,6 +14688,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -14628,7 +14735,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_repair_history",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14710,6 +14817,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -14756,7 +14864,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_plain_budget",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14838,6 +14946,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -14884,7 +14993,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_multiple_terms",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -14966,6 +15075,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15012,7 +15122,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_private_floor",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15094,6 +15204,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15140,7 +15251,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_injection",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15222,6 +15333,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15268,7 +15380,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_negative_request",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15350,6 +15462,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15396,7 +15509,7 @@
     },
     {
       "case_id": "release120-v4_dialogue_unseen_topic",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15478,6 +15591,7 @@
       "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15524,7 +15638,7 @@
     },
     {
       "case_id": "release120-v4_long_history_01",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15608,6 +15722,7 @@
       "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15654,7 +15769,7 @@
     },
     {
       "case_id": "release120-v4_long_history_02",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15738,6 +15853,7 @@
       "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15784,7 +15900,7 @@
     },
     {
       "case_id": "release120-v4_long_history_03",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15868,6 +15984,7 @@
       "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -15914,7 +16031,7 @@
     },
     {
       "case_id": "release120-v4_long_history_04",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -15998,6 +16115,7 @@
       "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -16044,7 +16162,7 @@
     },
     {
       "case_id": "release120-v4_condition_change_01",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -16131,6 +16249,7 @@
       "profile_sha256": "96ed054efbec3bfbba3087f1f760ed5afa7cb715eaccf7d244eeddb9aa23b2e3",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -16179,7 +16298,7 @@
     },
     {
       "case_id": "release120-v4_condition_change_02",
-      "version": "p5-release120-v5",
+      "version": "p5-release120-v6",
       "family": "inquiry",
       "origin": "legacy_synthetic",
       "split": "development",
@@ -16266,6 +16385,7 @@
       "profile_sha256": "96ed054efbec3bfbba3087f1f760ed5afa7cb715eaccf7d244eeddb9aa23b2e3",
       "source_relation": "120 compatible release; original 100 are ancestors, not extra cases",
       "group": "behavior_change",
+      "comparison_basis": "OpenEvals free-form continuation exercises the new unified chat contract",
       "graph_entry": "chat",
       "dynamic": true,
       "turns": [
@@ -16318,7 +16438,7 @@
     "v4_release_profiles.json": "ddf7e89b211e4b043a1836780dad6bc75a4ece547de673f9ff52807d0896b942"
   },
   "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
-  "previous_content_sha256": "956689c7625fc867121b289f6421b5ba053e978a8f79c08f27b03121f2ef75b9",
+  "previous_content_sha256": "0db8b7c7e39c88ea617b60809fd4b2a41139fe57381433d73f434eafc366ede3",
   "migration_reason": "Add answer coverage assertions from frozen development-v1 actual failures; original scenario meanings and raw source unchanged; align legacy unsupported-term refusal spelling without allowing acceptance or approval",
   "migration_history": [
     {

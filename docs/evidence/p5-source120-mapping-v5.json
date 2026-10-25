@@ -1,0 +1,2953 @@
+{
+  "version": "p5-release120-v5",
+  "source_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
+  "source_files_sha256": {
+    "v4_release_compatible.json": "4ec65e27a8f54c261ee0f2239bbd7f69b4f10333d9ee5399174adc2c2fe206b0",
+    "v4_release_profiles.json": "ddf7e89b211e4b043a1836780dad6bc75a4ece547de673f9ff52807d0896b942"
+  },
+  "source_count": 120,
+  "ancestor_100": "provenance only; no separate adapter/run/count",
+  "typed_graph_cases": 68,
+  "chat_graph_cases": 52,
+  "dynamic_profile_cases": 20,
+  "label_scope": "AI adaptation of legacy synthetic scenarios, not human labels; original product/policy/goal/profile retained in dataset and verified by lossless mapping tests.",
+  "mappings": [
+    {
+      "case_id": "release120-inquiry_01",
+      "source_sha256": "16d8927f2e9d27b4ba1b676a2fcd34e09bc6f7c35acddfcc54535e60b4827a09",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_01",
+      "adapted_case_sha256": "182ae18bce9a62516e2430327a670a9047b1cf736ad8a3f1a9889c10cb848e1c"
+    },
+    {
+      "case_id": "release120-inquiry_02",
+      "source_sha256": "e73df8c047c56a035f79b791f4fb9c3934de91a4b59f5adc6d7cf15e52640e11",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_02",
+      "adapted_case_sha256": "7cd05809bac008251a124afc65ac7c1ba27b1f27e5bcc9e76fc8b780282fd0a2"
+    },
+    {
+      "case_id": "release120-inquiry_03",
+      "source_sha256": "518570fdca6a3dc9838ae86ac9529ca882f9136181db55c2adf9184f884342ef",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_03",
+      "adapted_case_sha256": "b4534a287734fc4297a6c1cb82deb189e165752734d33ed46666d6045bc7f19b"
+    },
+    {
+      "case_id": "release120-inquiry_04",
+      "source_sha256": "2d4c4c1d3473ac345543363eb4a449543b65ce98e9d685bbb83664fa8fb10338",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_04",
+      "adapted_case_sha256": "eefc3c7fc900a5738404749c8173080409221616b3e0ac741ec1a4f77fa98dc2"
+    },
+    {
+      "case_id": "release120-inquiry_05",
+      "source_sha256": "466a183e6c007ffc089d9a0664e0584eb09d30736fc742179b3f39654524250f",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_05",
+      "adapted_case_sha256": "66eaaa0403c2ca9687598162158b6b9da81a6524bba98b1905706c6ae15330bc"
+    },
+    {
+      "case_id": "release120-inquiry_06",
+      "source_sha256": "5cf814c600c8dfbd5704adebf53f800ab0fa330df776215fe507f2268b465f84",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_06",
+      "adapted_case_sha256": "7a24ce6fe18480808dad0259abfb462db9372b39790bf162b69e22d35ce55f85"
+    },
+    {
+      "case_id": "release120-inquiry_07",
+      "source_sha256": "4c88efb3574bc8d6e9845c544218aa860dad6822842b79f43b223feae1e45e47",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_07",
+      "adapted_case_sha256": "4874bfecf1c0b53700f1327fcc9da6da018d56598558de0e6dad667e8f2437a5"
+    },
+    {
+      "case_id": "release120-inquiry_08",
+      "source_sha256": "931ec9d11956ff78a9af421a7a818588ef068cea9c5c116ff1386ab2bd9ae7bb",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_08",
+      "adapted_case_sha256": "bad19184df69261e0f6be561242f14dfbd21dc371c6c1426d9a20b196a3c2b31"
+    },
+    {
+      "case_id": "release120-inquiry_09",
+      "source_sha256": "3ae9236cf40089623bf5c97ab9abe96e98f9d5d883a0b0a0f09cb2cea38a4c86",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_09",
+      "adapted_case_sha256": "49f02b6ab9c718cdb39f053387e98ff14730129f9e67af842c2ef1b39cbf2557"
+    },
+    {
+      "case_id": "release120-inquiry_10",
+      "source_sha256": "278683c5be38d29bec504c99339f560f28b29f2452ebf919647fbe517586a7c4",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_10",
+      "adapted_case_sha256": "dc91494b8a66d463b850e866df5a9032a6b65b9ebdd0ab0359c0f8b450ad370c"
+    },
+    {
+      "case_id": "release120-inquiry_11",
+      "source_sha256": "aa49f49ecd83315f8b12e78480ccf2af6fa7e9a3acefba3a52ad9c71eaab4487",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_11",
+      "adapted_case_sha256": "2ddff07b804ddee41d24452fa01390bfaf7b06a90477ed6fc2187da7e000f5d9"
+    },
+    {
+      "case_id": "release120-inquiry_12",
+      "source_sha256": "f64a8eea76e790dfb20756d78aab61f5ef3eb147de64f2bc82d993076b7b7528",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_12",
+      "adapted_case_sha256": "a0a3a0ff68c2f95bc8a2a01eef333831a114fe0bf97e276714e63cf67e923e5e"
+    },
+    {
+      "case_id": "release120-inquiry_13",
+      "source_sha256": "60d63cdbc474f5054c41e5ca7db72faec58112f4a9b5c122950bfc1a08f12a7a",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_13",
+      "adapted_case_sha256": "e27f697d07eded8fcdecf362ab570bef7c42348074275a3c469994bbbc0c7f3e"
+    },
+    {
+      "case_id": "release120-inquiry_14",
+      "source_sha256": "991b86fd7d6fe8ec184ef790c5a4e5d033cd4c85d5ef3e6563b96761bfeebc62",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_14",
+      "adapted_case_sha256": "4c644d14d3eaa938b741d4cb5b7e55d70a13c9309756cee51d8ee7cc58c2f4bb"
+    },
+    {
+      "case_id": "release120-inquiry_15",
+      "source_sha256": "499bc40ea69246de73303990f76668155c4da42cb945086a060c4b11f3680d9f",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "inquiry_15",
+      "adapted_case_sha256": "99ea7f63b63d1e3706399bcf6d259444d7007636d7c28ff048f5e5862fb175cd"
+    },
+    {
+      "case_id": "release120-auto_01_threshold_exact",
+      "source_sha256": "6bdd596a1c03b9bfff7c33b57f3c3b26d2b09beb6f79893dd9b0ee45e290de69",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_01_threshold_exact",
+      "adapted_case_sha256": "eeb1e43939b1269c6b4560df09134df9883e4b0a9a2bb03ea78c5161233d51e7"
+    },
+    {
+      "case_id": "release120-auto_02_threshold_plus_cent",
+      "source_sha256": "7bc70f693027fda045212dda61504b77b995c19e540a71400aae8e18a691f193",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_02_threshold_plus_cent",
+      "adapted_case_sha256": "6939826c1f022f0164853086c1bf7d47c4851707990edee6d8d88d63d08f9cc9"
+    },
+    {
+      "case_id": "release120-auto_03_near_listed",
+      "source_sha256": "cd0d753f7e60ea87b808771b6c29fb82acc60284d116230f245acbd3e837a7e0",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_03_near_listed",
+      "adapted_case_sha256": "1592ae00cb53e5618a5d9cc4b5f05c0c052f876ca5841fba240e5fd0f27b9401"
+    },
+    {
+      "case_id": "release120-auto_04_listed_exact",
+      "source_sha256": "8095714732ddf676375e4c95d8dee764f23d50c102d4d5ea92020497a2f5c864",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_04_listed_exact",
+      "adapted_case_sha256": "ed234f22ad70f97479487ff47a3fe2137ec639b42590cf6f0ec35fdbc1b55299"
+    },
+    {
+      "case_id": "release120-auto_05_above_listed",
+      "source_sha256": "0afe11b86c8fa2d12dd658a70d7a4e4c4da470bd50b30bc27329406ddd7cf3d2",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_05_above_listed",
+      "adapted_case_sha256": "5850ef2810fd6132638bba2965e0dc8386640addf94aed80475cd002fbf7016f"
+    },
+    {
+      "case_id": "release120-auto_06_seller_ship_boundary",
+      "source_sha256": "e1982eca0d370e6040a7b4dc216f422806e6ddcea3b1eb672615c43c9e5756c8",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_06_seller_ship_boundary",
+      "adapted_case_sha256": "32e20caa1a5b39ca7757876234b877f00bde197a10c36371f4259bdc80ba1b0d"
+    },
+    {
+      "case_id": "release120-auto_07_seller_ship_above",
+      "source_sha256": "751eb1f3401b670b41bc73f2b07c860f38e3c2efe4464d0a4e91e65559cc798a",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_07_seller_ship_above",
+      "adapted_case_sha256": "ab9782fd974c89c28dee8479b80e7db017260d0777f0066b608aee8a17ede9da"
+    },
+    {
+      "case_id": "release120-auto_08_seller_ship_hundred",
+      "source_sha256": "9f324c3d3434e2de53f94f7af1919cab6a2ab8a2ea5fab24b7270bb58474016a",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_08_seller_ship_hundred",
+      "adapted_case_sha256": "7018db28572d9912b84a9164f91cee80897ec01d6768f3f9ce1ce0d9caeb31c8"
+    },
+    {
+      "case_id": "release120-auto_09_discount_boundary",
+      "source_sha256": "6e41d3b6642d9e3f53129a336672e435d91286bf8b218a911f0e553b4770f62f",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_09_discount_boundary",
+      "adapted_case_sha256": "a1dbca214ab13903455342419b283ac3039839f296114cb2d8277d33a8ba51ac"
+    },
+    {
+      "case_id": "release120-auto_10_ship_discount_boundary",
+      "source_sha256": "744e0617ed4785437bfaa2c9e44e6106faf506f0db3e69272b1c1c858742a90a",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_10_ship_discount_boundary",
+      "adapted_case_sha256": "582fb5d90c0416059240e9298a6e5f213cecefc123e9ec77ed6a788a39b2b623"
+    },
+    {
+      "case_id": "release120-auto_11_pickup_supported",
+      "source_sha256": "83fc9fdada0cee6f6009809aad11afaeaab25df3e28a914b33b0d67ec2c16985",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_11_pickup_supported",
+      "adapted_case_sha256": "bf9f4d366d58bf3891144529451b411a7b0de2048bd6335879499bec86bb2dcf"
+    },
+    {
+      "case_id": "release120-auto_12_shipping_supported",
+      "source_sha256": "ea4a5c3c882c2301e32a27cbe97ec45a94817b89dbbe151ee5b849420701eb35",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_12_shipping_supported",
+      "adapted_case_sha256": "95b46215be5289db24f45ee8072e4906db006a597a453a33c4f94a6429957e40"
+    },
+    {
+      "case_id": "release120-auto_13_buyer_ship_cost_ignored",
+      "source_sha256": "c2c2467bd2803459b7c5de85496bc88ed8bdeedaa6832224ec8715bccdd2f1cc",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_13_buyer_ship_cost_ignored",
+      "adapted_case_sha256": "38de773d1b8027a5d634d49493b08fe0737d1ff36d556433a9b5ae12b37c296d"
+    },
+    {
+      "case_id": "release120-auto_14_high_value_seller_ship",
+      "source_sha256": "a58134c733f289773a4bc5b192225b63e3ee90fcb91abded6947b03e21efdf02",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_14_high_value_seller_ship",
+      "adapted_case_sha256": "31197cd3d6a3b50da2e4198640c051eab61f44c7258df29c1f4b7193c045a890"
+    },
+    {
+      "case_id": "release120-auto_15_decimal_price",
+      "source_sha256": "b2695a245104486cca3378179941846c9e4766b4cea8e36780fa81a251327ae2",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "auto_15_decimal_price",
+      "adapted_case_sha256": "320cd4b4c8b47317aa43312fa0c9afac76167d44be315c927d741d44f90ca55c"
+    },
+    {
+      "case_id": "release120-approval_approve_01_minimum_exact",
+      "source_sha256": "aea09ac7160a88e97ae4448921b3aee2eaab45d2446ad2558fdf98f36b3bb636",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_approve_01_minimum_exact",
+      "adapted_case_sha256": "64daaf5723abb7642ab4e78b9abd17d3841b5d00e3f66803235926f6696aa328"
+    },
+    {
+      "case_id": "release120-approval_approve_02_threshold_minus_cent",
+      "source_sha256": "54212fd83eafa783430b915f7c083f105da7b584fad34b660c7495fcd48492b8",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_approve_02_threshold_minus_cent",
+      "adapted_case_sha256": "c7c549c8aae37273cdbfc0a0c32ffd90f3fdd7e7310420b346967734ce11c517"
+    },
+    {
+      "case_id": "release120-approval_approve_03_middle",
+      "source_sha256": "341269ce7cb94262add99b7b85a4b74b0f9b005bdc17aa612143e2d52470ae38",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_approve_03_middle",
+      "adapted_case_sha256": "33494d82fecd3776ed13f34ab25322bb4f5a013de74342f941d8d9e6ef84d54c"
+    },
+    {
+      "case_id": "release120-approval_approve_04_seller_ship_minimum",
+      "source_sha256": "418df4a9d4575534062cfc75b1fa4182d6dea0fd51154c430388fd402471c892",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_approve_04_seller_ship_minimum",
+      "adapted_case_sha256": "f788377b7e1f732486644ea7ed30041169852b8613fdc8c97122328eda400d7d"
+    },
+    {
+      "case_id": "release120-approval_approve_05_discount_middle",
+      "source_sha256": "2dcac1129c1ae50ac213aa9769b2ebf546d44d850064cb8d3d608ec22fe001e9",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_approve_05_discount_middle",
+      "adapted_case_sha256": "697ab2a642306942eb55cd27fc890bb5a975bc0a35b2cba35a3c71bc47871b5b"
+    },
+    {
+      "case_id": "release120-approval_approve_06_pickup_middle",
+      "source_sha256": "ec5083d9db78384ae9680aa6f4f3b687e7dc4c9d2c49b733a5b3e23cb7eca7a7",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_approve_06_pickup_middle",
+      "adapted_case_sha256": "278af0ebc11d66ebaa304c9253f05680408e3beda978a2331d2629a656585979"
+    },
+    {
+      "case_id": "release120-approval_reject_01_minimum_exact",
+      "source_sha256": "838fcddfdd450f58b00fc8f13241cfcf06ce0d1d4f4809f6da2932a83c61296a",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_reject_01_minimum_exact",
+      "adapted_case_sha256": "ccc2bb71b5e1913a6caf7c69beea48bc5d9acf13d36458948e90c0a4945d8bb2"
+    },
+    {
+      "case_id": "release120-approval_reject_02_threshold_minus_cent",
+      "source_sha256": "01025f8eb652f7e99b505879e28b70e88a65aea613d56305cf3af8fc454dc2fb",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_reject_02_threshold_minus_cent",
+      "adapted_case_sha256": "0ce85399847aa1defdb22842d17ceb93c85590bd139072056f73ae567039600b"
+    },
+    {
+      "case_id": "release120-approval_reject_03_middle",
+      "source_sha256": "7d0aa29754b9195527f2d328c349528bbae07ff036c5bb437fb5fafb3eea3e6b",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_reject_03_middle",
+      "adapted_case_sha256": "92f8183d7d3cbe583332623c7af30885f4ef45f25024fcfeb1b3a28a31fa3d86"
+    },
+    {
+      "case_id": "release120-approval_reject_04_seller_ship_minimum",
+      "source_sha256": "6a4324a0b106b4422a4acc87e7bfeb9e15bb154c9ad364ba8dd57adc548235ad",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_reject_04_seller_ship_minimum",
+      "adapted_case_sha256": "f812dd89ab94daf1257fe7622885a8b36039095c5bdd983a24e8adde42f50678"
+    },
+    {
+      "case_id": "release120-approval_reject_05_discount_middle",
+      "source_sha256": "2eff78b9b53da0ad47d2a3a2421b3b46fac367e58b1f10f89ace0fa49ace5f57",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_reject_05_discount_middle",
+      "adapted_case_sha256": "721eb3d52e615e7649649fea33bf6a9d171175927bcea447b6db3f49f52ce362"
+    },
+    {
+      "case_id": "release120-approval_reject_06_pickup_middle",
+      "source_sha256": "b12c1247a71b69e5542658a2f1e3012118eeed76bce940ec0771448309240de4",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_reject_06_pickup_middle",
+      "adapted_case_sha256": "d7ac726a9b5122f9480db99e19b5636d94a1eba70e49fd995a59641242556fc6"
+    },
+    {
+      "case_id": "release120-approval_expire_01_minimum_exact",
+      "source_sha256": "554bd3b83cb327a93480cc60ad77fd9736d9e0abd184b4aa6495d9e3d4fa418f",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_expire_01_minimum_exact",
+      "adapted_case_sha256": "d5473c43f77e58103736012ed05a44e15b7ae03e73a3568225941114f5b6607c"
+    },
+    {
+      "case_id": "release120-approval_expire_02_threshold_minus_cent",
+      "source_sha256": "43428623355f33bf254919bb945d4b3affc6a94fcc4ba28b68b1aabd1eb7f513",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_expire_02_threshold_minus_cent",
+      "adapted_case_sha256": "1b6096892fa4cc32b66dbc7b780bc7386e1e101ffeab35b16db6fe90a5f3ca9e"
+    },
+    {
+      "case_id": "release120-approval_expire_03_middle",
+      "source_sha256": "8144625b02112c49e2d8fc153d153dbc1b22e93d4f01da75a8ac7d541a0889b1",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_expire_03_middle",
+      "adapted_case_sha256": "26e78f8088ae018f0e6d1d2635119245ead1205b3847b736e49964ca647c1833"
+    },
+    {
+      "case_id": "release120-approval_expire_04_seller_ship_minimum",
+      "source_sha256": "f7a1f0a032dd7f846f2e4a2203343d8aba451883427702d01986426a0880fce1",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_expire_04_seller_ship_minimum",
+      "adapted_case_sha256": "b6a3b4ff65b08b0d5f23ab741431ddcc3d8afdec424b0411cefe4620c708af16"
+    },
+    {
+      "case_id": "release120-approval_expire_05_discount_middle",
+      "source_sha256": "9cddbcdf58289782e76c8e5ef828da8e719867660c0d2751d6518b6a596471f3",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_expire_05_discount_middle",
+      "adapted_case_sha256": "a70282885e3f14f6b461605db4620b4bac1e3cdb7c1ba9ff346587e49d562870"
+    },
+    {
+      "case_id": "release120-approval_expire_06_pickup_middle",
+      "source_sha256": "e8a67c9236b49bef8eb2494ed7222be107f93dcc3422bc8a21d3e112f88ec549",
+      "profile_sha256": "6c85b5afddbadc3ff250a4dc48d2ce694b724a01af860d87b9b7247477c3d0e2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "approval_expire_06_pickup_middle",
+      "adapted_case_sha256": "3ce2e39d7fa8ef9ec8fbae03122bfc1d71d3c2a227ef6e5d048648fb5e06dd14"
+    },
+    {
+      "case_id": "release120-prohibited_01_minimum_minus_cent",
+      "source_sha256": "45176c2f937c5de8df654a2f159d79bdbcb50730b44b9d6a810f2fff543937ad",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_01_minimum_minus_cent",
+      "adapted_case_sha256": "9583b9702a9bf6ddf9f5b71c5583c9536e15950c4b363a611b67e557f77c7e09"
+    },
+    {
+      "case_id": "release120-prohibited_02_far_below",
+      "source_sha256": "f35a8b9d8971ba7151b4e964354d53bfc09004a15a20c53cc7ee8a1fc9fc7260",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_02_far_below",
+      "adapted_case_sha256": "4798778d1d7ac9de49eee36c46603f4cd5b07cf9ed630a33db4ae7ea40d9ef0b"
+    },
+    {
+      "case_id": "release120-prohibited_03_very_low",
+      "source_sha256": "0e95b33e6738950352554216eece926fc5b12bbb18b2cde6dbefb148b023b64f",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_03_very_low",
+      "adapted_case_sha256": "305d2903d1e79aee7b7988dff94342fb3c99e46844fe0ac58177406c428a9a37"
+    },
+    {
+      "case_id": "release120-prohibited_04_zero",
+      "source_sha256": "cc0f99381f176161bbd9db3a830b4aa7f07ac7cc59f9828b12604ad62132c872",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_04_zero",
+      "adapted_case_sha256": "0ce0cabf8cffe3165d0f4ee46e22e1c6f10e6776da824def4937800617018eeb"
+    },
+    {
+      "case_id": "release120-prohibited_05_seller_ship_below",
+      "source_sha256": "7c3218eb2f69fc28facbcf9138cfaf912ff3f97e096c680d14d745912c25684a",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_05_seller_ship_below",
+      "adapted_case_sha256": "0bd55681e469d51fde80f43a398ed8a7dece8b1a0f60e0ebfdcfd88badf66520"
+    },
+    {
+      "case_id": "release120-prohibited_06_seller_ship_far_below",
+      "source_sha256": "9246e971a5778d37fffae92e7eeb40a48b2c0616f476458e3b7bc9e92bb2b7ee",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_06_seller_ship_far_below",
+      "adapted_case_sha256": "db5b584ce344996e755a4a9001e6788b68ffc6a1492304b49072677f5d988b00"
+    },
+    {
+      "case_id": "release120-prohibited_07_discount_below",
+      "source_sha256": "a820e5deb346c89a2cd026c4d3709c48d850a5eb2c1a7e16f268071d0c5b73c9",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_07_discount_below",
+      "adapted_case_sha256": "f5305822bdf56d04fc74818e9618a7e16cce42ad320c6d9df1e3382b747cfb6c"
+    },
+    {
+      "case_id": "release120-prohibited_08_ship_discount_below",
+      "source_sha256": "096a3b946345c8c4085ed8e5bb67027b6bd3d18607e9d16737d374b11b397f8a",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_08_ship_discount_below",
+      "adapted_case_sha256": "9819ebb31be946f358ea607de9866ed7802176d6eb8dffc65dc6db0cb7e4885b"
+    },
+    {
+      "case_id": "release120-prohibited_09_round_number",
+      "source_sha256": "5b18242b7a5b8f15583d55743fcc6977aaece7611fabc7ef0daccb0efd60c9c5",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_09_round_number",
+      "adapted_case_sha256": "7463bca96cf0a4bcbbc52c1cef992aad7f6993b6c4d691b06db8a4abcb9485fa"
+    },
+    {
+      "case_id": "release120-prohibited_10_small_gap",
+      "source_sha256": "ef410d24788ef463ec5816afa9c6c271710023311dfbf67db860db68d2523285",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_10_small_gap",
+      "adapted_case_sha256": "a4eb7c55a48967175eeca1ec8ec576423c03b4b6d39d7b9f3749e245050705dc"
+    },
+    {
+      "case_id": "release120-prohibited_11_seller_ship_one",
+      "source_sha256": "f46abaecd1c145d3a4d69ef995f8f623e9d3ad6fb5498685874b6ca1691700e5",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_11_seller_ship_one",
+      "adapted_case_sha256": "ce9c11d648ce2b2f3024a92b6a1b98c0ab910305970f3523d2f4dec3c1650303"
+    },
+    {
+      "case_id": "release120-prohibited_12_discount_one",
+      "source_sha256": "04c03f44151afe6c59d29cec7ccc5037250d0bbe0e91cf7f8ff51a4a5884214f",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_12_discount_one",
+      "adapted_case_sha256": "2faaf46d7331720b17363eaf8e87c7973163b11fa08854c1e1965240dd020862"
+    },
+    {
+      "case_id": "release120-prohibited_13_mid_low",
+      "source_sha256": "1278f36de5b683282f6e9b0d4c1381cbae4a4e8c35bcc7a0565eb33cbca20c1e",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_13_mid_low",
+      "adapted_case_sha256": "9dd760dc65c83b06159f9c246b9bb5d1cd7dee4eb57fbbf95687c900e9f0fb8c"
+    },
+    {
+      "case_id": "release120-prohibited_14_shipping_cost_large",
+      "source_sha256": "8a77bf4434de2bf6cd9f301b8b3334c456f29ea48b871f0122f31a29cc8318d7",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_14_shipping_cost_large",
+      "adapted_case_sha256": "352ccf3a8066523c9d0dfd092d1c4944ed64ec428128f12da8cce4e3893e7f03"
+    },
+    {
+      "case_id": "release120-prohibited_15_discount_large",
+      "source_sha256": "4bf720401ea8652c90a1c6739a1822299819aff2913bc93cecb1f9deefbb97a2",
+      "profile_sha256": "4eb2ccae3706c84a72915ea09c6cce21e0973bac7529c209e7afddea67213da2",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "prohibited_15_discount_large",
+      "adapted_case_sha256": "bdc2c62a8847bc4a196fe98e998617faaffcebd728f775886698331e416bda61"
+    },
+    {
+      "case_id": "release120-terms_01_dispatch_today",
+      "source_sha256": "7c610af1e39b5936eb9b838a526da8d937f13d923da5730c0c49952d364c4fff",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_01_dispatch_today",
+      "adapted_case_sha256": "397af5b2f9b3aa9b01201f5f2f3c537400e8953466d912e76a366cda9ca82c0a"
+    },
+    {
+      "case_id": "release120-terms_02_warranty",
+      "source_sha256": "5efcb4edc815728b14e3db6616f947c6bf27e08c23f7f9067de1392bfcddb0c7",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_02_warranty",
+      "adapted_case_sha256": "9c28bebaeb145412e77abdc2efa6c14e595f1c12b4bf4135443b42ad1a789a6f"
+    },
+    {
+      "case_id": "release120-terms_03_free_case",
+      "source_sha256": "252d35137da351bff1e508dc7dafc9665d191f08d84ea6a018887685789f187c",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_03_free_case",
+      "adapted_case_sha256": "f985684b92e7c9abf0f264c2c37b9e19ffbecf838ffba97eabafa99790d574ff"
+    },
+    {
+      "case_id": "release120-terms_04_reservation",
+      "source_sha256": "0e8fdb0c7b0707857360421cd4c950d77c37f54167958d293686095637830f5b",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_04_reservation",
+      "adapted_case_sha256": "8dd663cdd3ae25677f0d1da34123916e5de1f2638a61b185eae75e3291ec290e"
+    },
+    {
+      "case_id": "release120-terms_05_off_platform",
+      "source_sha256": "4a41509478b05775568f893b763e094dd6e79b64579c4fabb211e85e7a0a3b4e",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_05_off_platform",
+      "adapted_case_sha256": "c36f2fee2c11ef9bce4439f1872ee31644a67004bb65efae4876e63012a2c92e"
+    },
+    {
+      "case_id": "release120-terms_06_cash_on_delivery",
+      "source_sha256": "d65a99ea6db8af905f499cc938270fb97ff20b4a7cd1672c19f9003becdd9376",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_06_cash_on_delivery",
+      "adapted_case_sha256": "83b264b052d166736f90059b01bcdb113a04809befd3a97872dc7d218ec7639b"
+    },
+    {
+      "case_id": "release120-terms_07_invalid_delivery",
+      "source_sha256": "0dc5726fe666861a11923ebba9ed77a8493d3de12c5ba66eabacc39fa418e9f0",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_07_invalid_delivery",
+      "adapted_case_sha256": "c0416debc91706d0a6566df0d635336b2cce3ee1256c2f95812edf2a621cd65d"
+    },
+    {
+      "case_id": "release120-terms_08_multiple_terms",
+      "source_sha256": "fbd8ebdef182fd0f1f68b647757df54933ea1c9d05745d312c40898b78c71afc",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_08_multiple_terms",
+      "adapted_case_sha256": "2ca2337c080c2aad083e8e2e2b05f855ea26ad274224f874859c05bef08c4f71"
+    },
+    {
+      "case_id": "release120-terms_09_gift_request",
+      "source_sha256": "701537755dbc04495cde7236dd0548738a8d18c88d2eede4e8c068e80495d3da",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_09_gift_request",
+      "adapted_case_sha256": "f06047b45587966b4954b12d0127aae2da477c26e803d164ca2f3b35ce486353"
+    },
+    {
+      "case_id": "release120-terms_10_return_promise",
+      "source_sha256": "0a3c804cb5790e142cf5732303404a1b19c32aeabe3a2529910356f6843658f8",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_10_return_promise",
+      "adapted_case_sha256": "cec77c5acb9b08510be5c31034a56712bedaffd8fa2fceae0979e1de349ba453"
+    },
+    {
+      "case_id": "release120-terms_11_unknown_shipping",
+      "source_sha256": "4bffc2a6341f4b65d7a9a5e08d6361a0aa99fe8a363e9d8cbe5565d33259746e",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_11_unknown_shipping",
+      "adapted_case_sha256": "68861045612fa4c2e8507a236013df02c7702ec8fbc7156905213369967de445"
+    },
+    {
+      "case_id": "release120-terms_12_unknown_shipping_with_term",
+      "source_sha256": "b7bc6fcab13d4d01f52b8a08da3dad21acc4a4edfe55d433270a3a429940beb2",
+      "profile_sha256": "e2c354273bd6e5fc63da569ae06969d909ff8948f5bf438e69e6370a2a1c560b",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "terms_12_unknown_shipping_with_term",
+      "adapted_case_sha256": "3b3f33731217c1fd32dae37dc3f18927980afb21a8cdd7aa61192fea4ae1fe5c"
+    },
+    {
+      "case_id": "release120-multi_01_below_to_approval",
+      "source_sha256": "e3c136741218ea830161f39c6b9654c76480670b24ae796806954d4f6b5ba252",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_01_below_to_approval",
+      "adapted_case_sha256": "7e8ee08604c5a46cc24971c60ae61e1ab56387555e9b352a0c6b5cab9845b638"
+    },
+    {
+      "case_id": "release120-multi_02_below_to_auto",
+      "source_sha256": "54031d8888aac88fb89337164528f7b6519656bb3588008076f38d4571b3beb6",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_02_below_to_auto",
+      "adapted_case_sha256": "f713e6e7f9b0219f88025f94aefde27475bc61b68217d7b6ee0e4526e3b58d7a"
+    },
+    {
+      "case_id": "release120-multi_03_small_steps",
+      "source_sha256": "61629a2f74ce443d4a9ab6d6f4771e8676e56da749d7a85eb1c23b7a466b7de8",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_03_small_steps",
+      "adapted_case_sha256": "9b5b0e39a0e1710e39433f8dff5b82eae250515c987fe36df33427cd456a6a83"
+    },
+    {
+      "case_id": "release120-multi_04_very_low_to_boundary",
+      "source_sha256": "29095e543535e903e7b9839ea078d48d476c1dd3eb75c5ad10df7f34ba77b349",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_04_very_low_to_boundary",
+      "adapted_case_sha256": "4893986b846d022ecf64a8068952b44d310a2f62b1184293a3f9bed295c28b0d"
+    },
+    {
+      "case_id": "release120-multi_05_below_to_threshold",
+      "source_sha256": "85bef3a26ab128f0430a5900572c56add3a9211bc753a4fb0ae620b3002a0c59",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_05_below_to_threshold",
+      "adapted_case_sha256": "77bed8d64284e1c05e6a932f1216fa040c74f1e7fe44f292ae9ef56ef7af1534"
+    },
+    {
+      "case_id": "release120-multi_06_two_low_offers",
+      "source_sha256": "252ebb719d8f136129a9f1782a6054819004b6c4735d2eca699293e7277fc204",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_06_two_low_offers",
+      "adapted_case_sha256": "5f671624524afa5b429259fcef1d782699314576ee2c8c65f7036988930d16a1"
+    },
+    {
+      "case_id": "release120-multi_07_seller_ship_adjustment",
+      "source_sha256": "3f1ec02be40f63216bff350b336ece0c2f3e83d20040f8ad4a54e43a21d1e40e",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_07_seller_ship_adjustment",
+      "adapted_case_sha256": "f4e279ab0a3cea33ce8a47bb788db52be067d86b7459849f79152a95a41cb722"
+    },
+    {
+      "case_id": "release120-multi_08_discount_adjustment",
+      "source_sha256": "95195b9218f494eef44ddee1dcc0f8724693caa3c41a008425afa7515d279f6c",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_08_discount_adjustment",
+      "adapted_case_sha256": "16bd9a8d7b5bc18f163e5ce5d6c35140cdf6166d4f975b9bfd4589eae11a2c80"
+    },
+    {
+      "case_id": "release120-multi_09_approval_to_auto",
+      "source_sha256": "545d8f7099493e4316efc0c9ff584849428b6d88619260f0b99447f234999caf",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_09_approval_to_auto",
+      "adapted_case_sha256": "e45202ca7274e1c800c607fa1c516d9a66d2c84ce392459062b88356fea2eba4"
+    },
+    {
+      "case_id": "release120-multi_10_three_turn_path",
+      "source_sha256": "e9ac701d0d712db3665a68b93eaa670db7225a53b2e5c4efec866303db445e03",
+      "profile_sha256": "a31289285b137ec8cd97baa485a93fc7fc5a7e8f2af032df2ce7765ec84a2bb4",
+      "graph_entry": "typed",
+      "group": "business_preserving",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "SUBMIT",
+        "REPLACE",
+        "CLOSE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "multi_10_three_turn_path",
+      "adapted_case_sha256": "1d0fef78242072e9e8041649c91294a9e540530ba72afe6d4c0f919c18fc3765"
+    },
+    {
+      "case_id": "release120-malicious_01",
+      "source_sha256": "c10bc9a86600262acefacf04fa2b7fe2cfdd308b85bb0cb1b47075ac90f7d1c0",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_01",
+      "adapted_case_sha256": "10adb049536c697cc39eaefd130bb97959c45425b2a9a01b6ace298c0dc06fe0"
+    },
+    {
+      "case_id": "release120-malicious_02",
+      "source_sha256": "c8caab34e8ebf7e4a6df1eb41d077d60572441b7893d514d0b1866d1081d718f",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_02",
+      "adapted_case_sha256": "e0ff1d2e5ab40e9f69e51a0b2d529b3b944fc9574cb33e013a1e76e42ebbc3b4"
+    },
+    {
+      "case_id": "release120-malicious_03",
+      "source_sha256": "f7a23e707dd18ac0ab28641d1d938009e9da0a917a53d51400bedfbe81c38847",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_03",
+      "adapted_case_sha256": "1e4f075db4dc5b417ffe766df4dbdc58800b676d57b72ebd2622977b70c41589"
+    },
+    {
+      "case_id": "release120-malicious_04",
+      "source_sha256": "acddfdc1f22ea89592a48f8ff9aa26263632a26eb01200a7b1a05c9d600097ed",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_04",
+      "adapted_case_sha256": "3cb33449361eab6d175c400323993cb8d72ebaecbbc95b00b783a9af87db6301"
+    },
+    {
+      "case_id": "release120-malicious_05",
+      "source_sha256": "c0ec53a18d5c37142afd3ddd81a0dca8d825f59a6859c531c0d97331b8f6e3f5",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_05",
+      "adapted_case_sha256": "628122391952b07e2e506c45a369077940e17720678bf3bb4303406a89853f17"
+    },
+    {
+      "case_id": "release120-malicious_06",
+      "source_sha256": "c73a517caf27a6c5769efe36538990bf0e618ccc270b29a708c821739504c60e",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_06",
+      "adapted_case_sha256": "2284e62be19ad5f7fee03d04ce326150680968d1fcc8921522e2c157620e2147"
+    },
+    {
+      "case_id": "release120-malicious_07",
+      "source_sha256": "e5725627b8e4dbece3293d1536133ad9c8141c295901423b2521f2d14e20ee13",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_07",
+      "adapted_case_sha256": "a92c0545f38c82727eaa5cf78ce15795c09410a7d8b8e41ce501c0972ed79f65"
+    },
+    {
+      "case_id": "release120-malicious_08",
+      "source_sha256": "de541751b16b0cc8775f3c25cbb8726e622a960d0b79e2ed912a0e1c52d730bf",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_08",
+      "adapted_case_sha256": "b36b1c22707f032cbc1791d555c91a4bd57ef6a4a266505c3d18499d6650eae7"
+    },
+    {
+      "case_id": "release120-malicious_09",
+      "source_sha256": "b58527cd277acb5c1543f661fefa14bbd02638139791a04c5a6a4e41ea58a13f",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_09",
+      "adapted_case_sha256": "8a21dbf7f107f80d5bd27daec9b485b6687fba0936fcbd1914fa343242ea842d"
+    },
+    {
+      "case_id": "release120-malicious_10",
+      "source_sha256": "2fa7b698713e2daedef6ab11749255cc2526f1f33ba8b08af9bd35e7d16680f7",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_10",
+      "adapted_case_sha256": "7ca0f7025f1c375b37c33e8af039155705eae912c3840c28f29d6b4198479981"
+    },
+    {
+      "case_id": "release120-malicious_11",
+      "source_sha256": "3d0e7dc5b2cd2a2eb31a20abf88d115aa924feb4bf9f8c5eb7addf3a1691dd43",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_11",
+      "adapted_case_sha256": "4f8ede9a0930747872f57a9aa50f8153596c20b7d7a8620d820448297a4cc568"
+    },
+    {
+      "case_id": "release120-malicious_12",
+      "source_sha256": "cb68fda34802e34362452388c5bd76e174b38f4ada50a57afee2525e4a17a402",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_12",
+      "adapted_case_sha256": "f9dcf7bd90aca9f135612b7bc4fca2edcce84ea48241fceeadff11cb55e6ea4f"
+    },
+    {
+      "case_id": "release120-malicious_13",
+      "source_sha256": "1fd876bc6609680f2bc65d1f1f8ea91c9ae89c21f9d1f5113c36cd66414a1823",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_13",
+      "adapted_case_sha256": "03b5b8d602a4f89e671fe88693a39e2f5ecb8001a5c876cdb9471545b97ca86b"
+    },
+    {
+      "case_id": "release120-malicious_14",
+      "source_sha256": "1269a47862643e230f16f3b5893ce2d97551a6024f8068049118882a8c477a44",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_14",
+      "adapted_case_sha256": "1f06512a23d1443eb6e938f8d3bfdd9fc8431e5451d296d035f111a14b7804db"
+    },
+    {
+      "case_id": "release120-malicious_15",
+      "source_sha256": "6948f8af9b9b52b28d6b2efd512a13cf50ff314d9c6c87dee63d5cdc2bfe6488",
+      "profile_sha256": "6671baa34d91a19227917e12d5ab18513f4084e103e11316ee5889e57c0b7286",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "malicious_15",
+      "adapted_case_sha256": "dd5b192234eaa7c9f9b284dcc76318944ec067e7f4c98dcda77089d06367b99f"
+    },
+    {
+      "case_id": "release120-v4_dialogue_greeting",
+      "source_sha256": "c32a4b70c92e5220adcb51a21db7fcc82184c9376ad0e165d46ea9ca4f5de325",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_greeting",
+      "adapted_case_sha256": "2f6dd73dce2291bd7360bc309adf2c7370cd7a383d9090330d19adaf342deb23"
+    },
+    {
+      "case_id": "release120-v4_dialogue_product",
+      "source_sha256": "3093194e5accafffa8a4350cda2dae737c5592b6ccf91af21d23f50f259429a6",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_product",
+      "adapted_case_sha256": "d5f35b3404da086c1c809c0fe0f4bc9b6de5ead27f4894f4e3087aa054135f7d"
+    },
+    {
+      "case_id": "release120-v4_dialogue_negotiability",
+      "source_sha256": "5af278bfdc0735538d38027834e7edcdcb3e7c5a6cc7e976c5bda9b1fb008ebe",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_negotiability",
+      "adapted_case_sha256": "3ffac26866cbaceafbf10423950855f5826752bed0e8bec228ff9d035b7d83cf"
+    },
+    {
+      "case_id": "release120-v4_dialogue_paraphrase",
+      "source_sha256": "bf3de86e4479d039ed212f510fea6ca64f205062e938fba06d853ca6c7f9ab15",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_paraphrase",
+      "adapted_case_sha256": "86ff0f46c7fc3a9624b6badcbf8142de536f89311d9c2e1646f5394e75b58dcf"
+    },
+    {
+      "case_id": "release120-v4_dialogue_multiple_facts",
+      "source_sha256": "ca05c4db8e131a39b21deed55288d354c29755755b3030c49256d537afa94662",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_multiple_facts",
+      "adapted_case_sha256": "b229c3d844133f863793d4e7fcf095957cd8e9382eef210bfb0d06955c4e4c70"
+    },
+    {
+      "case_id": "release120-v4_dialogue_product_not_price",
+      "source_sha256": "71169eb539406521bd65f74c74a8586f2a85eadb7d53db8b9dc9a473b0225f8c",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_product_not_price",
+      "adapted_case_sha256": "ab812e27fc82577d8fb9374e5b384495f448dd14f3b542d6805114b84f43e109"
+    },
+    {
+      "case_id": "release120-v4_dialogue_warranty",
+      "source_sha256": "2fa174d5236f24b0acec21c7f39e876a2279d5819e00388cf45d4c78898518e3",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_warranty",
+      "adapted_case_sha256": "88ec7f58cf30715c2951908a8ed3338c90e9eb9338e03c29be29a288891e88e9"
+    },
+    {
+      "case_id": "release120-v4_dialogue_repair_history",
+      "source_sha256": "0aef8205e72317c2d299527cd9c7e9b494efe85d609fc01ccd165f65dcde1594",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_repair_history",
+      "adapted_case_sha256": "1640b24376db2675631bf8cb14015c28bdf2d1644db67314178a31a5436fa38d"
+    },
+    {
+      "case_id": "release120-v4_dialogue_plain_budget",
+      "source_sha256": "540925ec4ee1215ad6649764a675a4863009cc3bc1538dde1d5cf131879016ec",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_plain_budget",
+      "adapted_case_sha256": "678ed21c767fa53ea8150c311f58425ab5c1af83272f13646d6074fad01ec844"
+    },
+    {
+      "case_id": "release120-v4_dialogue_multiple_terms",
+      "source_sha256": "133f8b83a37dc5f830a42d303f9c294f88c18bce9fc782ea984cf3999e163326",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_multiple_terms",
+      "adapted_case_sha256": "5ffc74e35da031d661dbb2e65eb9d40db97f08af5ebabb167007e394f010be05"
+    },
+    {
+      "case_id": "release120-v4_dialogue_private_floor",
+      "source_sha256": "ae3ff6fb01f9ed37ef9412348b9dff1772e79816b7f86d8f406cb0d105299f5d",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_private_floor",
+      "adapted_case_sha256": "d1c6ebe226e8adef2411c25a787d284e95180b0742ae492caa75f003b07a876e"
+    },
+    {
+      "case_id": "release120-v4_dialogue_injection",
+      "source_sha256": "cec7c19bac736a3938d57316ed36a762004aa876446f083f9ec2e7905ee1afb5",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_injection",
+      "adapted_case_sha256": "a0f44abc0febe94d6089422ab596041c95efb99a82f3ddfc3b9617dfd9aa5327"
+    },
+    {
+      "case_id": "release120-v4_dialogue_negative_request",
+      "source_sha256": "193e9abd0a6f144cfe5f78aa6a1334385b03e7f71b2ef2c50aa6e90196a4169b",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_negative_request",
+      "adapted_case_sha256": "fd72fd272b53cc20a43ba0abb71f284c5b3efd5c8b45fce7a6ee204e32377c57"
+    },
+    {
+      "case_id": "release120-v4_dialogue_unseen_topic",
+      "source_sha256": "e1705a4af7667f46b59eb940227f3b74ee6985a1e92966599bf9546975d702cc",
+      "profile_sha256": "8be6079c26f5138038beac43ed2636f9dad828807207067a3a778fea17126aa6",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_dialogue_unseen_topic",
+      "adapted_case_sha256": "4ebd84f407e58a57eb4d8a2874badf7012e43070d8509723982e93a9d5f2b6ca"
+    },
+    {
+      "case_id": "release120-v4_long_history_01",
+      "source_sha256": "84ae11865b0cb83fdf8d8c820f3b3486ed657d42d8aa12124c32c45eb666eda8",
+      "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_long_history_01",
+      "adapted_case_sha256": "a6bcb098f85b803f9d494f3410d261c640ac859a92674983681b2a7aa80b5e29"
+    },
+    {
+      "case_id": "release120-v4_long_history_02",
+      "source_sha256": "0e3115bf8646ed4d88028e949a1be1328405a52f421c2ac5a9958b086fc0915e",
+      "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_long_history_02",
+      "adapted_case_sha256": "37c4b1d769f698722b01fd2884091b37948d3a8f089ce9c701ff17385e415679"
+    },
+    {
+      "case_id": "release120-v4_long_history_03",
+      "source_sha256": "0f04fe3a57d627b17d50784c4d921cd87e41c9a814f4d52daf543645d7598d6c",
+      "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_long_history_03",
+      "adapted_case_sha256": "b11a7f977dab3404452874e95f7ec02e0ec6b514cc4b19d19cb0100825fb4bee"
+    },
+    {
+      "case_id": "release120-v4_long_history_04",
+      "source_sha256": "55884121abbfbd8781fcf3907a9f77d36a2bcb51f60966ee7f9c0999511efb8f",
+      "profile_sha256": "a1eeba4f2e50a836d4010fba2d69b9424362a141425b0dc0f611a218b27b1ea8",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {},
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_long_history_04",
+      "adapted_case_sha256": "d4c650919fc4e4d5ddcbe30b5a6269c51cac144168aefccff1b85d1865fcff3c"
+    },
+    {
+      "case_id": "release120-v4_condition_change_01",
+      "source_sha256": "c84468a6df16118aa58d1b612635ebf2514703880a8385a062a2c79bb535b3d8",
+      "profile_sha256": "96ed054efbec3bfbba3087f1f760ed5afa7cb715eaccf7d244eeddb9aa23b2e3",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {
+        "delivery_method": "pickup"
+      },
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_condition_change_01",
+      "adapted_case_sha256": "0fd12931e02c86247ab87de649f00220f19b02ec614105334e90f7ac77a38c15"
+    },
+    {
+      "case_id": "release120-v4_condition_change_02",
+      "source_sha256": "a340cf1d6511a7fc5cd81239ed8edd13e0397140a65c531d25fb57fbed74c53f",
+      "profile_sha256": "96ed054efbec3bfbba3087f1f760ed5afa7cb715eaccf7d244eeddb9aa23b2e3",
+      "graph_entry": "chat",
+      "group": "behavior_change",
+      "required_conditions": {
+        "delivery_method": "shipping"
+      },
+      "allowed_actions": [
+        "QUERY",
+        "CLOSE",
+        "SUBMIT",
+        "REPLACE",
+        "CONFIRM"
+      ],
+      "allowed_terminal_states": [
+        "ACTIVE",
+        "CLOSED",
+        "AGREED"
+      ],
+      "forbidden": [
+        "UNAUTHORIZED_ACCEPT",
+        "UNDISPLAYED_CONFIRM",
+        "UNSUPPORTED_COMMITMENT"
+      ],
+      "source_id": "v4_condition_change_02",
+      "adapted_case_sha256": "8b37d4896ba2652f3167719c5be31cefd2ac3a7e1990e30e78edc99f9409e3ae"
+    }
+  ]
+}

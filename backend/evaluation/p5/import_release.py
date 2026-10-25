@@ -55,7 +55,7 @@ def adapt(source, profiles, source_hashes):
     facts["allowed_delivery_methods"] = ["pickup", "shipping"]
     case = dict(
         case_id="release120-" + cid,
-        version="p5-release120-v5",
+        version="p5-release120-v6",
         family=source["category"].lower(),
         origin="legacy_synthetic",
         split="development",
@@ -77,7 +77,14 @@ def adapt(source, profiles, source_hashes):
         source_commit=BASELINE,
         profile_sha256=digest(profile),
         source_relation="120 compatible release; original 100 are ancestors, not extra cases",
-        group="business_preserving" if typed else "behavior_change",
+        group="behavior_change" if dynamic else "business_preserving",
+        comparison_basis=(
+            "OpenEvals free-form continuation exercises the new unified chat contract"
+            if dynamic
+            else "Same public input, product, policy, formal-action expectation "
+            "and legal terminal; "
+            "static consultation/refusal is comparable even without a structured offer"
+        ),
         graph_entry="typed" if typed else "chat",
         dynamic=dynamic,
         turns=[t["message"] for t in source["turns"]],
@@ -183,7 +190,7 @@ def main():
     for name, blob in blobs.items():
         (sources / name).write_bytes(blob)
     document = dict(
-        version="p5-release120-v5",
+        version="p5-release120-v6",
         content_sha256=digest(cases),
         cases=cases,
         source_files_sha256=hashes,

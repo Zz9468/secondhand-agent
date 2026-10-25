@@ -56,3 +56,12 @@ def test_session_status_cannot_be_mislabeled_as_an_action_outcome():
     )
     with pytest.raises(ValueError, match="forbidden"):
         validate_case_expectations({"expected_status": "AGREED", "forbidden": ["AGREED"]})
+
+
+def test_static_consultations_and_refusals_are_not_excluded_from_comparison():
+    source = [c for c in load_cases() if c.get("source_scenario")]
+    common = [c for c in source if c["group"] == "business_preserving"]
+    assert len(common) == 100
+    assert len([c for c in common if c["graph_entry"] == "chat"]) == 32
+    assert all(not c["dynamic"] for c in common)
+    assert all(c["dynamic"] for c in source if c["group"] == "behavior_change")
