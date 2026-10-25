@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from app.db.models import ModelExecutionTask, ModelTaskStatus, NegotiationSession
 from app.db.models.graph import (
     BusinessActionReceipt,
+    GraphTurnQuality,
     ModelCallLedger,
     NegotiationInput,
     NotificationDelivery,
@@ -113,6 +114,7 @@ class GraphRunner:
                     session = db.get(NegotiationSession, run["session_id"])
                     evidence = bool(current.checkpoint_ref)
                     for model, field in (
+                        (GraphTurnQuality, "input_id"),
                         (ModelCallLedger, "input_id"),
                         (BusinessActionReceipt, "input_id"),
                         (NotificationDelivery, "input_id"),

@@ -38,6 +38,7 @@ def upgrade():
         sa.Column("approved", sa.Boolean(), nullable=False),
         sa.Column("review_count", sa.Integer(), nullable=False),
         sa.Column("stop_reason", sa.String(64)),
+        sa.Column("review_feedback", sa.String(500)),
     )
     op.create_table(
         "graph_recovery_actions",

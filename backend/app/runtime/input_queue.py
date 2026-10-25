@@ -163,7 +163,7 @@ class InputQueue:
                         max_tokens=180000,
                         max_cost=None,
                         active_seconds=120,
-                        quality_version="p4-v1",
+                        quality_version="p4-v2",
                     )
             frozen_config = dict(CONFIG if config is None else config)
             if (

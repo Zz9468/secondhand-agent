@@ -163,6 +163,7 @@ class GraphTurnQuality(Base):
     approved: Mapped[bool] = mapped_column(default=False)
     review_count: Mapped[int] = mapped_column(default=0)
     stop_reason: Mapped[str | None] = mapped_column(String(64))
+    review_feedback: Mapped[str | None] = mapped_column(String(500))
 
 
 class GraphRecoveryAction(Base):

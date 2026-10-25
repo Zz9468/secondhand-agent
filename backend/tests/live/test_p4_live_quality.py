@@ -1,5 +1,6 @@
 """Real model P4 development acceptance, separately recorded from deterministic coverage."""
 
+import asyncio
 import time
 from datetime import UTC, datetime
 
@@ -14,6 +15,7 @@ from app.runtime.contracts import utcnow
 from app.semantic.contracts import QUALITY_VERSION
 from app.semantic.model import SemanticResponseError
 from app.semantic.quality import QualityModel
+from scripts.query_native_traces import query_native_traces
 from tests.graph.test_semantic import fact, message, result, show
 from tests.live.test_p2_semantics import turn as chat
 from tests.p0.test_tracing import MARKER, exercise_native_traces
@@ -32,7 +34,6 @@ def p4_trace(live_evidence):
     exercise_native_traces(client, project)
     yield client, project
     client.flush(timeout=5)
-    deadline = time.monotonic() + 25
     required = {
         "LangGraph",
         "prepare_context",
@@ -44,14 +45,11 @@ def p4_trace(live_evidence):
         "p0_error",
         "p0_attachment",
     }
-    while True:
-        runs = list(client.list_runs(project_name=project, start_time=started, limit=500))
-        if required <= {r.name for r in runs} or time.monotonic() > deadline:
-            break
-        time.sleep(2)
+    project_id = client.read_project(project_name=project).id
+    runs = asyncio.run(query_native_traces(client, project_id, started, required))
     passed = (
         required <= {r.name for r in runs}
-        and any(r.run_type == "llm" for r in runs)
+        and any(str(r.run_type).lower() == "llm" for r in runs)
         and all(MARKER not in r.model_dump_json() and not r.attachments for r in runs)
     )
     live_evidence.report["native_trace"] = {
@@ -59,7 +57,10 @@ def p4_trace(live_evidence):
         "run_count": len(runs),
         "names": sorted({r.name for r in runs}),
         "run_ids": [str(r.id) for r in runs],
-        "example_url": client.get_run_url(run=runs[0]) if runs else None,
+        "query_api": "runs.query (SmithDB v2)",
+        "example_url": client.get_run_url(run_id=runs[0].id, project_id=project_id)
+        if runs
+        else None,
     }
     live_evidence.save()
     assert passed, "P4 remote export boundary or native span coverage failed"

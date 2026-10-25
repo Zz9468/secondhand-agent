@@ -47,12 +47,14 @@ from tests.graph.test_semantic import (
 class FakeQuality:
     def __init__(self):
         self.calls, self.rejects, self.error, self.unsafe = [], 0, False, False
+        self.evidence_seen = []
 
     def reserve_quality(self, purpose, evidence):
         return 1000, Decimal("0.001")
 
     def generate(self, purpose, evidence, config):
         self.calls.append((purpose, config["request_timeout"]))
+        self.evidence_seen.append(evidence)
         ids = [i["id"] for i in evidence["items"]]
         if self.error:
             raise TimeoutError("synthetic quality timeout")
@@ -107,6 +109,7 @@ def test_p4_reply_and_review_are_charged_without_repeating_business(quality_case
         assert db.get(GraphTurnQuality, run).review_count == 2
     assert c.runner.run(run)["public_message_id"] == message(c, run).id
     assert len(ledger_rows(c, run)) == 5
+    assert c.quality.evidence_seen[2]["repair_feedback"] == "fixture"
 
 
 @pytest.mark.parametrize("failure", ["error", "unsafe", "review"])
@@ -413,3 +416,24 @@ def test_p4_hung_process_releases_lock_and_notifies_real_receipt(case, record_pr
         assert item.status == "PUBLISHED" and item.result["outcome"] == "OFFER_ACCEPTED"
     with locked_saver(os.environ["P0_POSTGRES_URL"], thread_id(sid)):
         pass
+
+
+def test_context_artifact_without_checkpoint_requires_recovery(quality_case):
+    from app.runtime.recovery import RecoveryConflict
+
+    c = quality_case
+    def crash(point):
+        if point == "after_context":
+            raise RuntimeError("crash after context")
+    c.runner.fault = crash
+    run = turn(c, "900自提", execute=False)
+    with pytest.raises(RuntimeError):
+        c.runner.run(run)
+    with locked_saver(os.environ["P0_POSTGRES_URL"], thread_id(c.sid)) as (saver, _):
+        saver.delete_thread(thread_id(c.sid))
+    c.clock.advance(2)
+    c.runner.fault = lambda _: None
+    with pytest.raises(RecoveryConflict):
+        c.runner.run(run)
+    assert c.queue.read(run)["recovery_required"]
+    assert not ledger_rows(c, run)

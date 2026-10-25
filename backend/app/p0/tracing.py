@@ -12,7 +12,9 @@ from langsmith import Client
 from urllib3.util.retry import Retry
 
 SAFE_NAMES = {
-    "wait_for_seller", "apply_result", "publish_notice",
+    "wait_for_seller",
+    "apply_result",
+    "publish_notice",
     "prepare_context",
     "parse_intents",
     "plan_intents",
@@ -89,6 +91,14 @@ def safe_content(value):
     if not isinstance(value, dict):
         return {}
     result = {}
+    for usage_key in ("usage", "usage_metadata"):
+        usage = value.get(usage_key)
+        if isinstance(usage, dict):
+            result[usage_key] = {
+                k: v
+                for k, v in usage.items()
+                if k in COUNTERS - {"review_count"} and type(v) is int and 0 <= v <= 10_000_000
+            }
     for key in CONTENT_KEYS & value.keys():
         item = value[key]
         if key == "run_ref" and isinstance(item, str) and re.fullmatch(r"[0-9a-f]{64}", item):

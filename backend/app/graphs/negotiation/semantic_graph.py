@@ -43,6 +43,7 @@ def build_semantic_graph(
 
         try:
             reference = prepare_context(queue.factory, state["run_id"], owner, queue.clock())
+            fault("after_context")
             return {"context_reference": reference, "stop_reason": None}
         except BudgetExhausted:
             return {"context_reference": None, "stop_reason": "CONTEXT_LIMIT"}

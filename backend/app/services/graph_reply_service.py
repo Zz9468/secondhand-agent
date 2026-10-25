@@ -21,6 +21,9 @@ def reply_evidence(db, run, now):
     from app.services.notification_service import TEXT
 
     items = []
+    intents = {
+        i["id"]: i for i in (turn.frame.get("parsed", {}).get("intents", []) if turn else [])
+    }
     questions = {
         i["id"]: i.get("topic")
         for i in (turn.frame.get("parsed", {}).get("intents", []) if turn else [])
@@ -42,6 +45,13 @@ def reply_evidence(db, run, now):
                 **item,
                 "status": delivery.result["outcome"],
                 "text": TEXT.get(delivery.result["outcome"], "本次未执行业务动作。"),
+            }
+        if run.config.get("quality_version") == "p4-v2":
+            original = intents.get(item["id"], {})
+            item = {
+                **item,
+                "intent_type": original.get("type", "OTHER"),
+                "buyer_quote": original.get("source_quote", ""),
             }
         items.append(item)
     # Only public result texts; no policy, transport cost, credentials or raw command.
@@ -100,10 +110,20 @@ class GraphReplyService:
     def compose(self, run_id, owner, repair):
         with self.factory() as db:
             evidence = reply_evidence(db, db.get(NegotiationInput, run_id), self.clock())
+            previous = db.get(GraphTurnQuality, run_id)
+            generation = (
+                {
+                    **evidence,
+                    "previous_candidate": previous.reply,
+                    "repair_feedback": previous.review_feedback or previous.stop_reason,
+                }
+                if repair
+                else evidence
+            )
         try:
             # A changing evidence hash is a new logical step, not replay of an outdated candidate.
             value = self.call(
-                run_id, owner, "compose", evidence, f"compose:{repair}:{digest(evidence)[:16]}"
+                run_id, owner, "compose", generation, f"compose:{repair}:{digest(generation)[:16]}"
             )
             candidate = ReplyCandidate.model_validate(value)
             approved = candidate_safe(candidate, evidence)
@@ -124,7 +144,7 @@ class GraphReplyService:
             evidence = reply_evidence(db, db.get(NegotiationInput, run_id), self.clock())
             item = db.get(GraphTurnQuality, run_id)
             candidate, original_hash = item.reply, item.evidence_hash
-        approved, reason = False, "EVIDENCE_CHANGED"
+        approved, reason, feedback = False, "EVIDENCE_CHANGED", None
         if candidate and digest(evidence) == original_hash:
             try:
                 value = self.call(
@@ -142,6 +162,7 @@ class GraphReplyService:
                     and all(q and any(q in t for t in texts) for q in verdict.evidence_quotes)
                 )
                 reason = None if approved else "REVIEW_REJECTED"
+                feedback = verdict.reason
             except StaleOwner:
                 raise
             except Exception as exc:
@@ -150,6 +171,7 @@ class GraphReplyService:
             lock_owner(db, run_id, owner, self.clock())
             item = db.get(GraphTurnQuality, run_id, with_for_update=True)
             item.approved, item.stop_reason = approved, reason
+            item.review_feedback = feedback
             item.review_count += 1
         return approved
 
