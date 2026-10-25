@@ -117,6 +117,8 @@ class GraphTarget:
         index = len(self.outputs)
         request = "replay" if self.case.get("mode") == "replay" else uuid4().hex
         refs = {"display_receipt_id": self.ack} if self.ack else {}
+        if self.case.get("mode") == "replay":
+            refs = {}  # Retry the identical original payload, not a new displayed context.
         if index and self.case.get("mode") in {"confirm", "approve"}:
             refs.update(action="CONFIRM", offer_id=self.card["offer_id"])
         elif index and self.case.get("mode") == "close":
@@ -348,6 +350,21 @@ def score_case(case, snapshot):
             failures.append("causal_evidence")
         if not run["message"]:
             failures.append("missing_publication")
+        if case.get("mixed"):
+            intents = (run.get("semantic") or {}).get("parsed", {}).get("intents", [])
+            results = run.get("intent_results") or []
+            topics = {i.get("topic") for i in intents}
+            required_topics = (
+                {"battery_health_pct", "repair_history"}
+                if case["case_id"] == "quality-two-questions"
+                else {"battery_health_pct"}
+            )
+            if (
+                len(intents) < 2
+                or not required_topics <= topics
+                or ({i["id"] for i in intents} != {r["id"] for r in results})
+            ):
+                failures.append("annotated_intent_coverage")
     replies = "\n".join(r.get("reply") or "" for r in runs)
     if any(word not in replies for word in case.get("required_reply", [])):
         failures.append("intent_coverage")

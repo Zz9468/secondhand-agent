@@ -8,6 +8,7 @@ from app.db.models.graph import BusinessActionReceipt, BusinessCausalEvent, Nego
 from app.services.business_command_service import BusinessCommandService
 from evaluation.p5.scoring import auxiliary_trajectory, causal_score
 from tests.graph.test_business import submit
+from tests.graph.test_p4_quality import quality_case  # noqa: F401
 
 
 def read_chain(factory, run_id):
@@ -73,3 +74,27 @@ def test_audit_rolls_back_with_business_transaction(case, point):
         assert not db.scalar(
             select(BusinessCausalEvent).where(BusinessCausalEvent.action_id == f"turn:{run}:action")
         )
+
+
+def test_official_adapter_replays_identical_payload_after_display(quality_case):  # noqa: F811
+    from evaluation.p5.target import GraphTarget
+    from tests.graph.test_semantic import candidate, intent
+
+    c = quality_case
+    text = "900自提可以吗？"
+    c.model.values[text] = {"intents": [intent(text, candidate=candidate())]}
+    target = GraphTarget.__new__(GraphTarget)
+    target.factory, target.sid, target.buyer = c.factory, c.sid, c.buyer
+    target.queue, target.runner = c.queue, c.runner
+    target.case = {"mode": "replay", "show_cards": True}
+    target.run_ids, target.latencies, target.outputs = [], [], []
+    target.ack = target.card = target.trace_client = None
+    target.thread_id = str(c.sid)
+    # Fixture uses a fixed clock; display and enqueue need the same clock domain.
+    from app.runtime.contracts import utcnow
+
+    c.queue.clock = utcnow
+    first = target({"content": text}, thread_id=target.thread_id)
+    second = target({"content": text}, thread_id=target.thread_id)
+    assert first == second and target.run_ids[0] == target.run_ids[1]
+    assert len(read_chain(c.factory, target.run_ids[0])[0]) == 4
