@@ -257,6 +257,11 @@ class GraphTarget:
                         "id": offer.id,
                         "status": offer.status.value,
                         "amount": str(offer.price),
+                        "shipping_paid_by": offer.shipping_paid_by.value,
+                        "shipping_cost": str(offer.shipping_cost)
+                        if offer.shipping_cost is not None
+                        else None,
+                        "seller_discount": str(offer.seller_borne_discount),
                         "proposer": offer.proposer.value,
                         "terms": offer.terms,
                         "basis": {"candidate": basis.candidate, "evaluations": basis.evaluations}
@@ -300,6 +305,31 @@ def score_case(case, snapshot):
             failures.append(f"outcome_{index}")
     if snapshot["session_status"] != case["expected_status"]:
         failures.append("terminal_state")
+    for offer in snapshot["offers"]:
+        if offer["status"] == "ACCEPTED":
+            shipping = offer["shipping_cost"] if offer["shipping_paid_by"] == "seller" else "0"
+            if shipping is None or (
+                Decimal(offer["amount"]) - Decimal(shipping) - Decimal(offer["seller_discount"])
+                < Decimal("750")
+            ):
+                failures.append("minimum_net_authorization")
+    message_ids = [r["message"]["id"] for r in runs if r["message"]]
+    if len(message_ids) != len(set(message_ids)):
+        failures.append("duplicate_publication")
+    if case["case_id"] == "quality-known-condition":
+        conditions = [
+            p
+            for offer in snapshot["offers"]
+            if offer.get("basis")
+            for p in offer["basis"]["candidate"].get("conditions", [])
+        ]
+        if not any(
+            p["fact"] == "battery_health_pct"
+            and p["operator"] == ">="
+            and Decimal(p["value"]) == 90
+            for p in conditions
+        ):
+            failures.append("condition_not_preserved")
     for run in runs:
         if run["receipt"] and run["causal_score"]["status"] != "PASS":
             failures.append("causal_evidence")
