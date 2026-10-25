@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path.cwd()))
 
 
 def main():
+    from langchain_core.callbacks import BaseCallbackHandler
     from sqlalchemy import create_engine, select
     from sqlalchemy.orm import sessionmaker
 
@@ -44,8 +45,38 @@ def main():
     if output.exists():
         raise RuntimeError("refusing to overwrite old-version evidence")
     settings = get_settings()
-    model = QwenChatModelFactory().create(settings)
     lock = threading.Lock()
+
+    class Recorder(BaseCallbackHandler):
+        def __init__(self, calls):
+            self.calls = calls
+
+        def on_llm_end(self, response, **kwargs):
+            usage = response.generations[0][0].message.usage_metadata or {}
+            inp, out = usage.get("input_tokens"), usage.get("output_tokens")
+            cost = None
+            if inp is not None and out is not None and settings.model_cost_is_configured:
+                cost = (
+                    Decimal(inp) * settings.model_input_price_per_million
+                    + Decimal(out) * settings.model_output_price_per_million
+                ) / 1000000
+            self.calls.append(
+                {
+                    "status": "OK",
+                    "tokens": usage.get("total_tokens"),
+                    "estimated_cny": str(cost) if cost is not None else None,
+                }
+            )
+
+        def on_llm_error(self, error, **kwargs):
+            self.calls.append(
+                {
+                    "status": "ERROR",
+                    "tokens": None,
+                    "estimated_cny": None,
+                    "error_type": type(error).__name__,
+                }
+            )
 
     def execute(item):
         case, repeat = item["case"], item["repeat"]
@@ -57,7 +88,10 @@ def main():
             "runs": [],
             "latency_seconds": [],
             "auxiliary_calls": [],
+            "recorded_calls": [],
         }
+        model = QwenChatModelFactory().create(settings)
+        model.callbacks = [Recorder(row["recorded_calls"])]
         sid, buyer = create_negotiation(
             factory, minimum_net_price=Decimal("750"), auto_accept_threshold=Decimal("850")
         )
@@ -109,7 +143,7 @@ def main():
                     if case["approval"] == "expire":
                         with factory() as db, db.begin():
                             db.get(ApprovalRequest, aid).expires_at = datetime.now() - timedelta(1)
-                        service.expire_due_requests()
+                        service.expire_request(approval_id=aid)
                     else:
                         method = (
                             service.approve_request
@@ -117,9 +151,13 @@ def main():
                             else service.reject_request
                         )
                         method(seller_id=seller, approval_id=aid, request_id=uuid4().hex)
+                    with factory() as db:
+                        other_ids = set(
+                            db.scalars(select(ApprovalRequest.id).where(ApprovalRequest.id != aid))
+                        )
                     ApprovalProcessor(
                         factory, LangChainApprovalFollowupProvider(model)
-                    ).process_batch()
+                    ).process_next(excluded_approval_ids=other_ids)
                 row["latency_seconds"].append(time.monotonic() - start)
         except Exception as exc:
             row.update(status="ERROR", error_type=type(exc).__name__)
@@ -166,6 +204,7 @@ def main():
         with lock, output.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(row, ensure_ascii=False) + "\n")
         print(f"legacy {case['case_id']} repeat={repeat} status={row['status']}", flush=True)
+
     with ThreadPoolExecutor(max_workers=int(os.environ.get("P5_CONCURRENCY", "1"))) as pool:
         list(pool.map(execute, spec))
     engine.dispose()
