@@ -3,7 +3,9 @@
 import json
 import os
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -43,7 +45,9 @@ def main():
         raise RuntimeError("refusing to overwrite old-version evidence")
     settings = get_settings()
     model = QwenChatModelFactory().create(settings)
-    for item in spec:
+    lock = threading.Lock()
+
+    def execute(item):
         case, repeat = item["case"], item["repeat"]
         row = {
             "case_id": case["case_id"],
@@ -159,9 +163,11 @@ def main():
                 mapped = {"NEEDS_SELLER_CONFIRMATION": "WAITING_APPROVAL"}.get(actual, actual)
                 if mapped != expected:
                     row["business_pass"] = False
-        with output.open("a", encoding="utf-8") as stream:
+        with lock, output.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(row, ensure_ascii=False) + "\n")
         print(f"legacy {case['case_id']} repeat={repeat} status={row['status']}", flush=True)
+    with ThreadPoolExecutor(max_workers=int(os.environ.get("P5_CONCURRENCY", "1"))) as pool:
+        list(pool.map(execute, spec))
     engine.dispose()
 
 

@@ -93,7 +93,7 @@ def summarize(rows):
     }
 
 
-def run_legacy(cases, repetitions, directory):
+def run_legacy(cases, repetitions, directory, concurrency=1):
     checkout = directory / "legacy-source"
     archive = directory / "legacy-source.zip"
     subprocess.run(
@@ -136,6 +136,8 @@ def run_legacy(cases, repetitions, directory):
         "OBSERVABILITY_LANGSMITH_ENABLED": "false",
         "AGENT_RUNTIME": "V4",
         "MODEL_MAX_RETRIES": "0",
+        "P5_CONCURRENCY": str(concurrency),
+        "PYTHONUTF8": "1",
     }
     prices = SemanticModel().prices()
     if prices:
@@ -266,7 +268,9 @@ def run(factory, postgres_url, options):
     comparable = [c for c in cases if c["group"] == "business_preserving"]
     if options.get("legacy") and comparable:
         try:
-            report["legacy_results"] = run_legacy(comparable, options["repetitions"], directory)
+            report["legacy_results"] = run_legacy(
+                comparable, options["repetitions"], directory, options["concurrency"]
+            )
             by_id = {c["case_id"]: c for c in comparable}
             for old in report["legacy_results"]:
                 old["judge"] = judge(by_id[old["case_id"]], old["messages"], old["auxiliary_calls"])
