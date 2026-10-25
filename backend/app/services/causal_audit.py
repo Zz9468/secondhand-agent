@@ -46,11 +46,14 @@ def input_basis(db, run, session, product, policy, payload, candidate, quote, ev
         # Stable before insertion; commit maps this proposal to the actual offer.
         "proposal_id": f"input:{run.id}",
         "object_offer_id": offer.id if offer else None,
-        "terms_hash": digest(payload.terms.model_dump(mode="json"))
+        "terms_hash": command_terms_hash(payload.terms)
         if payload.terms
         else terms_hash(offer)
         if offer
         else digest(None),
+        "counter_terms_hash": command_terms_hash(payload.counter_terms)
+        if payload.counter_terms
+        else None,
         "conditions_hash": digest([conditions, commitments]),
         "evidence_hash": digest(
             [
@@ -77,6 +80,10 @@ def input_basis(db, run, session, product, policy, payload, candidate, quote, ev
 
 
 def committed(db, action_id, evidence, result, after_version):
+    from app.services.graph_business_operations import terms_hash
+
+    offer = db.get(Offer, result.get("offer_id")) if result.get("offer_id") else None
+    basis = db.get(SemanticOfferBasis, offer.id) if offer else None
     return append(
         db,
         action_id,
@@ -86,7 +93,30 @@ def committed(db, action_id, evidence, result, after_version):
             "offer_id": result.get("offer_id"),
             "after_version": after_version,
             "result_hash": digest(result),
+            "offer_terms_hash": terms_hash(offer) if offer else None,
+            "offer_conditions_hash": digest(
+                [
+                    basis.candidate.get("conditions", []) if basis else [],
+                    basis.candidate.get("commitments", []) if basis else [],
+                ]
+            ),
         },
+    )
+
+
+def command_terms_hash(terms):
+    return digest(
+        {
+            "amount": f"{terms.amount:.2f}",
+            "payer": terms.shipping_paid_by,
+            "shipping_cost": f"{terms.shipping_cost:.2f}"
+            if terms.shipping_cost is not None
+            else None,
+            "discount": f"{terms.seller_discount:.2f}"
+            if terms.seller_discount is not None
+            else None,
+            "terms": terms.additional_terms,
+        }
     )
 
 

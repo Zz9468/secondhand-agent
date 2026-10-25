@@ -18,6 +18,7 @@ IDENTITY = (
     "proposal_id",
     "object_offer_id",
     "terms_hash",
+    "counter_terms_hash",
     "conditions_hash",
     "evidence_hash",
     "evidence_versions",
@@ -46,6 +47,16 @@ def causal_score(events, receipt, message):
             ):
                 return {"status": "FAIL", "reason": "causality_or_object_mismatch"}
         commit, published = ordered[2]["evidence"], ordered[3]["evidence"]
+        if base["command"] in {"SUBMIT", "REPLACE", "CONFIRM"} and (
+            commit["offer_terms_hash"]
+            != (
+                base["counter_terms_hash"]
+                if receipt["result"]["outcome"] == "COUNTER_OFFERED"
+                else base["terms_hash"]
+            )
+            or commit["offer_conditions_hash"] != base["conditions_hash"]
+        ):
+            return {"status": "FAIL", "reason": "committed_offer_differs_from_authorized_basis"}
         if (
             base["logical_action_id"] != action
             or not base["proposal_id"]

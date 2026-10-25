@@ -19,6 +19,7 @@ def chain():
         proposal_id="input:test",
         object_offer_id=None,
         terms_hash="terms",
+        counter_terms_hash=None,
         conditions_hash="conditions",
         evidence_hash="facts",
         evidence_versions={"product": 1, "policy": 1, "cost_quote": "cost"},
@@ -40,6 +41,7 @@ def chain():
         value = deepcopy(basis)
         if i >= 3:
             value.update(offer_id=10, after_version=2, result_hash=digest(result))
+            value.update(offer_terms_hash="terms", offer_conditions_hash="conditions")
         if i == 4:
             value["message_id"] = 20
         events.append(
@@ -86,6 +88,13 @@ def test_missing_trace_or_wrong_causal_parent_is_never_pass():
     events, receipt, message = chain()
     assert causal_score(events[:-1], receipt, message)["status"] == "INSUFFICIENT_EVIDENCE"
     events[1]["parent_id"] = events[2]["id"]
+    assert causal_score(events, receipt, message)["status"] == "FAIL"
+
+
+def test_a58_consistent_wrong_terms_still_disagree_with_committed_offer():
+    events, receipt, message = chain()
+    for event in events:
+        event["evidence"]["terms_hash"] = "wrong but consistent"
     assert causal_score(events, receipt, message)["status"] == "FAIL"
 
 
