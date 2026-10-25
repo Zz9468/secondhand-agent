@@ -25,6 +25,7 @@ from app.semantic.model import PROMPTS, SemanticModel
 from app.semantic.quality import PROMPTS as QUALITY_PROMPTS
 from evaluation.p5.datasets import load_cases
 from evaluation.p5.official import BUYER_PROMPT, JUDGE_PROMPT, export_experiment, judge, simulate
+from evaluation.p5.references import public_fixture_reference
 from evaluation.p5.scoring import acceptance, percentile, risk_report
 from evaluation.p5.target import GraphTarget, score_case
 from scripts.query_native_traces import query_native_traces
@@ -49,6 +50,9 @@ def metadata(cases):
         "dataset_sha256": digest(cases),
         "prompt_sha256": digest([PROMPTS, QUALITY_PROMPTS]),
         "evaluator_prompt_sha256": digest([BUYER_PROMPT, JUDGE_PROMPT]),
+        "judge_reference_sha256": digest(
+            {c["case_id"]: public_fixture_reference(c) for c in cases}
+        ),
         "dependency_lock_sha256": sha(ROOT / "backend/requirements.lock"),
         "packages": {
             p: importlib.metadata.version(p)

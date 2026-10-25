@@ -15,7 +15,10 @@ sys.path.insert(0, str(Path.cwd()))
 
 
 def main():
+    # This standalone worker runs from the archived old checkout. Its script directory
+    # remains on sys.path, so the evaluator helper comes from the current pinned runner.
     from langchain_core.callbacks import BaseCallbackHandler
+    from legacy_scoring import score_legacy
     from sqlalchemy import create_engine, select
     from sqlalchemy.orm import sessionmaker
 
@@ -161,6 +164,8 @@ def main():
                 row["latency_seconds"].append(time.monotonic() - start)
         except Exception as exc:
             row.update(status="ERROR", error_type=type(exc).__name__)
+            if getattr(exc, "orig", None) and exc.orig.args:
+                row["database_error_code"] = exc.orig.args[0]
         with factory() as db:
             session = db.get(NegotiationSession, sid)
             row.update(
@@ -168,8 +173,6 @@ def main():
                 rounds=session.round_count,
                 database_evidence=True,
                 request_count=len(case["turns"]),
-                business_pass=row["status"] == "OK"
-                and session.status.value == case["expected_status"],
             )
             row["messages"] = [
                 m.content for m in db.scalars(select(Message).where(Message.session_id == sid))
@@ -196,13 +199,7 @@ def main():
                     )
                 )
             ]
-            if any(t.status.value != "SUCCEEDED" for t in tasks):
-                row["business_pass"] = False
-            for index, expected in enumerate(case.get("expected_outcomes", [])):
-                actual = row["runs"][index]["outcome"] if index < len(row["runs"]) else None
-                mapped = {"NEEDS_SELLER_CONFIRMATION": "WAITING_APPROVAL"}.get(actual, actual)
-                if mapped != expected:
-                    row["business_pass"] = False
+            row["business_pass"] = score_legacy(case, row)
         with lock, output.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(row, ensure_ascii=False) + "\n")
         print(f"legacy {case['case_id']} repeat={repeat} status={row['status']}", flush=True)
