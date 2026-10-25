@@ -1,0 +1,6607 @@
+{
+  "schema": 1,
+  "version": "p5-v1",
+  "content_sha256": "5d3dbf514adf556d720f639de0af09f6907b2e5b8c0784d8fd17c952470df354",
+  "cases": [
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-000",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号0）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-001",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号1）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-002",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号2）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-003",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号3）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-004",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号4）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-005",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号5）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-006",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号6）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-007",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号7）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-008",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号8）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-009",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号9）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-010",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号10）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-011",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号11）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-012",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号12）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-013",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号13）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-014",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号14）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-015",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号15）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-016",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号16）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-017",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号17）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-018",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号18）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-019",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号19）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-020",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号20）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-021",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号21）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-022",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号22）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-023",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号23）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-024",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号24）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-025",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号25）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-026",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号26）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-027",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号27）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-028",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号28）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-029",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号29）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-030",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号30）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-031",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号31）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-032",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号32）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-033",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号33）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-034",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号34）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-035",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号35）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-036",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号36）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-037",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号37）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-038",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号38）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-039",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号39）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-040",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号40）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-041",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号41）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-042",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号42）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-043",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号43）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-044",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号44）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-045",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号45）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-046",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号46）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-047",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号47）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-048",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号48）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-049",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号49）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-050",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号50）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-051",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号51）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-052",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号52）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-053",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号53）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-054",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号54）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-055",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号55）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-056",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号56）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-057",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号57）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-058",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号58）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-059",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号59）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-060",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号60）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-061",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号61）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-062",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号62）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-063",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号63）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-064",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号64）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-065",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号65）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-066",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号66）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-067",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号67）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-068",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号68）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-069",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号69）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-070",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号70）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-071",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号71）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-072",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号72）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-073",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号73）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-074",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号74）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-075",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号75）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-076",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号76）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-077",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号77）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-078",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号78）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-079",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号79）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-080",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号80）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-081",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号81）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-082",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号82）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-083",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号83）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-084",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号84）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-085",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号85）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-086",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号86）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-087",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号87）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-088",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号88）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-089",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号89）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-090",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号90）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-091",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号91）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-092",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号92）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-093",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号93）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-094",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号94）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-095",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号95）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-096",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号96）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-097",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号97）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-098",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号98）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-099",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号99）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-100",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号100）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-101",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号101）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-102",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号102）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-103",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号103）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-104",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号104）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-105",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号105）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-106",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号106）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-107",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号107）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-108",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号108）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-109",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号109）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-110",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号110）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-111",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号111）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-112",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号112）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-113",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号113）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-114",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号114）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-115",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号115）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-116",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号116）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-117",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号117）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-118",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号118）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-119",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号119）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-120",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号120）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-121",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号121）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-122",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号122）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-123",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号123）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-124",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号124）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-125",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号125）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-126",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号126）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-127",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号127）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-128",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号128）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-129",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号129）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-130",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号130）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-131",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号131）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-132",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号132）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-133",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号133）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-134",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号134）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-135",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号135）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-136",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号136）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-137",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号137）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-138",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号138）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-139",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号139）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-140",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号140）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-141",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号141）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-142",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号142）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-143",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号143）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-144",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号144）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-145",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号145）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-146",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号146）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-147",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号147）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-148",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号148）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-149",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号149）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-150",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号150）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-151",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号151）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-152",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号152）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-153",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号153）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-154",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号154）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-155",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号155）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-156",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号156）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-157",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号157）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-158",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号158）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-159",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号159）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-160",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号160）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-161",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号161）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-162",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号162）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-163",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号163）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-164",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号164）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-165",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号165）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-166",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号166）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-167",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号167）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-168",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号168）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-169",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号169）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-170",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号170）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-171",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号171）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-172",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号172）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-173",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号173）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-174",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号174）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-175",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号175）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-176",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号176）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-177",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号177）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-178",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号178）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-179",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号179）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-180",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号180）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-181",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号181）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-182",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号182）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-183",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号183）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-184",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号184）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-185",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号185）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-186",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号186）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-187",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号187）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-188",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号188）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-189",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号189）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-190",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号190）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-191",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号191）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-192",
+      "family": "smoke-0",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。（资料编号192）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-193",
+      "family": "smoke-1",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。（资料编号193）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-194",
+      "family": "smoke-2",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。（资料编号194）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-195",
+      "family": "smoke-3",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。（资料编号195）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-196",
+      "family": "smoke-4",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。（资料编号196）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-197",
+      "family": "smoke-5",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。（资料编号197）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-198",
+      "family": "smoke-6",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。（资料编号198）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "smoke-199",
+      "family": "smoke-7",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。（资料编号199）"
+      ],
+      "smoke": true,
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    }
+  ]
+}

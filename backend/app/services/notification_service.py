@@ -198,6 +198,9 @@ class NotificationService:
             session.next_public_seq += 1
             db.add(message)
             db.flush()
+            from app.services.causal_audit import published
+
+            published(db, run, message)
             if context_id:
                 db.add(
                     PublicInteractionContext(

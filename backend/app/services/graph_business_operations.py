@@ -164,7 +164,8 @@ def new_offer_in_transaction(db, session, product, policy, terms, proposer, now)
 
 
 def resolve_offer_in_transaction(
-    db, session, product, policy, payload, now, fault, semantic_candidate=None
+    db, session, product, policy, payload, now, fault, semantic_candidate=None,
+    audit_authorized=lambda: None,
 ):
     """新买家提案、替代、自动接受/审批/合法还价在同一事务内完成。"""
     if product.status != ProductStatus.AVAILABLE:
@@ -213,6 +214,7 @@ def resolve_offer_in_transaction(
             and proof.product_hash == product_hash(product)
             and same_semantics
         ):
+            audit_authorized()
             approval = db.scalar(
                 select(ApprovalRequest).where(ApprovalRequest.offer_id == current.id)
             )
@@ -233,6 +235,7 @@ def resolve_offer_in_transaction(
         raise Conflict("还价候选自身未获自动授权")
     # 价格过低的正式提案仍计轮，但不得取消之前有效的报价或审批。
     rejected = authorization.is_acceptance_prohibited and not payload.counter_terms
+    audit_authorized()
     if not rejected:
         from app.services.approval_lifecycle import invalidate_offer
 
@@ -299,7 +302,9 @@ def resolve_offer_in_transaction(
     return result
 
 
-def confirm_in_transaction(db, session, product, policy, payload, run, now):
+def confirm_in_transaction(
+    db, session, product, policy, payload, run, now, audit_authorized=lambda: None,
+):
     offer = db.get(Offer, payload.offer_id, with_for_update=True)
     ack = (
         db.get(DisplayAck, run.payload.get("display_receipt_id"))
@@ -322,6 +327,7 @@ def confirm_in_transaction(db, session, product, policy, payload, run, now):
         or context.expires_at <= now
     ):
         raise Conflict("缺少接收前已展示且当前有效的报价确认凭据")
+    audit_authorized()
     session.status = NegotiationStatus.AGREED
     session.confirmed_offer_id = offer.id
     session.confirmed_at = now
@@ -339,7 +345,7 @@ def confirm_in_transaction(db, session, product, policy, payload, run, now):
     return {"outcome": "INTENT_CONFIRMED", "offer_id": offer.id}
 
 
-def lifecycle_in_transaction(db, session, payload, now):
+def lifecycle_in_transaction(db, session, payload, now, audit_authorized=lambda: None):
     offer = (
         db.get(Offer, session.current_offer_id, with_for_update=True)
         if session.current_offer_id
@@ -352,6 +358,7 @@ def lifecycle_in_transaction(db, session, payload, now):
         or offer.status not in {OfferStatus.PROPOSED, OfferStatus.ACCEPTED}
     ):
         raise Conflict("只能撤回当前有效报价")
+    audit_authorized()
     from app.services.approval_lifecycle import close_drafts, invalidate_offer
 
     invalidate_offer(db, session, offer, now, "CLOSED" if payload.kind == "CLOSE" else "WITHDRAWN")

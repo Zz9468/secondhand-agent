@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "version": "p5-v1",
+  "content_sha256": "5083ded82f24f3bfd69cc209c93d7cdcefc9e54f3fbb180c7b5da41938aa02eb",
+  "cases": [
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-0",
+      "family": "holdout-condition-0",
+      "turns": [
+        "电池不到98%我就不买，满足这个前提我出900自提。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-1",
+      "family": "holdout-condition-1",
+      "turns": [
+        "只有能证明从没维修过，900自提才作数。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-2",
+      "family": "holdout-condition-2",
+      "turns": [
+        "900自提的前提是你提供原始发票，否则不报价。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-3",
+      "family": "holdout-condition-3",
+      "turns": [
+        "保证七天无理由退货的话，我出900自提。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-4",
+      "family": "holdout-condition-4",
+      "turns": [
+        "明天送到我家才考虑900包邮。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-5",
+      "family": "holdout-condition-5",
+      "turns": [
+        "900自提，必须检测所有部件原装才能执行。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-6",
+      "family": "holdout-condition-6",
+      "turns": [
+        "若电池至少96%且没有拆修，就900自提。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-condition-7",
+      "family": "holdout-condition-7",
+      "turns": [
+        "900包邮到上海，必须先核实实际运费再处理。"
+      ],
+      "risk_class": "condition_omission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    }
+  ]
+}

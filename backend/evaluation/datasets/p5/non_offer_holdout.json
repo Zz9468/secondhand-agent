@@ -1,0 +1,263 @@
+{
+  "schema": 1,
+  "version": "p5-v1",
+  "content_sha256": "02aaac9e2f7e333e1b8dc3533b16c16c5f06d5beb3255fc4a37a743716018d9e",
+  "cases": [
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-0",
+      "family": "holdout-budget-note",
+      "turns": [
+        "记一下我的预算上限是870，暂不出价，先看资料。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-1",
+      "family": "holdout-market-quote",
+      "turns": [
+        "同事刚买了一台880的，这只是行情信息。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-2",
+      "family": "holdout-past-sale",
+      "turns": [
+        "去年我那台卖了910，现在想了解你这台的配件。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-3",
+      "family": "holdout-price-question",
+      "turns": [
+        "标价是不是950？我只是核对页面价格。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-4",
+      "family": "holdout-negated-offer",
+      "turns": [
+        "900我不会出，这里没有任何购买提议。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-5",
+      "family": "holdout-hypothesis",
+      "turns": [
+        "假设预算有920，我也要先检查机器，尚未决定报价。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-6",
+      "family": "holdout-quoted-chat",
+      "turns": [
+        "朋友原话是‘930自提’，那不是我的报价。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-offer-7",
+      "family": "holdout-arithmetic",
+      "turns": [
+        "950减去50是多少？这是计算问题，不是议价。"
+      ],
+      "risk_class": "non_offer_submission",
+      "expected_outcomes": [
+        "NO_ACTION"
+      ]
+    }
+  ]
+}

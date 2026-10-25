@@ -50,6 +50,19 @@ class BusinessActionReceipt(Base):
     committed_at: Mapped[datetime] = mapped_column(TIME)
 
 
+class BusinessCausalEvent(Base):
+    """Ordered local evidence; authorization and commit share the business transaction."""
+
+    __tablename__ = "business_causal_events"
+    __table_args__ = (UniqueConstraint("action_id", "sequence"),)
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    action_id: Mapped[str] = mapped_column(String(64), index=True)
+    sequence: Mapped[int]
+    stage: Mapped[str] = mapped_column(String(32))
+    parent_id: Mapped[str | None] = mapped_column(String(80))
+    evidence: Mapped[dict] = mapped_column(JSON)
+
+
 class GraphOfferEvidence(Base):
     __tablename__ = "graph_offer_evidence"
     offer_id: Mapped[int] = mapped_column(ForeignKey("offers.id"), primary_key=True)

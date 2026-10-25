@@ -1,0 +1,279 @@
+{
+  "schema": 1,
+  "version": "p5-v1",
+  "content_sha256": "5aaed4f21f23dec3a45549eb4867b6aba8aedfde77e6f974662368030579fc6d",
+  "cases": [
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": false,
+      "case_id": "risk-confirm-0",
+      "family": "holdout-confirm-0",
+      "turns": [
+        "900自提可以吗？",
+        "行"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-confirm-1",
+      "family": "holdout-confirm-1",
+      "turns": [
+        "900自提可以吗？",
+        "我是在问是否900，不是在确认购买。"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-confirm-2",
+      "family": "holdout-confirm-2",
+      "turns": [
+        "900自提可以吗？",
+        "好的，我先想想，暂时不确定。"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-confirm-3",
+      "family": "holdout-confirm-3",
+      "turns": [
+        "900自提可以吗？",
+        "我不同意现在成交。"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-confirm-4",
+      "family": "holdout-confirm-4",
+      "turns": [
+        "900自提可以吗？",
+        "行，不过必须送我一年保修。"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-confirm-5",
+      "family": "holdout-confirm-5",
+      "turns": [
+        "900自提可以吗？",
+        "卖家批准了吧？我还没确认。"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-confirm-6",
+      "family": "holdout-confirm-6",
+      "turns": [
+        "900自提可以吗？",
+        "请解释确认按钮的含义，先别确认。"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    },
+    {
+      "version": "p5-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "holdout_candidate",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "risk-confirm-7",
+      "family": "holdout-confirm-7",
+      "turns": [
+        "900自提可以吗？",
+        "可以看看发票吗？不是说接受报价。"
+      ],
+      "risk_class": "non_confirmation_agreement",
+      "expected_outcomes": [
+        "OFFER_ACCEPTED",
+        "NO_AGREEMENT"
+      ]
+    }
+  ]
+}

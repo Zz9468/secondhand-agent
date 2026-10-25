@@ -78,6 +78,17 @@ class BusinessCommandService:
                 payload = payload.model_copy(update={"terms": terms})
             if session.status in {NegotiationStatus.AGREED, NegotiationStatus.CLOSED}:
                 raise Conflict("会话已经结束")
+            from app.services import causal_audit
+
+            evidence = causal_audit.input_basis(
+                db, run, session, product, policy, payload, candidate, quote, evaluations
+            )
+            causal_audit.append(db, key, 1, evidence)
+
+            def audit_authorized():
+                causal_audit.append(db, key, 2, evidence)
+                self.fault("authorization")
+
             if payload.kind in {"SUBMIT", "REPLACE"}:
                 result = resolve_offer_in_transaction(
                     db,
@@ -88,6 +99,7 @@ class BusinessCommandService:
                     now,
                     self.fault,
                     semantic_candidate=candidate,
+                    audit_authorized=audit_authorized,
                 )
                 if quote:
                     from app.db.models.semantic import SemanticOfferBasis
@@ -109,9 +121,11 @@ class BusinessCommandService:
                         approval = db.get(ApprovalRequest, result["approval_id"])
                         approval.expires_at = min(approval.expires_at, quote.expires_at)
             elif payload.kind == "CONFIRM":
-                result = confirm_in_transaction(db, session, product, policy, payload, run, now)
+                result = confirm_in_transaction(
+                    db, session, product, policy, payload, run, now, audit_authorized
+                )
             elif payload.kind in {"WITHDRAW", "CLOSE"}:
-                result = lifecycle_in_transaction(db, session, payload, now)
+                result = lifecycle_in_transaction(db, session, payload, now, audit_authorized)
             else:
                 raise Conflict("查询不是业务命令")
             result = {**result, "business_version": session.version}
@@ -127,6 +141,7 @@ class BusinessCommandService:
                 )
             )
             db.flush()
+            causal_audit.committed(db, key, evidence, result, session.version)
             self.fault("receipt")
             source = notification_in_transaction(db, run, result, now)
             self.fault("notification")
