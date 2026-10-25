@@ -97,6 +97,8 @@ def build_semantic_graph(
                 with queue.factory() as db, db.begin():
                     current, _ = lock_owner(db, state["run_id"], owner, queue.clock())
                     timeout = model_timeout(db, current, queue.clock())
+                    if not quality:
+                        timeout = min(timeout, 20)
                 value, used, actual_cost = model(
                     payload.text, call_context, {**config, "request_timeout": timeout}
                 )

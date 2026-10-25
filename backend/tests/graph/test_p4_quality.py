@@ -422,9 +422,11 @@ def test_context_artifact_without_checkpoint_requires_recovery(quality_case):
     from app.runtime.recovery import RecoveryConflict
 
     c = quality_case
+
     def crash(point):
         if point == "after_context":
             raise RuntimeError("crash after context")
+
     c.runner.fault = crash
     run = turn(c, "900自提", execute=False)
     with pytest.raises(RuntimeError):
@@ -448,6 +450,38 @@ def test_public_receipt_numbers_accept_equivalent_decimal_but_reject_invented_pr
     with c.factory() as db:
         evidence = reply_evidence(db, db.get(NegotiationInput, run), c.clock())
     ids = [i["id"] for i in evidence["items"]]
-    assert candidate_safe(ReplyCandidate(text="900元报价已接受，等待最终确认。", covered_ids=ids),
-                          evidence)
+    assert candidate_safe(
+        ReplyCandidate(text="900元报价已接受，等待最终确认。", covered_ids=ids), evidence
+    )
     assert not candidate_safe(ReplyCandidate(text="950元报价已接受。", covered_ids=ids), evidence)
+
+
+def test_p4_displayed_history_uses_receipt_sequence_not_database_timezone(quality_case):
+    c = quality_case
+    first = turn(c, "900自提")
+    _, ack = show(c, first)
+    second = turn(c, "行", [intent("行", "CONFIRM_INTENT")], display_receipt_id=ack)
+    with c.factory() as db:
+        item = db.get(GraphTurnQuality, second)
+        assert item.context["displayed_messages"][0]["message_id"] == message(c, first).id
+    assert result(c, second)["outcome"] == "INTENT_CONFIRMED"
+
+
+def test_p4_end_finalization_after_original_deadline_does_not_reset_budget(quality_case):
+    c = quality_case
+
+    def crash(point):
+        if point == "after_end":
+            raise RuntimeError("end persisted")
+
+    c.runner.fault = crash
+    run = turn(c, "900自提", execute=False)
+    with pytest.raises(RuntimeError):
+        c.runner.run(run)
+    calls = len(ledger_rows(c, run))
+    c.clock.advance(3600)
+    c.runner.fault = lambda _: None
+    c.runner.run(run)
+    assert len(ledger_rows(c, run)) == calls
+    with c.factory() as db:
+        assert db.get(NegotiationSession, c.sid).last_resolved_input_seq == 1

@@ -275,7 +275,12 @@ class InputQueue:
 
             settle(run, now)
             deadline = lease_deadline(db, run, now, lease_seconds)
-            cleanup_only = task.last_manual_action == "TERMINATE"
+            from app.db.models.graph import NotificationDelivery
+
+            delivery = db.get(NotificationDelivery, f"turn:{run_id}:reply")
+            cleanup_only = task.last_manual_action == "TERMINATE" or (
+                delivery and delivery.status == "PUBLISHED"
+            )
             if cleanup_only:
                 deadline = now + timedelta(seconds=15)
             if deadline <= now:

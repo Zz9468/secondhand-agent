@@ -63,7 +63,6 @@ def build_context(db, run, session, now):
             .where(
                 Message.session_id == run.session_id,
                 Message.public_seq <= run.seen_public_message_seq,
-                Message.created_at <= run.received_at,
             )
             .order_by(Message.public_seq.desc())
             .limit(4)
@@ -170,7 +169,6 @@ def load_context(db, run):
             or not source.public_seq
             or source.public_seq != message["public_seq"]
             or source.public_seq > run.seen_public_message_seq
-            or source.created_at > run.received_at
             or source.content != message["text"]
         ):
             raise Conflict("摘要展示来源越界")
