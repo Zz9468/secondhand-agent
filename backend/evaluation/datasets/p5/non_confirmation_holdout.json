@@ -1,10 +1,10 @@
 {
   "schema": 1,
-  "version": "p5-confirm-development-v2",
-  "content_sha256": "cf2cc00d6f555af22c76e59b19e346a06efc4673323929eabd15448785ca89af",
+  "version": "p5-confirmation-development-v3",
+  "content_sha256": "e716e9fe3a82340bfc020994a67890c5bcef6baf176b2f5ace9d154c6ca5eba5",
   "cases": [
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -78,7 +78,7 @@
       }
     },
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -112,7 +112,7 @@
       ]
     },
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -143,10 +143,16 @@
       "expected_outcomes": [
         "OFFER_ACCEPTED",
         "NO_AGREEMENT"
-      ]
+      ],
+      "required_replies": {
+        "1": [
+          "不同意",
+          "没有执行最终确认"
+        ]
+      }
     },
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -180,7 +186,7 @@
       ]
     },
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -214,7 +220,7 @@
       ]
     },
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -248,7 +254,7 @@
       ]
     },
     {
-      "version": "p5-confirm-development-v2",
+      "version": "p5-confirmation-development-v3",
       "origin": "synthetic_agent_authored",
       "split": "development_regression",
       "human_labelled": false,
@@ -282,6 +288,6 @@
       ]
     }
   ],
-  "previous_content_sha256": "5aaed4f21f23dec3a45549eb4867b6aba8aedfde77e6f974662368030579fc6d",
+  "previous_content_sha256": "cf2cc00d6f555af22c76e59b19e346a06efc4673323929eabd15448785ca89af",
   "migration_reason": "All candidates are quarantined development; add second-turn displayed-price answer check without changing source turns or authorization"
 }

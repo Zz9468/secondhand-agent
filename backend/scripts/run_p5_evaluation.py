@@ -19,6 +19,11 @@ def main():
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--legacy", action="store_true")
     parser.add_argument("--remote", action="store_true")
+    parser.add_argument(
+        "--trace-local",
+        action="store_true",
+        help="Record sanitized native callbacks locally even when remote quota is unavailable",
+    )
     args = parser.parse_args()
     if args.output.exists() or args.repetitions < 1 or not 1 <= args.concurrency <= 8:
         parser.error("use a new output directory, positive repetitions and concurrency 1..8")

@@ -21,12 +21,13 @@ from dotenv import dotenv_values
 from sqlalchemy.engine import make_url
 
 from app.core.config import get_settings
-from app.p0.tracing import trace_client
 from app.runtime.contracts import digest
 from app.semantic.model import PROMPTS, SemanticModel
 from app.semantic.quality import PROMPTS as QUALITY_PROMPTS
 from evaluation.p5.datasets import load_cases
+from evaluation.p5.legacy_config import SHARED_MODEL_CONFIG, configuration_audit
 from evaluation.p5.official import (
+    AUXILIARY_MODEL_CONFIG,
     BUYER_PROMPT,
     CONSULTATION_PREFIX,
     JUDGE_PROMPT,
@@ -37,6 +38,7 @@ from evaluation.p5.official import (
 from evaluation.p5.references import public_fixture_reference
 from evaluation.p5.scoring import acceptance, percentile, risk_report
 from evaluation.p5.target import GraphTarget, score_case
+from evaluation.p5.trace_journal import JournalTraceClient, journal_summary
 from scripts.query_native_traces import query_native_traces
 from scripts.run_p0_tests import ROOT, mysql_admin
 
@@ -90,6 +92,8 @@ def metadata(cases):
         "temperature": 0,
         "enable_thinking": False,
         "sdk_retries": 0,
+        "shared_model_config": SHARED_MODEL_CONFIG,
+        "auxiliary_model_config": AUXILIARY_MODEL_CONFIG,
         "experiment_spend_cap": None,
         "runtime_budget": {"calls": 10, "tokens": 180000, "active_seconds": 120},
         "cost_rates_per_million": [str(x) for x in SemanticModel().prices()]
@@ -192,6 +196,11 @@ def run_legacy(cases, repetitions, directory, concurrency=1):
         "OBSERVABILITY_LANGSMITH_ENABLED": "false",
         "AGENT_RUNTIME": "V4",
         "MODEL_MAX_RETRIES": "0",
+        "MODEL_TIMEOUT_SECONDS": "45",
+        "MODEL_TEMPERATURE": "0",
+        "MODEL_ENABLE_THINKING": "false",
+        "AGENT_REPLY_REVIEW_ENABLE_THINKING": "false",
+        "AGENT_OUTPUT_TOKEN_RESERVE": "2048",
         "P5_CONCURRENCY": str(concurrency),
         "PYTHONUTF8": "1",
     }
@@ -255,11 +264,13 @@ def run(factory, postgres_url, options):
     lock = threading.Lock()
     settings = get_settings()
     tracing = (
-        trace_client(
+        JournalTraceClient(
+            directory / "native-traces.jsonl",
+            mirror_remote=bool(options.get("remote")),
             api_url=settings.langsmith_endpoint,
             api_key=settings.langsmith_api_key.get_secret_value(),
         )
-        if options.get("remote") and settings.langsmith_api_key
+        if (options.get("remote") or options.get("trace_local")) and settings.langsmith_api_key
         else None
     )
 
@@ -343,6 +354,16 @@ def run(factory, postgres_url, options):
         except Exception as exc:
             report["legacy_error"] = type(exc).__name__
         save()
+    if tracing:
+        from langchain_core.tracers.langchain import wait_for_all_tracers
+
+        wait_for_all_tracers()
+        report["local_native_trace"] = journal_summary(
+            directory / "native-traces.jsonl",
+            {digest(r["run_id"]) for row in report["results"] for r in row.get("runs", [])},
+        )
+        report["local_native_trace"]["sha256"] = sha(directory / "native-traces.jsonl")
+        save()
     if options.get("remote"):
         if tracing:
             try:
@@ -409,6 +430,9 @@ def run(factory, postgres_url, options):
             sum(r.get("business_pass") is True for r in subset) / len(subset) if subset else None
         )
     report["comparison"] = comparison(comparable, rows, report["legacy_results"])
+    report["model_configuration_comparison"] = configuration_audit(
+        report["legacy_results"], meta["model"]
+    )
     report["release_status"] = acceptance(
         report["risk"],
         deterministic="PASS" if rows and all(r.get("business_pass") for r in rows) else "FAIL",

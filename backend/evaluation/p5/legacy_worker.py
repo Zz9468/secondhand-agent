@@ -19,6 +19,7 @@ def main():
     # This standalone worker runs from the archived old checkout. Its script directory
     # remains on sys.path, so the evaluator helper comes from the current pinned runner.
     from langchain_core.callbacks import BaseCallbackHandler
+    from legacy_config import aligned_config, public_call_config
     from legacy_scoring import score_legacy
     from sqlalchemy import create_engine, select
     from sqlalchemy.orm import sessionmaker
@@ -70,8 +71,14 @@ def main():
     class Recorder(BaseCallbackHandler):
         def __init__(self, calls):
             self.calls = calls
+            self.configs = {}
 
-        def on_llm_end(self, response, **kwargs):
+        def on_chat_model_start(self, serialized, messages, *, run_id, **kwargs):
+            self.configs[str(run_id)] = public_call_config(
+                serialized, kwargs.get("invocation_params", {})
+            )
+
+        def on_llm_end(self, response, *, run_id, **kwargs):
             usage = response.generations[0][0].message.usage_metadata or {}
             inp, out = usage.get("input_tokens"), usage.get("output_tokens")
             cost = None
@@ -85,18 +92,38 @@ def main():
                     "status": "OK",
                     "tokens": usage.get("total_tokens"),
                     "estimated_cny": str(cost) if cost is not None else None,
+                    "model_config": self.configs.pop(str(run_id), None),
                 }
             )
 
-        def on_llm_error(self, error, **kwargs):
+        def on_llm_error(self, error, *, run_id, **kwargs):
+            usage = getattr(getattr(error, "completion", None), "usage", None)
+            inp, out = (
+                getattr(usage, "prompt_tokens", None),
+                getattr(usage, "completion_tokens", None),
+            )
+            cost = (
+                (
+                    Decimal(inp) * settings.model_input_price_per_million
+                    + Decimal(out) * settings.model_output_price_per_million
+                )
+                / 1000000
+                if inp is not None and out is not None and settings.model_cost_is_configured
+                else None
+            )
             self.calls.append(
                 {
                     "status": "ERROR",
-                    "tokens": None,
-                    "estimated_cny": None,
+                    "tokens": getattr(usage, "total_tokens", None),
+                    "estimated_cny": str(cost) if cost is not None else None,
                     "error_type": type(error).__name__,
+                    "model_config": self.configs.pop(str(run_id), None),
                 }
             )
+
+    class AlignedDecisionProvider(LangChainDecisionProvider):
+        def invoke_agent(self, messages, tools, config, *, purpose="REACT"):
+            return super().invoke_agent(messages, tools, aligned_config(config), purpose=purpose)
 
     def execute(item):
         case, repeat = item["case"], item["repeat"]
@@ -110,7 +137,19 @@ def main():
             "auxiliary_calls": [],
             "recorded_calls": [],
         }
-        model = QwenChatModelFactory().create(settings)
+        model = (
+            QwenChatModelFactory()
+            .create(settings)
+            .model_copy(
+                update={
+                    "max_tokens": 2048,
+                    "temperature": 0,
+                    "request_timeout": 45,
+                    "max_retries": 0,
+                    "extra_body": {"enable_thinking": False},
+                }
+            )
+        )
         model.callbacks = [Recorder(row["recorded_calls"])]
         policy = case.get(
             "policy", {"minimum_net_price": "750", "auto_accept_threshold": "850", "max_rounds": 6}
@@ -137,7 +176,7 @@ def main():
             )
             product.policy.max_rounds = policy["max_rounds"]
             seller = product.seller_id
-        chat = ChatService(factory, LangChainDecisionProvider(model))
+        chat = ChatService(factory, AlignedDecisionProvider(model))
         try:
             turns = list(case["turns"])
             if case.get("final_action"):

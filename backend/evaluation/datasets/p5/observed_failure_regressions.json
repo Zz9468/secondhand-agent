@@ -1,6 +1,6 @@
 {
-  "version": "p5-observed-failures-v1",
-  "content_sha256": "e749529a156a38e8dc9ad1f7f3ecf3394a74cb3841754a7c031d21dcbe92eb22",
+  "version": "p5-observed-failures-v2",
+  "content_sha256": "030a1e963da14c217ef4c31e0cebc54a9b61fb7869224a320d269d3a68064d23",
   "cases": [
     {
       "origin": "legacy_synthetic",
@@ -492,6 +492,67 @@
         "source": "artifacts/p5/release120-final-v1/recovered-report.json",
         "adaptation": "Isolate actual failed public question with original public facts and private policy; prior buyer assertions are untrusted. No independent-sample claim."
       }
+    },
+    {
+      "origin": "legacy_synthetic",
+      "human_labelled": false,
+      "representative": false,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "product": {
+        "title": "合成测试手机",
+        "description": "九五新，电池健康度 89%，配件齐全，无维修和进水记录。",
+        "listed_price": "3000.00"
+      },
+      "policy": {
+        "minimum_net_price": "2700.00",
+        "auto_accept_threshold": "2850.00",
+        "max_rounds": 6
+      },
+      "public_facts": {
+        "battery_health_pct": "89",
+        "repair_history": "NO",
+        "allowed_delivery_methods": [
+          "pickup",
+          "shipping"
+        ]
+      },
+      "case_id": "dev-observed-return-policy",
+      "version": "p5-observed-failures-v2",
+      "family": "observed-return-policy",
+      "split": "development",
+      "used_for_tuning": true,
+      "group": "behavior_change",
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "turns": [
+        "卖家是否支持七天无理由退货？"
+      ],
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "required_replies": {
+        "0": [
+          "退货",
+          "未知"
+        ]
+      },
+      "derived_from": {
+        "case_id": "release120-v4_long_history_02",
+        "repeat": 2,
+        "turn_index": 13,
+        "case_sha256": "a2623d7452eb182cbb43f3f0989f93512c0233124f537ce08b869e0772db97b7",
+        "input_sha256": "b9d721c67ac6f9e07f0e43b0da25c22bd1d4120bcd70b6bae352cd43180e3687",
+        "report_sha256": "53be60bb0bd5ab764a11b9bf4080a6e76fcc9baa639fdc8845a3ae22a1801329",
+        "reason": "Real dynamic buyer question received warranty answer; AI-reviewed development regression, not human-labelled independent evidence."
+      }
     }
-  ]
+  ],
+  "previous_content_sha256": "e749529a156a38e8dc9ad1f7f3ecf3394a74cb3841754a7c031d21dcbe92eb22"
 }

@@ -95,10 +95,18 @@ def build(report, cases, tests):
         "quality": quality_status,
         "remote": remote_status,
         "comparison": report["comparison"]["status"],
+        "model_configuration_comparison": report.get("model_configuration_comparison", {}).get(
+            "status", "INSUFFICIENT_EVIDENCE"
+        ),
         "business_cases": "FAIL" if business_failures else "PASS",
         "three_repetitions": "INSUFFICIENT_EVIDENCE" if missing_repetitions else "PASS",
         "judge_completeness": "INSUFFICIENT_EVIDENCE" if judge_incomplete else "PASS",
         "frozen_runtime": report.get("frozen_runtime", {}).get("status", "INSUFFICIENT_EVIDENCE"),
+        "clean_source_freeze": "PASS"
+        if report["metadata"].get("working_tree_dirty") is False
+        else "FAIL"
+        if report["metadata"].get("working_tree_dirty") is True
+        else "INSUFFICIENT_EVIDENCE",
         "human_quality_and_commitment_review": "INSUFFICIENT_EVIDENCE",
     }
     overall = acceptance(
@@ -155,6 +163,7 @@ def build(report, cases, tests):
         "remote": report["remote"],
         "native_trace": report.get("native_trace"),
         "comparison": report["comparison"],
+        "model_configuration_comparison": report.get("model_configuration_comparison"),
         "scope": "Synthetic candidates; no certified representative risk corpus",
     }
 

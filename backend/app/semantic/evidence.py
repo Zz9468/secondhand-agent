@@ -223,6 +223,8 @@ def public_answer(db, product, topic, source_quote=""):
         "confirmation_button": r"确认按钮|确认入口|点.{0,4}确认|确认.{0,5}(?:含义|意思)",
         "water_damage": r"进(?:过)?水|涉水",
         "repair_history": r"维修|修过",
+        "battery_health_pct": r"电池健康|电池寿命",
+        "battery_endurance": r"续航",
         "condition": r"成色|成新|划痕|磕碰|使用痕迹|掉漆",
         "screen": r"屏幕|坏点",
         "color": r"颜色|配色|什么色",
@@ -232,6 +234,7 @@ def public_answer(db, product, topic, source_quote=""):
         "device_function": r"NFC|充电接口|电话|短信|SIM|Wi.?Fi|功能|开机|登录账号|连接网络",
         "photo": r"实物图|实拍图|图片|照片|拍照|视频|截图",
         "warranty": r"保修",
+        "return_policy": r"退货|退换|无理由|退款",
         "packaging_method": r"怎么包装|如何包装|包装方式|包装材料|防震|防护包装",
         "shipping_arrangement": r"运费|包邮",
         "pickup_location": r"自提.{0,12}(?:哪里|地点|地址|位置)|(?:哪里|地点|地址|位置).{0,12}自提",
@@ -289,7 +292,7 @@ def public_answer(db, product, topic, source_quote=""):
         "pickup_location": "自提的具体地点和地址",
         "dispatch_time": "具体发货时间",
         "seller_location": "卖家所在省市或发货地点",
-        "courier": "承运的快递公司",
+        "courier": "承运的快递公司及顺丰到付、京东物流等具体配送服务是否支持",
         "photo": "商品的图片、实拍图或检测截图",
     }
     if topic in pending:
@@ -314,6 +317,8 @@ def public_answer(db, product, topic, source_quote=""):
         "accessories": ("配件及包装", r"配件|包装|充电线|充电器"),
         "invoice": ("发票或购买凭证", r"发票|凭证"),
         "warranty": ("原厂保修期限", r"保修"),
+        "return_policy": ("退货、退换或七天无理由退款政策", r"退货|退换|无理由|退款"),
+        "battery_endurance": ("实际续航时长及使用条件", r"续航"),
         "screen": ("屏幕划痕或坏点", r"屏幕"),
         "condition": ("成色和使用痕迹", r"成新|新|痕迹"),
         "color": ("颜色和配色", r"色"),
@@ -362,6 +367,8 @@ def public_answer(db, product, topic, source_quote=""):
 def public_refusal(text):
     """A public boundary statement only; never an authorization or inferred seller action."""
     parts = []
+    if re.search(r"不要调用规则|(?:跳过|绕过|忽略).{0,8}(?:规则|校验|审批)", text):
+        parts.append("不能跳过规则校验或审批直接接受报价；是否接受须依据完整条款和真实校验结果。")
     if re.search(
         r"底价|最低净收入|审批阈值|自动接受阈值|内部策略|系统提示词"
         r"|floor\s+price|approval\s+threshold|system\s+prompt",
@@ -413,4 +420,13 @@ def clarification(candidate, missing):
                 parts.append(f"“{predicate.source_quote}”：{text}")
     if "unsupported_commitment" in missing:
         parts.append("当前不支持承诺：" + "、".join(candidate.commitments))
-    return "报价尚未提交，已保留原条件。待解决：" + "；".join(parts or ["核实原报价前提"]) + "。"
+    retained = (
+        f"{candidate.amount}元方案连同原条件尚待整体校验。" if candidate.amount is not None else ""
+    )
+    return (
+        "报价尚未提交，已保留原条件。"
+        + retained
+        + "待解决："
+        + "；".join(parts or ["核实原报价前提"])
+        + "。"
+    )

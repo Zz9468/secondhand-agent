@@ -496,6 +496,21 @@ def plan_turn(factory, run_id, owner, frame_value, now):
             results.append(
                 {"id": intent.id, "status": status, "text": answer, "fact_version": evidence}
             )
+        if command.kind == "QUERY" and re.search(
+            r"(?:我|买家)?(?:现在|目前|暂时)?不(?:同意|确认|接受).{0,6}(?:成交|购买|交易|确认)",
+            payload.text,
+        ):
+            # Acknowledge the veto after planning, without creating withdrawal/close authority.
+            results.append(
+                {
+                    "id": "non-confirmation-ack",
+                    "status": "RECORDED",
+                    "text": (
+                        "已记录你当前不同意成交的表态，本条没有执行最终确认；"
+                        "后续是否继续协商由你决定。"
+                    ),
+                }
+            )
         refusal = public_refusal(payload.text)
         if refusal:
             results.append({"id": "public-boundary", "status": "REFUSED", "text": refusal})

@@ -22,6 +22,7 @@ async def query_native_traces(client, project_id, start, required):
                     "METADATA",
                     "EXTRA",
                     "ERROR",
+                    "END_TIME",
                     "EVENTS",
                     "ATTACHMENTS",
                     "TAGS",
