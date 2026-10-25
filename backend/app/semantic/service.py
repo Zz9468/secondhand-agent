@@ -155,6 +155,20 @@ def safe_frame(frame, text):
         if candidate is None:
             continue
         scope = condition_scope(item, actions, text)
+        # A negative purchase condition reverses the comparison in the quoted fragment.
+        # Validate against the whole branch, not only the model's potentially truncated quote.
+        negative_floor = re.search(
+            r"电池[^，。；！？!?]{0,30}?(?:不到|低于|少于|小于)\s*(\d+(?:\.\d+)?)\s*%"
+            r"[^，。；！？!?]{0,12}?(?:不买|不接受|不考虑|不成交)",
+            scope,
+        )
+        if negative_floor and not any(
+            p.fact == "battery_health_pct" and p.operator == ">="
+            and re.fullmatch(r"\d+(?:\.\d+)?", p.value)
+            and Decimal(p.value) == Decimal(negative_floor[1])
+            for p in candidate.conditions
+        ):
+            return ordered, False
         if re.search(r"如果|只要|前提|的话", scope):
             if not candidate.conditions and not candidate.commitments:
                 return ordered, False

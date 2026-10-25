@@ -39,7 +39,7 @@ include = ["app*", "evaluation*"]
 
 [tool.setuptools.package-data]
 app = ["agent/prompt_resources/*.txt"]
-evaluation = ["scenarios/*.json", "datasets/p5/*.json"]
+evaluation = ["scenarios/*.json", "datasets/p5/*.json", "datasets/p5_development_regressions.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

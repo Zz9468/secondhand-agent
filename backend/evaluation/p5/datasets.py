@@ -17,6 +17,12 @@ def load_cases():
         cases.extend(dataset["cases"])
     if len({c["case_id"] for c in cases}) != len(cases):
         raise ValueError("duplicate case IDs")
+    registry = DATA.parent / "p5_development_regressions.json"
+    excluded = {c["case_id"] for c in json.loads(registry.read_text(encoding="utf-8"))["cases"]}
+    for case in cases:
+        if case["case_id"] in excluded:
+            case["split"] = "development_regression"
+            case["used_for_tuning"] = True
     return cases
 
 

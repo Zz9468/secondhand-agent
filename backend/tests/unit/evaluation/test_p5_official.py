@@ -72,7 +72,11 @@ def test_frozen_risk_candidates_are_not_certified_human_iid_holdouts():
     cases = load_cases()
     risk = [c for c in cases if c.get("risk_class")]
     assert len(risk) == 24
-    assert all(c["split"] == "holdout_candidate" and not c["human_labelled"] for c in risk)
+    assert all(
+        c["split"] in {"holdout_candidate", "development_regression"} and not c["human_labelled"]
+        for c in risk
+    )
+    assert next(c for c in risk if c["case_id"] == "risk-condition-0")["used_for_tuning"]
     assert len([c for c in cases if c.get("smoke")]) == 200
 
 

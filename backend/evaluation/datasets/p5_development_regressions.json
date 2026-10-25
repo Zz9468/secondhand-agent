@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "case_id": "risk-condition-0",
+      "family": "holdout-condition-0",
+      "source_batch": "artifacts/p5/formal-v1/report.json",
+      "source_repeat": 2,
+      "observed": "Model inverted a negative purchase condition to battery <= 98; actual battery 92 and offer ACCEPTED.",
+      "resolution": "Deterministic whole-branch negative-floor polarity check; wrong or omitted predicates cannot execute.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    }
+  ]
+}

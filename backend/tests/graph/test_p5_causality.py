@@ -9,6 +9,7 @@ from app.services.business_command_service import BusinessCommandService
 from evaluation.p5.scoring import auxiliary_trajectory, causal_score
 from tests.graph.test_business import submit
 from tests.graph.test_p4_quality import quality_case  # noqa: F401
+from tests.graph.test_semantic import semantic_case  # noqa: F401
 
 
 def read_chain(factory, run_id):
@@ -98,3 +99,50 @@ def test_official_adapter_replays_identical_payload_after_display(quality_case):
     second = target({"content": text}, thread_id=target.thread_id)
     assert first == second and target.run_ids[0] == target.run_ids[1]
     assert len(read_chain(c.factory, target.run_ids[0])[0]) == 4
+
+
+@pytest.mark.parametrize("operator", ["<=", "==", None, ">="])
+def test_failed_risk_case_negative_battery_condition_never_accepts_92(
+    semantic_case,
+    operator,  # noqa: F811
+):
+    from app.db.models import Offer
+    from tests.graph.test_semantic import candidate, fact, intent, turn
+
+    c = semantic_case
+    fact(c, "battery_health_pct", 92)
+    text = "电池不到98%我就不买，满足这个前提我出900自提。"
+    conditions = (
+        [
+            {
+                "fact": "battery_health_pct",
+                "operator": operator,
+                "value": "98",
+                "source_quote": "电池不到98%",
+            }
+        ]
+        if operator
+        else []
+    )
+    run = turn(c, text, [intent(text, candidate=candidate(conditions=conditions))])
+    with c.factory() as db:
+        assert not db.get(BusinessActionReceipt, f"turn:{run}:action")
+        assert not db.scalar(select(Offer).where(Offer.session_id == c.sid))
+
+
+def test_negative_floor_with_correct_predicate_can_execute_when_fact_satisfies(semantic_case):  # noqa: F811
+    from tests.graph.test_semantic import candidate, fact, intent, result, turn
+
+    c = semantic_case
+    fact(c, "battery_health_pct", 99)
+    text = "电池低于98%就不买，900自提。"
+    conditions = [
+        {
+            "fact": "battery_health_pct",
+            "operator": ">=",
+            "value": "98.0",
+            "source_quote": "电池低于98%",
+        }
+    ]
+    run = turn(c, text, [intent(text, candidate=candidate(conditions=conditions))])
+    assert result(c, run)["outcome"] == "OFFER_ACCEPTED"
