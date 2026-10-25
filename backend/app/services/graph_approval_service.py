@@ -77,11 +77,14 @@ def reconcile_approval(db, session, product, policy, offer, approval, now):
     expired = approval.status == ApprovalStatus.PENDING and approval.expires_at <= now
     if expired or not basis_valid(db, session, product, policy, offer, now):
         reason = "APPROVAL_EXPIRED" if expired else "OFFER_BASIS_INVALID"
+        before = session.version
         current = session.current_offer_id == offer.id
         if current:
             session.version += 1
         # Preserve EXPIRED rather than turning a pending timeout into CANCELLED.
-        invalidate_approval(db, session, approval, now, reason, expired=expired)
+        invalidate_approval(
+            db, session, approval, now, reason, expired=expired, before_version=before
+        )
         invalidate_offer(db, session, offer, now, reason)
 
 

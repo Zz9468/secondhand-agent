@@ -71,7 +71,9 @@ def effect_notice(db, session, approval, outcome, now):
     return source
 
 
-def invalidate_approval(db, session, approval, now, reason, *, expired=False):
+def invalidate_approval(
+    db, session, approval, now, reason, *, expired=False, before_version=None, after_version=None
+):
     if approval.effect_status == "INVALIDATED":
         return
     if approval.status == ApprovalStatus.PENDING:
@@ -91,8 +93,8 @@ def invalidate_approval(db, session, approval, now, reason, *, expired=False):
                 "offer_id": approval.offer_id,
                 "invalid_reason": reason,
             },
-            before_version=session.version,
-            after_version=session.version,
+            before_version=session.version if before_version is None else before_version,
+            after_version=session.version if after_version is None else after_version,
             committed_at=now,
         )
     )
@@ -107,7 +109,8 @@ def invalidate_offer(db, session, offer, now, reason):
         OfferStatus.WITHDRAWN if offer.proposer == OfferProposer.BUYER else OfferStatus.REJECTED
     )
     offer.invalid_reason, offer.invalidated_at = reason, now
-    if session.current_offer_id == offer.id:
+    current = session.current_offer_id == offer.id
+    if current:
         session.current_offer_id = None
         if session.status == NegotiationStatus.WAITING_APPROVAL:
             session.status = NegotiationStatus.ACTIVE
@@ -120,7 +123,17 @@ def invalidate_offer(db, session, offer, now, reason):
         .with_for_update()
     )
     for approval in approvals:
-        invalidate_approval(db, session, approval, now, reason)
+        # Buyer commands increment the session once later in this same transaction.
+        # Reconciliation has already recorded its own invalidation and returns above.
+        invalidate_approval(
+            db,
+            session,
+            approval,
+            now,
+            reason,
+            before_version=session.version,
+            after_version=session.version + int(current),
+        )
     db.flush()  # Release the pending-session unique key before creating the replacement.
 
 

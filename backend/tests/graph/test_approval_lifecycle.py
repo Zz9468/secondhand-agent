@@ -24,6 +24,7 @@ from app.db.models import (
 )
 from app.db.models.graph import (
     ApprovalExecution,
+    BusinessActionReceipt,
     NotificationDelivery,
     OutboxEvent,
     PublicInteractionContext,
@@ -154,6 +155,12 @@ def test_a41_a51_old_decision_cannot_override_buyer_change(case, approved, actio
         a, session = db.get(ApprovalRequest, p.id), db.get(NegotiationSession, sid)
         assert a.status.value == ("APPROVED" if approved else "CANCELLED")
         assert a.effect_status == "INVALIDATED" and a.invalidated_at and a.invalid_reason
+        invalidation = db.get(BusinessActionReceipt, f"approval:{p.id}:invalidate:1")
+        change_receipt = receipt(factory, run)
+        assert (invalidation.before_version, invalidation.after_version) == (
+            change_receipt.before_version,
+            change_receipt.after_version,
+        )
         assert db.get(Offer, p.offer).status.value == "WITHDRAWN"
         assert (
             session.status.value
