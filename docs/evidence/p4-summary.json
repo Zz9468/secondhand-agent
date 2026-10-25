@@ -1,0 +1,541 @@
+{
+  "stage": "17.5 P4",
+  "status": "passed",
+  "recorded_at": "2026-10-25T13:12:50.618566+08:00",
+  "baseline_commit": "4ed1076",
+  "verified_source_commit": "55e912deccd313666a6f104306435bf5f03426f2",
+  "implementation_commits": [
+    "5e4882805615a0473f6a7d25a908c2ba988ae291 feat(p4): add sourced context, durable runtime budgets and reviewed recovery",
+    "39667018b21da9ce06b01887e522a402af187fd3 fix(p4): ground reply review in buyer intents and paginate native traces",
+    "9598999cf8b87045dfcc045a0fd3dc7dce170a84 fix(p4): preserve draft patches and validate public reply amounts",
+    "4eedfcbb44ea22115d7394994855da6cd0bfe967 fix(p4): use causal display order and finalize expired completed turns",
+    "f08d3ed41778f41360c75f5860df603238b3f3f1 test(p4): include reply fallback and durable budget evidence",
+    "ad616955eb5711bc6c1ac241dbd1289f586a5116 fix(p4): scope native tracing to the sanitized graph client",
+    "8187f3b8002da2c3a44cd8d1d2a2607dd960cc76 fix(p4): preserve runtime evidence when rejecting unsafe schema downgrade",
+    "55e912deccd313666a6f104306435bf5f03426f2 test(p4): isolate application schema checks from P0 probe tables"
+  ],
+  "migration": "e45b9c02d7a1",
+  "tests": {
+    "baseline-graph.xml": {
+      "tests": 170,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 218.156,
+      "sha256": "9545c4a1fbf988fd16232a118685399f78cf421643e97f2569a4a8008c2d9f97",
+      "failed_cases": [
+        "test_parallel_apply_and_replace_have_one_serializable_outcome"
+      ]
+    },
+    "legacy-final.xml": {
+      "tests": 628,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 247,
+      "seconds": 108.459,
+      "sha256": "0d87c1009be3ad4813e5550cb9d0b592a97b40ab8e8b4beab1d601cfae271382",
+      "failed_cases": []
+    },
+    "legacy-release.xml": {
+      "tests": 372,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 109.15,
+      "sha256": "53059e75f5357550221541468cdfea10ccb32303e283db8959953b6233bdaddd",
+      "failed_cases": []
+    },
+    "legacy.xml": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0,
+      "seconds": 3.744,
+      "sha256": "529cc18e29c7c700995570108459d3201f67e8a54b420aff9f6990ecbe5168fc",
+      "failed_cases": [
+        "tests.live.test_p4_quality"
+      ]
+    },
+    "live-first.xml": {
+      "tests": 3,
+      "failures": 1,
+      "errors": 1,
+      "skipped": 0,
+      "seconds": 131.063,
+      "sha256": "5bcecd69d9e230099b934b729216e4b5d7bf516fbda93711f56e00427d5905e1",
+      "failed_cases": [
+        "test_p4_live_mixed_question_offer_and_review",
+        "test_p4_live_injection_cannot_authorize_or_leak"
+      ]
+    },
+    "live-release.xml": {
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 232.402,
+      "sha256": "a1aa256a08d7029d5ea92b8e3a6466abd9cabdcbe08c0657b27c2f61ec448813",
+      "failed_cases": []
+    },
+    "live-second.xml": {
+      "tests": 3,
+      "failures": 2,
+      "errors": 1,
+      "skipped": 0,
+      "seconds": 109.58,
+      "sha256": "ed18f974260afa5cb4db5d065f267b9ed152345a775a7bb421ec957c79dfea6e",
+      "failed_cases": [
+        "test_p4_live_mixed_question_offer_and_review",
+        "test_p4_live_memory_correction_keeps_unknown_condition",
+        "test_p4_live_injection_cannot_authorize_or_leak"
+      ]
+    },
+    "live-third.xml": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 111.059,
+      "sha256": "0f21130c09f68bbd5613c11cc0c3fa49065b44e2009963649e144e2b1f956f68",
+      "failed_cases": []
+    },
+    "protocol-final.xml": {
+      "tests": 225,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 346.572,
+      "sha256": "6d73a95de03e487f59b3d63fbb1c80d41b1de629a20429e23ebd38e966b89c0c",
+      "failed_cases": [
+        "test_migration_matches_orm_after_upgrade_downgrade_upgrade"
+      ]
+    },
+    "protocol-release.xml": {
+      "tests": 226,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 342.254,
+      "sha256": "b207ecf4d76c8f1cac7bd2492769074249423bec1fc3387010f669833e0d02ac",
+      "failed_cases": []
+    },
+    "quality-first.xml": {
+      "tests": 14,
+      "failures": 0,
+      "errors": 13,
+      "skipped": 0,
+      "seconds": 39.597,
+      "sha256": "ceb9c7be331309cab975454547ac384494ddf24b2b9abac1d40516e4edf21e2b",
+      "failed_cases": [
+        "test_p4_reply_and_review_are_charged_without_repeating_business",
+        "test_p4_failed_review_or_unsafe_text_uses_true_receipt[error]",
+        "test_p4_failed_review_or_unsafe_text_uses_true_receipt[unsafe]",
+        "test_p4_failed_review_or_unsafe_text_uses_true_receipt[review]",
+        "test_a54_active_time_unknown_cost_and_count_survive_retry",
+        "test_a54_crashed_attempt_is_charged_through_last_lease",
+        "test_a54_reply_deadline_never_extends_and_notification_within_sixty",
+        "test_a55_late_display_and_poisoned_cache_cannot_confirm_old_input",
+        "test_a55_context_provenance_is_checked_after_restore",
+        "test_long_context_keeps_pending_conditions_and_latest_preference",
+        "test_seller_recovery_is_owned_idempotent_and_termination_preserves_receipt",
+        "test_a57_active_and_pending_delivery_block_archive_then_tombstone_blocks_replay",
+        "test_recovery_http_ownership_and_minimal_view"
+      ]
+    },
+    "quality-second.xml": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 51.728,
+      "sha256": "a7d288f52b8507196ffab5a661906c2a69c6e63c82225d96cbc8140924e7413c",
+      "failed_cases": []
+    },
+    "quality-third.xml": {
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 80.795,
+      "sha256": "2348896c1fd147207a7b99073449fa25b558f8e863fbe3e2ad5d3a4a95913357",
+      "failed_cases": []
+    },
+    "unit-final.xml": {
+      "tests": 224,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 11.203,
+      "sha256": "8a48d0c090f6baaca0f653b54776ec9c720d2fb421893cf4e891060730262c38",
+      "failed_cases": []
+    },
+    "unit.xml": {
+      "tests": 224,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 12.033,
+      "sha256": "609617bf588949d38905437701b61066e062be6add6369019ccbf9e388d682ea",
+      "failed_cases": []
+    }
+  },
+  "p4_protocol_cases": 19,
+  "runtime_properties": {
+    "test_a32_independent_supervisor[hang]": {
+      "takeover": "{\"mode\": \"hang\", \"cleanup_required\": false, \"after_expiry_seconds\": 0.09981274604797363, \"takeover\": true}"
+    },
+    "test_a32_independent_supervisor[exit]": {
+      "takeover": "{\"mode\": \"exit\", \"cleanup_required\": false, \"after_expiry_seconds\": 0, \"takeover\": true}"
+    },
+    "test_a32_independent_supervisor[partition]": {
+      "takeover": "{\"mode\": \"partition\", \"cleanup_required\": true, \"after_expiry_seconds\": 0.17062830924987793, \"takeover\": true}"
+    },
+    "test_p4_hung_process_releases_lock_and_notifies_real_receipt": {
+      "hang_to_notification_seconds": "22.48499999998603"
+    }
+  },
+  "live_batches": {
+    "live-first": {
+      "source_commit": "5e4882805615a0473f6a7d25a908c2ba988ae291",
+      "working_tree_dirty": false,
+      "calls": 53,
+      "actual_tokens": 38168,
+      "estimated_cny": "0.0105394",
+      "unknown_usage_calls": 0
+    },
+    "live-second": {
+      "source_commit": "39667018b21da9ce06b01887e522a402af187fd3",
+      "working_tree_dirty": false,
+      "calls": 36,
+      "actual_tokens": 35819,
+      "estimated_cny": "0.0090838",
+      "unknown_usage_calls": 0
+    },
+    "live-third": {
+      "source_commit": "9598999cf8b87045dfcc045a0fd3dc7dce170a84",
+      "working_tree_dirty": false,
+      "calls": 40,
+      "actual_tokens": 41240,
+      "estimated_cny": "0.0106504",
+      "unknown_usage_calls": 0
+    },
+    "live-release": {
+      "source_commit": "55e912deccd313666a6f104306435bf5f03426f2",
+      "working_tree_dirty": true,
+      "calls": 95,
+      "actual_tokens": 166300,
+      "estimated_cny": "0.0400202",
+      "unknown_usage_calls": 0
+    }
+  },
+  "live_all_batches_total": {
+    "calls": 224,
+    "actual_tokens": 281527,
+    "estimated_cny": "0.0702938",
+    "unknown_usage_calls": 0
+  },
+  "final_live_case_count": 34,
+  "final_live_call_purposes": {
+    "parse": 61,
+    "compose": 17,
+    "review": 17
+  },
+  "final_p4_quality": {
+    "input_rounds": 8,
+    "approved": 4,
+    "fallback": 4,
+    "min_context_bytes": 391,
+    "max_context_bytes": 2842,
+    "max_active_ms": 17388,
+    "note": "Business correctness passing does not mean all natural replies passed review."
+  },
+  "native_trace": {
+    "passed": true,
+    "run_count": 147,
+    "names": [
+      "ChatOpenAI",
+      "LangGraph",
+      "commit_business",
+      "compose_reply",
+      "p0_attachment",
+      "p0_error",
+      "p0_trace",
+      "parse_intents",
+      "plan_intents",
+      "prepare_context",
+      "publish_reply",
+      "query_product",
+      "review_reply"
+    ],
+    "run_ids": [
+      "01a17172-4432-7970-99c6-466f7aec268e",
+      "01a17172-442a-7450-9452-60ca82ba2a19",
+      "01a17172-3885-75f3-9874-4d3d49cbb634",
+      "01a17172-384d-7b63-bf50-ebcc5c51d162",
+      "01a17172-352c-7991-80a8-de0096d4f412",
+      "01a17172-34f3-7ca2-bfba-29b0707b29d8",
+      "01a17172-34e6-7e20-96c5-b39e4832ce97",
+      "01a17172-29c4-75b0-b3fd-456b1eae67c1",
+      "01a17172-2987-7e80-ade5-52637a0b9b60",
+      "01a17172-259f-7ab0-a73a-a43519890709",
+      "01a17172-2568-7603-aed2-4fe72b1047c1",
+      "01a17172-255b-77b3-887e-66064fb75764",
+      "01a17172-1c4c-7a41-b81a-43d59902434c",
+      "01a17172-1c15-7023-8312-6cb3b2e26499",
+      "01a17172-18d1-7f00-bd77-be9075ed4c34",
+      "01a17172-189e-7693-bd8e-f2c2ecad21a1",
+      "01a17172-187c-7032-9edf-d7b0be32a3ad",
+      "01a17172-185b-7c72-b5a5-8821c133e356",
+      "01a17172-11d8-7953-ae74-0355532fe6e0",
+      "01a17172-118d-79c3-9123-e6ecc3bf7c0f",
+      "01a17172-1171-7702-bc1b-f9816083e5c1",
+      "01a17172-1168-7e92-a462-a7c24690bfaf",
+      "01a17172-1039-7ca3-a5a3-365565dac0b5",
+      "01a17172-102f-73b2-95bd-090679afc256",
+      "01a17172-03d1-79c2-8b77-70d0028c872d",
+      "01a17172-0398-7863-b469-17eea5a8fd67",
+      "01a17172-0037-7173-bc2c-b9990ff9cade",
+      "01a17171-fffc-7111-85a7-9cbdf5e45395",
+      "01a17171-ffed-7490-b3da-dbcaf0c048ae",
+      "01a17171-f128-75b3-9dc5-f385607db733",
+      "01a17171-f0f2-7483-a370-34bdda274376",
+      "01a17171-ed06-7c92-b02f-a671a3d07ea9",
+      "01a17171-ecce-73a0-be67-d3ebb5fafecc",
+      "01a17171-ecc0-7931-be48-88511910ff24",
+      "01a17171-d819-7220-9350-9bce6ac83fad",
+      "01a17171-d7df-7ce0-aae7-8036163c1aed",
+      "01a17171-d2de-7032-81c1-683e08327c2c",
+      "01a17171-d2a6-7200-a13f-12ae794dd5f4",
+      "01a17171-d285-7953-b374-f22c4a5eac17",
+      "01a17171-d255-73f0-9b96-d6c7778f5f0d",
+      "01a17171-cd3a-77e0-ac92-7809e16ad19e",
+      "01a17171-ccd1-7d50-a561-05ed6f090e83",
+      "01a17171-ccae-70b3-8b8c-dc3dc2c44da7",
+      "01a17171-cc9d-7090-a999-c3d3791e2596",
+      "01a17171-cbd0-7c41-b66f-4d99f91349ed",
+      "01a17171-cbc5-7620-817a-c53a5beaadee",
+      "01a17171-be28-7c30-8fc3-a921c04bbd0c",
+      "01a17171-bdf1-7d23-846c-62ac8afd7d89",
+      "01a17171-ba5b-7071-a811-7d59ca78785e",
+      "01a17171-ba1e-70a0-a763-cff857e6369a",
+      "01a17171-ba10-7ee0-91ee-d3f70e0e559b",
+      "01a17171-b163-77c0-8241-3d374ae01481",
+      "01a17171-b116-7612-a057-68ecd79652f3",
+      "01a17171-ad73-7f41-80ad-d5f7d6eebfbc",
+      "01a17171-ad2c-76b3-a0ec-6005fcbbcd47",
+      "01a17171-ad1d-7992-91da-b3fdd629a141",
+      "01a17171-a583-71e0-b974-b2508a211c5e",
+      "01a17171-a54c-7003-b771-93088d7eb439",
+      "01a17171-a06a-7630-8422-cd0cea3b77da",
+      "01a17171-a031-7612-b182-a442a1c9a7f6",
+      "01a17171-a00c-7030-a398-9d4877b48de3",
+      "01a17171-9fe0-7ca3-a18c-5206beb56da3",
+      "01a17171-994f-7110-8128-0e2d2da7daf1",
+      "01a17171-98ed-7843-8259-087def1b560b",
+      "01a17171-98c4-7092-901d-4eb27ff9157f",
+      "01a17171-98b6-7b41-94f2-4d9335130874",
+      "01a17171-981c-7ef1-9673-cdea45903b38",
+      "01a17171-9815-7c00-b937-c05a990a5f1f",
+      "01a17171-91a2-7dd0-91d7-bc1f6f8af2a9",
+      "01a17171-916d-75d0-b5cf-a8637c82ede7",
+      "01a17171-8c8b-7d22-9886-56206336e9b4",
+      "01a17171-8c52-7343-b347-1dc3c4bc5527",
+      "01a17171-8c30-7993-8dbc-fa2eb426f2f1",
+      "01a17171-8c09-73c1-a531-c4e9892d3008",
+      "01a17171-86fb-7b32-8e33-6d2748b6993c",
+      "01a17171-86a3-78e2-9a04-ddffe67f5cfb",
+      "01a17171-867e-73e3-850d-c463a521d08b",
+      "01a17171-8670-7de1-9e94-ab9a1617a57d",
+      "01a17171-85db-7912-b76e-e7bc3d9ff482",
+      "01a17171-85d4-7453-94c6-5d2767a67f3b",
+      "01a17171-7e3b-7fd0-bebb-4d1db36305d1",
+      "01a17171-7dfd-7342-b7b3-fc1327026520",
+      "01a17171-787e-7793-b0ef-a6a11d418cc4",
+      "01a17171-7842-7fd0-966f-e180981fd7f2",
+      "01a17171-781c-7e21-aef5-3cc8a7cbb9c3",
+      "01a17171-77f6-7e92-872a-5c8b29bc9430",
+      "01a17171-7326-7ff2-aa70-bacb8a6ee566",
+      "01a17171-72cb-71b0-a3af-e360864de7f0",
+      "01a17171-72ad-7153-83d6-964ef1fad856",
+      "01a17171-72a0-7221-97ef-3967a818f0ea",
+      "01a17171-7226-7992-b531-87dfc71594ca",
+      "01a17171-721d-7583-ab6b-03d333456e32",
+      "01a17171-6bee-7242-84f2-36bc56a4a5ca",
+      "01a17171-6bb2-70e0-8d61-ebf6b7ef831d",
+      "01a17171-674b-7b80-943f-71dadbe5abbe",
+      "01a17171-66ff-76c1-bd91-16f8a1313e7d",
+      "01a17171-66f0-7351-a235-83c683cbfe73",
+      "01a17171-602b-7032-b824-8cfa2be55123",
+      "01a17171-5fee-70c0-a51a-421b22f636a8",
+      "01a17171-5c14-7b10-9687-07a4afc4ad0e",
+      "01a17171-5be1-7e53-a793-5abea0505cb1",
+      "01a17171-5bbd-7400-aff6-18e4b9495e1b",
+      "01a17171-5b96-7801-a61a-2c0be5eb5d84",
+      "01a17171-5627-7b20-ae9a-8a845a776130",
+      "01a17171-55d0-7e80-bc6f-b56c39eb283a",
+      "01a17171-55b0-7c71-a9d0-0b5a3286bb1c",
+      "01a17171-55a2-7372-b416-7861a00e7336",
+      "01a17171-54e8-7ba1-9fae-6f4b367f6254",
+      "01a17171-54e0-7e12-84db-836c29da51cf",
+      "01a17171-4d81-7da1-9cc2-f6f1b7e9b445",
+      "01a17171-4d09-73b3-9374-c4198c69a149",
+      "01a17171-480f-7da1-a002-7c9677c21acb",
+      "01a17171-47d4-7571-94f5-65ac3361d3ad",
+      "01a17171-47c6-74c3-a87e-564da4b83f58",
+      "01a17171-3c55-7733-9016-083f91949233",
+      "01a17171-3c1d-77e1-8c99-828eb6b61f68",
+      "01a17171-3761-70e3-b321-405a35aa9700",
+      "01a17171-372c-7bf2-b4eb-47c471347663",
+      "01a17171-371c-7780-80c5-c3f9b99c2b47",
+      "01a17171-2f32-7920-bfac-31f460f728b0",
+      "01a17171-2ef7-7fb0-8cbb-a76f3f942e3c",
+      "01a17171-29d1-7c23-ab6d-c1f1ac98843b",
+      "01a17171-299b-7dd1-ad2b-92ccf2b4d395",
+      "01a17171-2977-7051-a389-7b284d899ebb",
+      "01a17171-294e-7950-843a-dfb88afe1376",
+      "01a17171-21a2-7ff0-8bd1-40df5b9104c6",
+      "01a17171-2143-7e93-81c5-25fef83536da",
+      "01a17171-211a-7552-9e59-ae01947ac677",
+      "01a17171-210d-70d1-8497-fef813b6ec49",
+      "01a17171-1fc9-7062-84ef-fbd0c9a18f53",
+      "01a17171-1fc0-7653-9bb7-8187e91e8d57",
+      "01a17171-1805-72a3-9191-81c2d7de404f",
+      "01a17171-17cb-7040-99f9-6b9c238b9b22",
+      "01a17171-12ed-7872-beb3-4e6bdae9cf96",
+      "01a17171-12b1-7521-be04-e10fa3221b91",
+      "01a17171-126e-7cb3-a618-2d9e6fe9f5ab",
+      "01a17171-1236-7a33-a764-e3af3a7a3326",
+      "01a17171-0a4a-7ba1-9358-e2969cccc641",
+      "01a17171-09c1-7133-817f-f81b8b3e1c82",
+      "01a17171-0996-74d3-b9e8-7231e2872b19",
+      "01a17171-0987-7782-8ab7-626485b817a2",
+      "035133af-21d2-4890-b707-8423f6ef03bc",
+      "01a17171-0527-7f11-914e-bb9d9cb7436b",
+      "01a17171-0520-7af2-a7fb-2988495a96b4",
+      "01a17171-050a-7403-bf0f-89868ea37069",
+      "01a17171-04fc-76b3-816d-12cf808b91c0",
+      "01a17171-04f9-7f22-9ed3-7ebf21f60fa4"
+    ],
+    "query_api": "runs.query (SmithDB v2)",
+    "example_url": "https://smith.langchain.com/o/f7c35c3b-a5c7-4dda-b7a5-4c1ff553058b/projects/p/f3a5232f-8aaa-4c24-842c-64340e02c80b/trace/01a17172-1168-7e92-a462-a7c24690bfaf/run/01a17172-4432-7970-99c6-466f7aec268e?start_time=2026-10-25T05:04:36.402185Z"
+  },
+  "release_checks": {
+    "recorded_at": "2026-10-25T13:10:15.074052+08:00",
+    "source_commit": "55e912deccd313666a6f104306435bf5f03426f2",
+    "migration": {
+      "database": "127.0.0.1:3307/secondhand_langgraph",
+      "from": "d34a8b9c71f0",
+      "to": "e45b9c02d7a1",
+      "upgrade_exit_code": 0,
+      "check_exit_code": 0,
+      "check_result": "No new upgrade operations detected."
+    },
+    "ruff": {
+      "command": "python -m ruff check app evaluation tests scripts migrations",
+      "exit_code": 0,
+      "result": "All checks passed!"
+    },
+    "pip": {
+      "command": "python -m pip check",
+      "exit_code": 0,
+      "result": "No broken requirements found."
+    },
+    "frontend": {
+      "type_check": "passed",
+      "build": "passed",
+      "source": "Earlier command results in this P4 implementation session; frontend files unchanged since validation."
+    },
+    "live_source_note": "Only untracked docs/P4_运行与复验.md at start; tracked implementation and tests were clean. Report intentionally retains working_tree_dirty=true."
+  },
+  "artifacts": {
+    "baseline-graph.xml": {
+      "bytes": 41238,
+      "sha256": "9545c4a1fbf988fd16232a118685399f78cf421643e97f2569a4a8008c2d9f97"
+    },
+    "legacy-final.xml": {
+      "bytes": 157132,
+      "sha256": "0d87c1009be3ad4813e5550cb9d0b592a97b40ab8e8b4beab1d601cfae271382"
+    },
+    "legacy-release.xml": {
+      "bytes": 55467,
+      "sha256": "53059e75f5357550221541468cdfea10ccb32303e283db8959953b6233bdaddd"
+    },
+    "legacy.xml": {
+      "bytes": 761,
+      "sha256": "529cc18e29c7c700995570108459d3201f67e8a54b420aff9f6990ecbe5168fc"
+    },
+    "live-first-trace-recheck.json": {
+      "bytes": 359,
+      "sha256": "56af185caae1b0510bdb2271c6389f8a49f2f21ab921daef29a0467d273e2564"
+    },
+    "live-first.json": {
+      "bytes": 72714,
+      "sha256": "e20e359f1a3b2df72b65ea8214db99d701d5c11b426a53bdddf22f89a27487c9"
+    },
+    "live-first.xml": {
+      "bytes": 3856,
+      "sha256": "5bcecd69d9e230099b934b729216e4b5d7bf516fbda93711f56e00427d5905e1"
+    },
+    "live-release.json": {
+      "bytes": 234295,
+      "sha256": "2ebea880e0b5472d237aca9843271ad7583f19a624874b3310647c1c855f286c"
+    },
+    "live-release.xml": {
+      "bytes": 6489,
+      "sha256": "a1aa256a08d7029d5ea92b8e3a6466abd9cabdcbe08c0657b27c2f61ec448813"
+    },
+    "live-second.json": {
+      "bytes": 52646,
+      "sha256": "d575fb18c87fa3ca1c8ede4be7c7a39da079e56ec4f85518badd1f88b4ded2ed"
+    },
+    "live-second.xml": {
+      "bytes": 2774,
+      "sha256": "ed18f974260afa5cb4db5d065f267b9ed152345a775a7bb421ec957c79dfea6e"
+    },
+    "live-third.json": {
+      "bytes": 68115,
+      "sha256": "c3caae135f49361d26bdcf56d7b0df52b844a1b13c613a07ef9e4b3ac083830d"
+    },
+    "live-third.xml": {
+      "bytes": 791,
+      "sha256": "0f21130c09f68bbd5613c11cc0c3fa49065b44e2009963649e144e2b1f956f68"
+    },
+    "protocol-final.xml": {
+      "bytes": 43402,
+      "sha256": "6d73a95de03e487f59b3d63fbb1c80d41b1de629a20429e23ebd38e966b89c0c"
+    },
+    "protocol-release.xml": {
+      "bytes": 42596,
+      "sha256": "b207ecf4d76c8f1cac7bd2492769074249423bec1fc3387010f669833e0d02ac"
+    },
+    "quality-first.xml": {
+      "bytes": 29566,
+      "sha256": "ceb9c7be331309cab975454547ac384494ddf24b2b9abac1d40516e4edf21e2b"
+    },
+    "quality-second.xml": {
+      "bytes": 2644,
+      "sha256": "a7d288f52b8507196ffab5a661906c2a69c6e63c82225d96cbc8140924e7413c"
+    },
+    "quality-third.xml": {
+      "bytes": 3134,
+      "sha256": "2348896c1fd147207a7b99073449fa25b558f8e863fbe3e2ad5d3a4a95913357"
+    },
+    "release-checks.json": {
+      "bytes": 1027,
+      "sha256": "448f6242c439e3bb2627152ff4bcd287ece17523562c1fdbee8dcf95711f8c3b"
+    },
+    "unit-final.xml": {
+      "bytes": 33599,
+      "sha256": "8a48d0c090f6baaca0f653b54776ec9c720d2fb421893cf4e891060730262c38"
+    },
+    "unit.xml": {
+      "bytes": 33599,
+      "sha256": "609617bf588949d38905437701b61066e062be6add6369019ccbf9e388d682ea"
+    }
+  },
+  "remaining": [
+    "P5 independent held-out risk evaluation, quality/fallback/latency/cost comparison, A58/A59.",
+    "P6 service deployment, restricted residual PostgreSQL session cleanup, alerts and archive storage/purge policy.",
+    "Retain SDK upgrade regression for every native export boundary."
+  ]
+}
