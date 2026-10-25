@@ -9,10 +9,10 @@ from app.api.dependencies import (
 )
 from app.core.config import Settings, get_settings
 from app.db.models import NegotiationSession, Product
-from app.main import create_app
 from tests.fakes import RoutingDecisionProvider, demo_negotiation_decision
 from tests.integration.auth_helpers import authenticate_user
 from tests.integration.factories import create_negotiation, create_user_account
+from tests.legacy_app import create_app
 
 pytestmark = pytest.mark.mysql_integration
 

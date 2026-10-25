@@ -34,13 +34,7 @@ def review(factory, seller_id, approval_id, payload, approved):
             approved=approved,
             expected_revision=payload.expected_effect_revision,
         )
-    operation = service.approve_request if approved else service.reject_request
-    return operation(
-        seller_id=seller_id,
-        approval_id=approval_id,
-        request_id=payload.request_id,
-        comment=payload.comment,
-    )
+    raise ApprovalConflictError("旧版审批需要由原版本服务排空")
 
 
 @router.get("", response_model=SellerApprovalListResponse)

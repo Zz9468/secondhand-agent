@@ -14,6 +14,7 @@ def graph_session_factory(url):
         pool_recycle=1800,
         pool_size=3,
         max_overflow=1,
+        pool_timeout=3,
         connect_args={"connect_timeout": 3, "read_timeout": 5, "write_timeout": 5},
     )
     return sessionmaker(engine, expire_on_commit=False)

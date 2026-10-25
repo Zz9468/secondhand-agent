@@ -495,7 +495,7 @@ def test_p4_downgrade_cannot_erase_paid_artifacts_or_runtime_budget(quality_case
                                  .render_as_string(hide_password=False)},
                             capture_output=True, timeout=30)
     # A newer evidence-preserving migration may block the downgrade before P4 is reached.
-    assert result.returncode != 0 and any(stage in result.stderr for stage in (b"P4", b"P5"))
+    assert result.returncode != 0 and any(stage in result.stderr for stage in (b"P4", b"P5", b"P6"))
     assert ledger_rows(c, run)
     with c.factory() as db:
         assert db.get(GraphTurnQuality, run).approved

@@ -19,7 +19,7 @@ from app.runtime.graph_runner import GraphRunner
 from app.services.graph_approval_service import GraphApprovalService
 
 
-def run_batch(factory, postgres_url, *, limit=20):
+def run_batch(factory, postgres_url, *, limit=20, progress=lambda: None):
     runner = GraphRunner(factory, postgres_url)
     now = utcnow()
     result = {
@@ -47,6 +47,7 @@ def run_batch(factory, postgres_url, *, limit=20):
             )
         )
     for sid in sessions:
+        progress()
         try:
             lifecycle.reconcile_offer(sid)
             result["reconciled"] += 1
@@ -129,6 +130,7 @@ def run_batch(factory, postgres_url, *, limit=20):
         )
     # 到期通知优先履行，即使当前输入无法从 checkpoint 恢复。
     for source in notifications:
+        progress()
         try:
             result["notified"] += int(runner.notify(source) is not None)
         except ThreadBusy:
@@ -136,11 +138,12 @@ def run_batch(factory, postgres_url, *, limit=20):
         except Exception:
             result["failed"] += 1
     for run_id in candidates:
+        progress()
         try:
             if runner.queue.read(run_id)["graph_version"] == "negotiation-v3":
                 from app.runtime.supervisor import run_supervised
 
-                completed = run_supervised(factory, postgres_url, run_id)
+                completed = run_supervised(factory, postgres_url, run_id, progress=progress)
                 result["completed"] += int(completed)
                 result["failed"] += int(not completed)
             else:
@@ -150,6 +153,7 @@ def run_batch(factory, postgres_url, *, limit=20):
         except Exception:
             result["failed"] += 1
     for approval_id in approvals:
+        progress()
         try:
             result["approvals"] += int(
                 ApprovalRunner(factory, postgres_url).run(approval_id) is not None
@@ -174,10 +178,20 @@ def main():
         raise RuntimeError("checkpoint 数据库未配置")
     if not 1 <= args.batch_size <= 200:
         parser.error("batch-size 必须在 1 到 200 之间")
+    from app.runtime.operations import instance_id, pulse
+
     factory = graph_session_factory(settings.database_url)
+    identity = instance_id()
+
+    def progress():
+        pulse(factory, "worker", identity)
+
     try:
         while True:
-            result = run_batch(factory, settings.checkpoint_database_url, limit=args.batch_size)
+            progress()
+            result = run_batch(
+                factory, settings.checkpoint_database_url, limit=args.batch_size, progress=progress
+            )
             if args.once or any(result.values()):
                 print(result, flush=True)
             if args.once:

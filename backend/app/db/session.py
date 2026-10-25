@@ -13,6 +13,10 @@ def get_engine() -> Engine:
         settings.database_url,
         pool_pre_ping=True,
         pool_recycle=1800,
+        pool_size=5,
+        max_overflow=5,
+        pool_timeout=3,
+        connect_args={"connect_timeout": 3, "read_timeout": 5, "write_timeout": 5},
     )
 
 

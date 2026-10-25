@@ -18,7 +18,7 @@ def lock_key(thread_id: str) -> int:
 
 
 @contextmanager
-def locked_saver(url: str, thread_id: str, *, instance: str = "p0"):
+def locked_saver(url: str, thread_id: str, *, instance: str = "p0", on_connect=None):
     # No pool, reconnect or setup here. A failed connection ends this runner.
     with psycopg.connect(
         url,
@@ -29,6 +29,8 @@ def locked_saver(url: str, thread_id: str, *, instance: str = "p0"):
         application_name=f"secondhand-p0:{instance}",
         options="-c statement_timeout=5000 -c lock_timeout=2000",
     ) as connection:
+        if on_connect:
+            on_connect(connection)
         key = lock_key(thread_id)
         acquired = connection.execute(
             "SELECT pg_try_advisory_lock(%s) AS acquired", (key,)

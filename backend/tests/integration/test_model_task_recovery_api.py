@@ -13,10 +13,10 @@ from app.db.models import (
     NegotiationSession,
     Product,
 )
-from app.main import create_app
 from app.services.model_task_service import ModelTaskService
 from tests.integration.auth_helpers import authenticate_user
 from tests.integration.factories import create_negotiation, create_user_account
+from tests.legacy_app import create_app
 
 pytestmark = pytest.mark.mysql_integration
 

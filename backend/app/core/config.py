@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",
         env_file_encoding="utf-8",
+        env_ignore_empty=True,
         case_sensitive=False,
         extra="ignore",
         populate_by_name=True,
@@ -26,6 +27,7 @@ class Settings(BaseSettings):
     database_url: str
     checkpoint_database_url: str | None = None
     graph_chat_enabled: bool = True
+    graph_require_services: bool = False
     graph_langsmith_tracing: bool = False
     langsmith_api_key: SecretStr | None = None
     langsmith_endpoint: str = "https://api.smith.langchain.com"

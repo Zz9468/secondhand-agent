@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.api.dependencies import get_session_factory_dependency
 from app.core.config import Settings, get_settings
 from app.db.models import Message, MessageRole
-from app.main import create_app
 from app.services.negotiation_service import NegotiationService
 from app.services.pricing_service import OfferTerms, ShippingPayer
 from tests.integration.auth_helpers import authenticate_user
 from tests.integration.factories import create_negotiation, create_user_account
+from tests.legacy_app import create_app
 
 pytestmark = pytest.mark.mysql_integration
 

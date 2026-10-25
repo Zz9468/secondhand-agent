@@ -14,3 +14,6 @@ class ReadinessResponse(BaseModel):
     database: Literal["ok"]
     model: Literal["configured", "not_configured"]
     authentication: Literal["configured", "not_configured"]
+    checkpoint: Literal["ok", "unavailable"] | None = None
+    worker: Literal["ok", "unavailable"] | None = None
+    watchdog: Literal["ok", "unavailable"] | None = None

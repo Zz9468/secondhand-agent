@@ -52,6 +52,9 @@ def pg_admin_config(config, database="postgres"):
 
 
 def initialize_checkpoint(admin_url):
+    from app.persistence.setup import initialize_checkpoint as initialize_graph_checkpoint
+
+    initialize_graph_checkpoint(admin_url, cleaner_role="checkpoint_cleaner")
     with psycopg.connect(admin_url, autocommit=True, row_factory=dict_row) as db:
         PostgresSaver(db).setup()
         # PostgreSQL otherwise lets a role terminate other sessions of the same role.

@@ -18,8 +18,8 @@ from app.core.security import (
     verify_password,
 )
 from app.db.models import UserAccount
-from app.main import create_app
 from tests.integration.factories import create_negotiation
+from tests.legacy_app import create_app
 
 pytestmark = pytest.mark.mysql_integration
 

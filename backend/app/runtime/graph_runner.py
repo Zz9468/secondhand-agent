@@ -43,13 +43,23 @@ class GraphRunner:
             return self._run(run_id)
 
     def _run(self, run_id):
+        import os
+
+        from app.runtime.operations import attach_owner, instance_id, register_instance
+
+        instance = os.environ.get("GRAPH_EXECUTION_INSTANCE") or instance_id()
         run = self.queue.read(run_id)
         config = {
             "configurable": {"thread_id": thread_id(run["session_id"])},
             "metadata": {"run_ref": digest(run_id), "graph_version": run["graph_version"]},
         }
         with locked_saver(
-            self.postgres_url, config["configurable"]["thread_id"], instance=run_id
+            self.postgres_url,
+            config["configurable"]["thread_id"],
+            instance=f"graph-{instance}",
+            on_connect=lambda connection: register_instance(
+                self.factory, run_id, instance, connection
+            ),
         ) as (saver, _):
             with self.factory() as db:
                 task = db.get(ModelExecutionTask, run["task_id"])
@@ -61,6 +71,7 @@ class GraphRunner:
             if not owner:
                 return None
             try:
+                attach_owner(self.factory, run_id, instance, owner)
                 self.fault("after_claim")
                 from app.semantic.contracts import QUALITY_VERSION, SEMANTIC_VERSIONS
 

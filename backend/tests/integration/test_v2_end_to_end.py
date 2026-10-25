@@ -16,13 +16,13 @@ from app.api.dependencies import (
 )
 from app.core.config import Settings, get_settings
 from app.db.models import ApprovalRequest, NegotiationSession, Product
-from app.main import create_app
 from app.services.chat_service import BuyerOfferSubmission, ChatService
 from app.services.pricing_service import ShippingPayer
 from app.workers.approval_processor import ApprovalProcessor
 from tests.fakes import RoutingDecisionProvider, demo_negotiation_decision
 from tests.integration.auth_helpers import authenticate_user
 from tests.integration.factories import create_negotiation
+from tests.legacy_app import create_app
 
 pytestmark = pytest.mark.mysql_integration
 

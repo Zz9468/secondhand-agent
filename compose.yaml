@@ -6,10 +6,30 @@ x-backend-service: &backend-service
     context: ./backend
     args:
       BASE_REGISTRY: ${DOCKER_REGISTRY:-docker.io}
-  env_file:
-    - .env
-  environment:
-    DATABASE_URL: ${CONTAINER_DATABASE_URL:?Run bootstrap_p0 first}
+  environment: &runtime-environment
+    DATABASE_URL: ${CONTAINER_DATABASE_URL:?Run bootstrap_p6 first}
+    CHECKPOINT_DATABASE_URL: ${CONTAINER_CHECKPOINT_DATABASE_URL:?Run bootstrap_p6 first}
+    GRAPH_CHAT_ENABLED: ${GRAPH_CHAT_ENABLED:-true}
+    GRAPH_REQUIRE_SERVICES: "true"
+    GRAPH_LANGSMITH_TRACING: ${GRAPH_LANGSMITH_TRACING:-false}
+    LANGSMITH_TRACING: "false"
+    LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+    LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT:-https://api.smith.langchain.com}
+    AUTH_SECRET: ${AUTH_SECRET:?Run bootstrap_p6 first}
+    AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+    DEMO_SELLER_PASSWORD: ${DEMO_SELLER_PASSWORD:?Run bootstrap_p6 first}
+    CORS_ORIGINS: ${CORS_ORIGINS:-["http://localhost:5174","http://127.0.0.1:5174"]}
+    MODEL_PROVIDER: ${MODEL_PROVIDER:-qwen}
+    MODEL_NAME: ${MODEL_NAME:-qwen3.7-flash}
+    MODEL_API_KEY: ${MODEL_API_KEY:-}
+    MODEL_BASE_URL: ${MODEL_BASE_URL:-}
+    MODEL_ENABLE_THINKING: ${MODEL_ENABLE_THINKING:-false}
+    MODEL_TIMEOUT_SECONDS: ${MODEL_TIMEOUT_SECONDS:-30}
+    MODEL_MAX_RETRIES: "0"
+    MODEL_INPUT_PRICE_PER_MILLION: ${MODEL_INPUT_PRICE_PER_MILLION:-}
+    MODEL_OUTPUT_PRICE_PER_MILLION: ${MODEL_OUTPUT_PRICE_PER_MILLION:-}
+    MODEL_CACHED_INPUT_PRICE_PER_MILLION: ${MODEL_CACHED_INPUT_PRICE_PER_MILLION:-}
+    MODEL_COST_CURRENCY: ${MODEL_COST_CURRENCY:-CNY}
     EVALUATION_GIT_COMMIT: ${EVALUATION_GIT_COMMIT:-}
     EVALUATION_GIT_WORKTREE_DIRTY: ${EVALUATION_GIT_WORKTREE_DIRTY:-}
 
@@ -65,6 +85,8 @@ services:
     depends_on:
       seed:
         condition: service_completed_successfully
+      checkpoint-setup:
+        condition: service_completed_successfully
     healthcheck:
       test:
         - CMD
@@ -79,10 +101,54 @@ services:
   worker:
     <<: *backend-service
     restart: unless-stopped
-    command: ["python", "-m", "app.workers.model_task_worker"]
+    command: ["python", "-m", "app.workers.graph_worker"]
     depends_on:
       seed:
         condition: service_completed_successfully
+      checkpoint-setup:
+        condition: service_completed_successfully
+    init: true
+    stop_grace_period: 15s
+    healthcheck:
+      test: ["CMD", "python", "-m", "scripts.service_health", "worker"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  watchdog:
+    <<: *backend-service
+    restart: unless-stopped
+    command: ["python", "-m", "app.workers.graph_watchdog"]
+    environment:
+      DATABASE_URL: ${CONTAINER_DATABASE_URL:?Run bootstrap_p6 first}
+      CHECKPOINT_CLEANER_URL: ${CONTAINER_CHECKPOINT_CLEANER_URL:?Run bootstrap_p6 first}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      checkpoint-setup:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "scripts.service_health", "watchdog"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  checkpoint-setup:
+    <<: *backend-service
+    restart: "no"
+    command: ["python", "-m", "scripts.setup_checkpoint"]
+    environment:
+      POSTGRES_HOST: checkpoint
+      POSTGRES_DB: ${POSTGRES_DB:-secondhand_checkpoints}
+      POSTGRES_USER: ${POSTGRES_USER:-checkpoint_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run bootstrap_p6 first}
+      CHECKPOINT_PASSWORD: ${CHECKPOINT_PASSWORD:?Run bootstrap_p6 first}
+      GRAPH_CLEANER_PASSWORD: ${GRAPH_CLEANER_PASSWORD:?Run bootstrap_p6 first}
+    depends_on:
+      checkpoint:
+        condition: service_healthy
 
   frontend:
     image: secondhand-agent-langgraph-frontend:local
@@ -95,6 +161,10 @@ services:
       - "127.0.0.1:${FRONTEND_PORT:-5174}:80"
     depends_on:
       api:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+      watchdog:
         condition: service_healthy
 
   checkpoint:
