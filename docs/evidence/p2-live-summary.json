@@ -1,0 +1,2265 @@
+{
+  "stage": "17.3 P2",
+  "status": "passed",
+  "recorded_at": "2026-10-25T09:21:16.648261+08:00",
+  "implementation_commit": "e8c36f61dbbbd1cebb4a431f3827e731b18f22c9",
+  "authorization": "2026-10-25 user authorized continued P2 work, model calls without a cap",
+  "scope": "P2 development acceptance; not independent P5 risk or production acceptance",
+  "real_model_calls": 494,
+  "known_actual_tokens": 967030,
+  "known_estimated_cny": "0.2379182",
+  "unknown_usage_calls": 1,
+  "unknown_conservative_reserved_cny": "0.034504",
+  "known_plus_unknown_upper_estimate_cny": "0.2724222",
+  "reports": [
+    {
+      "file": "live-extended-01.json",
+      "sha256": "7ec7978c915e848cf063023b0344c5fabc49a475d4c52921ae41583af326a0a4",
+      "passed": false,
+      "prompt_version": "p2-intents-v1",
+      "source_commit": "e076da737aac899d78a377890c1c1db48b009e26",
+      "calls": 20,
+      "tokens": 31040,
+      "estimated_known_cny": "0.0083182",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-02.json",
+      "sha256": "a2e2fc5f1793021ae2c43e40cc9d9d03604bf1fe08f669ef3a9522d18c3e9eb4",
+      "passed": false,
+      "prompt_version": "p2-intents-v2",
+      "source_commit": "e076da737aac899d78a377890c1c1db48b009e26",
+      "calls": 20,
+      "tokens": 32087,
+      "estimated_known_cny": "0.0082636",
+      "unknown_usage_calls": 1,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "FAILED",
+          "error_type": "ValueError"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-03.json",
+      "sha256": "5a0371fc61f8c07b34071b397d39ddcf3b2f2454fdd8e70afe49d08875d6e837",
+      "passed": true,
+      "prompt_version": "p2-intents-v3",
+      "source_commit": "e076da737aac899d78a377890c1c1db48b009e26",
+      "calls": 20,
+      "tokens": 36183,
+      "estimated_known_cny": "0.0090366",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-final.json",
+      "sha256": "755d01615a0a4bf534e5ecb72b92d72950f07be580a574bde1346445f1ea92d6",
+      "passed": true,
+      "prompt_version": "p2-intents-v3",
+      "source_commit": "781356d42b02bf7b82c9c92fe4df6f4d12ec427b",
+      "calls": 20,
+      "tokens": 36303,
+      "estimated_known_cny": "0.0091326",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-v4-final.json",
+      "sha256": "05d88baaeb9026c0bc1d04952024f2645cd03c1d40b303fdc00911a290d0b85d",
+      "passed": true,
+      "prompt_version": "p2-intents-v4",
+      "source_commit": "1cd8c055b90ff9517b9c5fccfe0eef0ff67db1c6",
+      "calls": 21,
+      "tokens": 44354,
+      "estimated_known_cny": "0.0109582",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-battery-condition-no-parent-intent",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-v5-final.json",
+      "sha256": "734f91609bb9483d65338fce80b3e947c42bc01e36d704770b67860ac8187abf",
+      "passed": false,
+      "prompt_version": "p2-intents-v5",
+      "source_commit": "2fd2f472bb50a728a7e687f51d6949a1beb4d4a0",
+      "calls": 21,
+      "tokens": 38418,
+      "estimated_known_cny": "0.0097752",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "FAILED",
+          "error_type": "SemanticResponseError"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "FAILED",
+          "error_type": "SemanticResponseError"
+        },
+        {
+          "id": "region-only",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "conditional-question",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-battery-condition-no-parent-intent",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-v6-final.json",
+      "sha256": "4b086ce2efff5c7362371c05ccfdb8ecea4ce9763b48b25fa69311f811daaa4e",
+      "passed": false,
+      "prompt_version": "p2-intents-v6",
+      "source_commit": "f3bf53c44428f5572916c57ad3a31bf572f14f35",
+      "calls": 21,
+      "tokens": 47406,
+      "estimated_known_cny": "0.0116232",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "FAILED",
+          "error_type": "SemanticResponseError"
+        },
+        {
+          "id": "negative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-battery-condition-no-parent-intent",
+          "status": "FAILED",
+          "error_type": "SemanticResponseError"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-v7-final.json",
+      "sha256": "fbd803bdec4a396be46283a20bf69d51d986f717c905ea05be1f4658e3f9e605",
+      "passed": false,
+      "prompt_version": "p2-intents-v7",
+      "source_commit": "2ead99c4c9f47251fa8df62d2831ccedf3ea3713",
+      "calls": 21,
+      "tokens": 48895,
+      "estimated_known_cny": "0.0118694",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "FAILED",
+          "error_type": "SemanticResponseError"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-battery-condition-no-parent-intent",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-extended-v8-final.json",
+      "sha256": "5bdc6fe9c785049c21f7bc57b7bd6ec0cc8edf344040d86ca9ae019627997ff2",
+      "passed": true,
+      "prompt_version": "p2-intents-v8",
+      "source_commit": "e8c36f61dbbbd1cebb4a431f3827e731b18f22c9",
+      "calls": 21,
+      "tokens": 48847,
+      "estimated_known_cny": "0.0118310",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "negated-offer",
+          "status": "PASSED"
+        },
+        {
+          "id": "expensive-comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "only-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "corrected-delivery",
+          "status": "PASSED"
+        },
+        {
+          "id": "decimal-price",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-pays-explicit",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-suffix",
+          "status": "PASSED"
+        },
+        {
+          "id": "condition-required",
+          "status": "PASSED"
+        },
+        {
+          "id": "negative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed-unknown-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "local-alternative-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "region-only",
+          "status": "PASSED"
+        },
+        {
+          "id": "continue-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "select-bound",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-region",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw-with-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "conditional-question",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-warranty",
+          "status": "PASSED"
+        },
+        {
+          "id": "ignored-conditions-injection",
+          "status": "PASSED"
+        },
+        {
+          "id": "shared-battery-condition-no-parent-intent",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": {
+        "negated-offer": "PASSED",
+        "expensive-comparison": "PASSED",
+        "only-question": "PASSED",
+        "corrected-delivery": "PASSED",
+        "decimal-price": "PASSED",
+        "buyer-pays-explicit": "PASSED",
+        "condition-suffix": "PASSED",
+        "condition-required": "PASSED",
+        "negative-condition": "PASSED",
+        "mixed-unknown-question": "PASSED",
+        "shared-alternative-condition": "PASSED",
+        "local-alternative-condition": "PASSED",
+        "region-only": "PASSED",
+        "continue-bound": "PASSED",
+        "select-bound": "PASSED",
+        "change-region": "PASSED",
+        "withdraw-with-question": "PASSED",
+        "conditional-question": "PASSED",
+        "unsupported-warranty": "PASSED",
+        "ignored-conditions-injection": "PASSED",
+        "shared-battery-condition-no-parent-intent": "PASSED"
+      }
+    },
+    {
+      "file": "live-graph-01.json",
+      "sha256": "0f686a7b9bfb80843c3a580816e66a5e40a5f3a3c41f259c002914b84fcf0737",
+      "passed": true,
+      "prompt_version": "p2-intents-v1",
+      "source_commit": "e076da737aac899d78a377890c1c1db48b009e26",
+      "calls": 31,
+      "tokens": 47292,
+      "estimated_known_cny": "0.0122904",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "test_price_ranges[900-OFFER_ACCEPTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[800-WAITING_APPROVAL]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[700-OFFER_REJECTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u9884\\u7b97\\u5927\\u6982900\\uff0c\\u5148\\u770b\\u770b]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u522b\\u4eba\\u5356900\\uff0c\\u6211\\u9884\\u7b97\\u4e5f\\u5dee\\u4e0d\\u591a]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u6211\\u4e0d\\u63a5\\u53d7900\\u81ea\\u63d0]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u53ea\\u662f\\u6bd4\\u4ef7900\\uff0c\\u4e0d\\u62a5\\u4ef7]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[None-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[89-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[95-True]",
+          "status": "passed"
+        },
+        {
+          "id": "test_independent_questions_and_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_short_continuation_retains_condition",
+          "status": "passed"
+        },
+        {
+          "id": "test_alternatives_then_selection_keeps_unknown_condition",
+          "status": "passed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[fact]",
+          "status": "passed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[cost]",
+          "status": "passed"
+        },
+        {
+          "id": "test_confirmation_after_visible_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_changed_terms_do_not_confirm",
+          "status": "passed"
+        },
+        {
+          "id": "test_refresh_does_not_authorize_earlier_input",
+          "status": "passed"
+        },
+        {
+          "id": "test_region_change_requires_new_cost",
+          "status": "passed"
+        },
+        {
+          "id": "test_correction_uses_only_revised_price",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[900\\u81ea\\u63d0\\uff0c\\u4f46\\u4eca\\u5929\\u5fc5\\u987b\\u53d1\\u8d27]",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[\\u4e0d\\u4e70\\u4e86\\u7ed3\\u675f\\u5427\\uff0c\\u540c\\u65f6900\\u81ea\\u63d0\\u7ee7\\u7eed\\u62a5\\u4ef7]",
+          "status": "passed"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-graph-defects.json",
+      "sha256": "3ebaaa37776b70758be040b9bd20ba5b750be4bb83d94a1e317247a60ebafa82",
+      "passed": false,
+      "prompt_version": "p2-intents-v1",
+      "source_commit": "e076da737aac899d78a377890c1c1db48b009e26",
+      "calls": 3,
+      "tokens": 4704,
+      "estimated_known_cny": "0.0012858",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "test_rejection_is_not_withdrawal_of_existing_offer",
+          "status": "failed"
+        },
+        {
+          "id": "test_local_condition_does_not_block_other_alternative",
+          "status": "failed"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-graph-final.json",
+      "sha256": "be916e38f6b0707dcaeb7ee772e0d5df227ddd69446d8b47ba2240284f910be5",
+      "passed": false,
+      "prompt_version": "p2-intents-v3",
+      "source_commit": "781356d42b02bf7b82c9c92fe4df6f4d12ec427b",
+      "calls": 37,
+      "tokens": 66448,
+      "estimated_known_cny": "0.0163880",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "test_price_ranges[900-OFFER_ACCEPTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[800-WAITING_APPROVAL]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[700-OFFER_REJECTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u9884\\u7b97\\u5927\\u6982900\\uff0c\\u5148\\u770b\\u770b]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u522b\\u4eba\\u5356900\\uff0c\\u6211\\u9884\\u7b97\\u4e5f\\u5dee\\u4e0d\\u591a]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u6211\\u4e0d\\u63a5\\u53d7900\\u81ea\\u63d0]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u53ea\\u662f\\u6bd4\\u4ef7900\\uff0c\\u4e0d\\u62a5\\u4ef7]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[None-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[89-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[95-True]",
+          "status": "passed"
+        },
+        {
+          "id": "test_independent_questions_and_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_short_continuation_retains_condition",
+          "status": "passed"
+        },
+        {
+          "id": "test_alternatives_then_selection_keeps_unknown_condition",
+          "status": "failed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[fact]",
+          "status": "passed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[cost]",
+          "status": "passed"
+        },
+        {
+          "id": "test_confirmation_after_visible_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_changed_terms_do_not_confirm",
+          "status": "passed"
+        },
+        {
+          "id": "test_refresh_does_not_authorize_earlier_input",
+          "status": "passed"
+        },
+        {
+          "id": "test_region_change_requires_new_cost",
+          "status": "passed"
+        },
+        {
+          "id": "test_correction_uses_only_revised_price",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[900\\u81ea\\u63d0\\uff0c\\u4f46\\u4eca\\u5929\\u5fc5\\u987b\\u53d1\\u8d27]",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[\\u4e0d\\u4e70\\u4e86\\u7ed3\\u675f\\u5427\\uff0c\\u540c\\u65f6900\\u81ea\\u63d0\\u7ee7\\u7eed\\u62a5\\u4ef7]",
+          "status": "passed"
+        },
+        {
+          "id": "test_rejection_is_not_withdrawal_of_existing_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_local_condition_does_not_block_other_alternative",
+          "status": "passed"
+        },
+        {
+          "id": "test_explicit_withdrawal_and_close",
+          "status": "passed"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-graph-v4-final.json",
+      "sha256": "a0b8e3633606cc4de983219a4cf9e02c7a43a5e81c762fd7253e87bb20b73c76",
+      "passed": false,
+      "prompt_version": "p2-intents-v4",
+      "source_commit": "1cd8c055b90ff9517b9c5fccfe0eef0ff67db1c6",
+      "calls": 38,
+      "tokens": 79099,
+      "estimated_known_cny": "0.0189704",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "test_price_ranges[900-OFFER_ACCEPTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[800-WAITING_APPROVAL]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[700-OFFER_REJECTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u9884\\u7b97\\u5927\\u6982900\\uff0c\\u5148\\u770b\\u770b]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u522b\\u4eba\\u5356900\\uff0c\\u6211\\u9884\\u7b97\\u4e5f\\u5dee\\u4e0d\\u591a]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u6211\\u4e0d\\u63a5\\u53d7900\\u81ea\\u63d0]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u53ea\\u662f\\u6bd4\\u4ef7900\\uff0c\\u4e0d\\u62a5\\u4ef7]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[None-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[89-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[95-True]",
+          "status": "passed"
+        },
+        {
+          "id": "test_independent_questions_and_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_short_continuation_retains_condition",
+          "status": "passed"
+        },
+        {
+          "id": "test_alternatives_then_selection_keeps_unknown_condition",
+          "status": "passed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[fact]",
+          "status": "passed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[cost]",
+          "status": "passed"
+        },
+        {
+          "id": "test_confirmation_after_visible_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_changed_terms_do_not_confirm",
+          "status": "failed"
+        },
+        {
+          "id": "test_refresh_does_not_authorize_earlier_input",
+          "status": "passed"
+        },
+        {
+          "id": "test_region_change_requires_new_cost",
+          "status": "passed"
+        },
+        {
+          "id": "test_correction_uses_only_revised_price",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[900\\u81ea\\u63d0\\uff0c\\u4f46\\u4eca\\u5929\\u5fc5\\u987b\\u53d1\\u8d27]",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[\\u4e0d\\u4e70\\u4e86\\u7ed3\\u675f\\u5427\\uff0c\\u540c\\u65f6900\\u81ea\\u63d0\\u7ee7\\u7eed\\u62a5\\u4ef7]",
+          "status": "passed"
+        },
+        {
+          "id": "test_rejection_is_not_withdrawal_of_existing_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_local_condition_does_not_block_other_alternative",
+          "status": "passed"
+        },
+        {
+          "id": "test_explicit_withdrawal_and_close",
+          "status": "passed"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-graph-v8-final.json",
+      "sha256": "38e79a83dd1f45e62c807782e0e21157a52dd35ddb8bd0deaa41eb2752a48161",
+      "passed": true,
+      "prompt_version": "p2-intents-v8",
+      "source_commit": "e8c36f61dbbbd1cebb4a431f3827e731b18f22c9",
+      "calls": 40,
+      "tokens": 91773,
+      "estimated_known_cny": "0.0215988",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "test_price_ranges[900-OFFER_ACCEPTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[800-WAITING_APPROVAL]",
+          "status": "passed"
+        },
+        {
+          "id": "test_price_ranges[700-OFFER_REJECTED]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u9884\\u7b97\\u5927\\u6982900\\uff0c\\u5148\\u770b\\u770b]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u522b\\u4eba\\u5356900\\uff0c\\u6211\\u9884\\u7b97\\u4e5f\\u5dee\\u4e0d\\u591a]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u6211\\u4e0d\\u63a5\\u53d7900\\u81ea\\u63d0]",
+          "status": "passed"
+        },
+        {
+          "id": "test_information_and_negation_never_submit[\\u53ea\\u662f\\u6bd4\\u4ef7900\\uff0c\\u4e0d\\u62a5\\u4ef7]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[None-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[89-False]",
+          "status": "passed"
+        },
+        {
+          "id": "test_conditional_offer[95-True]",
+          "status": "passed"
+        },
+        {
+          "id": "test_independent_questions_and_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_short_continuation_retains_condition",
+          "status": "passed"
+        },
+        {
+          "id": "test_alternatives_then_selection_keeps_unknown_condition",
+          "status": "passed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[fact]",
+          "status": "passed"
+        },
+        {
+          "id": "test_seller_supplement_waits_for_buyer[cost]",
+          "status": "passed"
+        },
+        {
+          "id": "test_confirmation_after_visible_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_changed_terms_do_not_confirm",
+          "status": "passed"
+        },
+        {
+          "id": "test_refresh_does_not_authorize_earlier_input",
+          "status": "passed"
+        },
+        {
+          "id": "test_region_change_requires_new_cost",
+          "status": "passed"
+        },
+        {
+          "id": "test_correction_uses_only_revised_price",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[900\\u81ea\\u63d0\\uff0c\\u4f46\\u4eca\\u5929\\u5fc5\\u987b\\u53d1\\u8d27]",
+          "status": "passed"
+        },
+        {
+          "id": "test_unsupported_or_conflicting_action[\\u4e0d\\u4e70\\u4e86\\u7ed3\\u675f\\u5427\\uff0c\\u540c\\u65f6900\\u81ea\\u63d0\\u7ee7\\u7eed\\u62a5\\u4ef7]",
+          "status": "passed"
+        },
+        {
+          "id": "test_rejection_is_not_withdrawal_of_existing_offer",
+          "status": "passed"
+        },
+        {
+          "id": "test_short_negative_is_not_confirmation",
+          "status": "passed"
+        },
+        {
+          "id": "test_local_condition_does_not_block_other_alternative",
+          "status": "passed"
+        },
+        {
+          "id": "test_explicit_withdrawal_and_close",
+          "status": "passed"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-01.json",
+      "sha256": "ebe74cc556fa2976717819a3336473a7ac56e685b9205db030c7f89c96905d5a",
+      "passed": true,
+      "prompt_version": "p2-intents-v1",
+      "source_commit": null,
+      "calls": 20,
+      "tokens": 30453,
+      "estimated_known_cny": "0.0078774",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "PASSED"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "PASSED"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "PASSED"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "PASSED"
+        },
+        {
+          "id": "conflict",
+          "status": "PASSED"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-02.json",
+      "sha256": "66d7d5e3144dc63078f45b51688ba346149e72d6d3406d28a682dc9fe894d09b",
+      "passed": true,
+      "prompt_version": "p2-intents-v2",
+      "source_commit": "e076da737aac899d78a377890c1c1db48b009e26",
+      "calls": 20,
+      "tokens": 33555,
+      "estimated_known_cny": "0.0085470",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "PASSED"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "PASSED"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "PASSED"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "PASSED"
+        },
+        {
+          "id": "conflict",
+          "status": "PASSED"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-final.json",
+      "sha256": "969edad1d8150f343a76b0901203df17aa3e4968df8ca52ff290e17f9780eaac",
+      "passed": true,
+      "prompt_version": "p2-intents-v3",
+      "source_commit": "781356d42b02bf7b82c9c92fe4df6f4d12ec427b",
+      "calls": 20,
+      "tokens": 35919,
+      "estimated_known_cny": "0.0088542",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "PASSED"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "PASSED"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "PASSED"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "PASSED"
+        },
+        {
+          "id": "conflict",
+          "status": "PASSED"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-v4-final.json",
+      "sha256": "f662f54f9705e4d785165d979360059e900585d09b50d53026aaa497967ee3d2",
+      "passed": false,
+      "prompt_version": "p2-intents-v4",
+      "source_commit": "1cd8c055b90ff9517b9c5fccfe0eef0ff67db1c6",
+      "calls": 20,
+      "tokens": 41625,
+      "estimated_known_cny": "0.0099750",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "PASSED"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "PASSED"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "PASSED"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "PASSED"
+        },
+        {
+          "id": "conflict",
+          "status": "PASSED"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-v5-final.json",
+      "sha256": "81b3e3e63a9a4731190382978a5bcaa76cba2ad862202c6bb7df993338dd2ba7",
+      "passed": false,
+      "prompt_version": "p2-intents-v5",
+      "source_commit": "2fd2f472bb50a728a7e687f51d6949a1beb4d4a0",
+      "calls": 20,
+      "tokens": 35924,
+      "estimated_known_cny": "0.0088102",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "FAILED",
+          "error_type": "SemanticResponseError"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "PASSED"
+        },
+        {
+          "id": "conflict",
+          "status": "PASSED"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-v6-final.json",
+      "sha256": "9f7c7c2419f21c227011e24b50a14e45b2f1588163263370177d377dfcc00984",
+      "passed": false,
+      "prompt_version": "p2-intents-v6",
+      "source_commit": "f3bf53c44428f5572916c57ad3a31bf572f14f35",
+      "calls": 20,
+      "tokens": 44706,
+      "estimated_known_cny": "0.0107478",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "PASSED"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "PASSED"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "PASSED"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "conflict",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-v7-final.json",
+      "sha256": "6678b5d5a3553295cbfc86650b04f33ef89344494e9edfec4c5f999e15549d12",
+      "passed": false,
+      "prompt_version": "p2-intents-v7",
+      "source_commit": "2ead99c4c9f47251fa8df62d2831ccedf3ea3713",
+      "calls": 20,
+      "tokens": 46003,
+      "estimated_known_cny": "0.0108854",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "PASSED"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "PASSED"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "PASSED"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "FAILED",
+          "error_type": "AssertionError"
+        },
+        {
+          "id": "conflict",
+          "status": "PASSED"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": null
+    },
+    {
+      "file": "live-semantics-v8-final.json",
+      "sha256": "2fb7b1b1c51ced7a181440582fcbfd262295fe53f4b7281c829dd88be0ec5829",
+      "passed": true,
+      "prompt_version": "p2-intents-v8",
+      "source_commit": "e8c36f61dbbbd1cebb4a431f3827e731b18f22c9",
+      "calls": 20,
+      "tokens": 45996,
+      "estimated_known_cny": "0.0108798",
+      "unknown_usage_calls": 0,
+      "outcomes": [
+        {
+          "id": "clear-pickup",
+          "status": "PASSED"
+        },
+        {
+          "id": "clear-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "buyer-shipping",
+          "status": "PASSED"
+        },
+        {
+          "id": "incomplete",
+          "status": "PASSED"
+        },
+        {
+          "id": "budget",
+          "status": "PASSED"
+        },
+        {
+          "id": "comparison",
+          "status": "PASSED"
+        },
+        {
+          "id": "correction",
+          "status": "PASSED"
+        },
+        {
+          "id": "repair-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "battery-condition",
+          "status": "PASSED"
+        },
+        {
+          "id": "two-conditions",
+          "status": "PASSED"
+        },
+        {
+          "id": "mixed",
+          "status": "PASSED"
+        },
+        {
+          "id": "alternatives",
+          "status": "PASSED"
+        },
+        {
+          "id": "continuation",
+          "status": "PASSED"
+        },
+        {
+          "id": "confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "change-not-confirm",
+          "status": "PASSED"
+        },
+        {
+          "id": "unsupported-promise",
+          "status": "PASSED"
+        },
+        {
+          "id": "withdraw",
+          "status": "PASSED"
+        },
+        {
+          "id": "close",
+          "status": "PASSED"
+        },
+        {
+          "id": "conflict",
+          "status": "PASSED"
+        },
+        {
+          "id": "no-default-cost",
+          "status": "PASSED"
+        }
+      ],
+      "case_results": {
+        "clear-pickup": "PASSED",
+        "clear-shipping": "PASSED",
+        "buyer-shipping": "PASSED",
+        "incomplete": "PASSED",
+        "budget": "PASSED",
+        "comparison": "PASSED",
+        "correction": "PASSED",
+        "repair-condition": "PASSED",
+        "battery-condition": "PASSED",
+        "two-conditions": "PASSED",
+        "mixed": "PASSED",
+        "alternatives": "PASSED",
+        "continuation": "PASSED",
+        "confirm": "PASSED",
+        "change-not-confirm": "PASSED",
+        "unsupported-promise": "PASSED",
+        "withdraw": "PASSED",
+        "close": "PASSED",
+        "conflict": "PASSED",
+        "no-default-cost": "PASSED"
+      }
+    }
+  ],
+  "tests": {
+    "graph-v8-final.xml": {
+      "tests": 117,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 205.059,
+      "sha256": "1b849283f4ae0f4672a3ed2c28702807e8d45bb667cf22b22f661e5739ab3efb"
+    },
+    "graph-live-final.xml": {
+      "tests": 108,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 187.33,
+      "sha256": "2403cb77aeb1f5c48258e42d40acebcc95d17c74e60e2ce89556be737fbbfe56"
+    },
+    "legacy-live-final.xml": {
+      "tests": 366,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 166.439,
+      "sha256": "d0e39fa870aed91e630e90ef89bfc92149034ddaa348983fb3f05c69a764ae6c"
+    },
+    "model-v8-final.xml": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 5.27,
+      "sha256": "d87b2791659801ed79313b84e1d86422eee208eb42c691c5f4861da8aa991e6a"
+    },
+    "live-graph-v8-final.xml": {
+      "tests": 26,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 127.51,
+      "sha256": "a45d7b348d48cdcf3211eda51544b0f85b8ea07bbb65a1650249ebd168b07eb2"
+    },
+    "live-graph-v4-final.xml": {
+      "tests": 25,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 128.909,
+      "sha256": "1147066f6a074bc2cbbaa0a0e3a126865809cfc3cf4bbf4b7683ee4f1044cf22"
+    },
+    "semantic-v6-final.xml": {
+      "tests": 60,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 129.19,
+      "sha256": "59ad5e214a5064f4fc072238ee925bac3fc1f0e7e816be5d91e7ca71a70f2c90"
+    },
+    "live-graph-final.xml": {
+      "tests": 25,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 124.461,
+      "sha256": "1682bacd708f01e82bb8c822582626db0b05eb56ba02c1ed7b9b273c69a4750d"
+    },
+    "graph-refined.xml": {
+      "tests": 106,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 185.581,
+      "sha256": "8577fff6d58e81fe8a8d1499fc5531f09100ae712998115cd37314a542659f57"
+    },
+    "live-graph-defects.xml": {
+      "tests": 2,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 31.517,
+      "sha256": "a92c5cdd1f39e9dd4305ef28eab16fe0dbab7bc49f9dd47a2b3e5d4f83811039"
+    }
+  },
+  "failing_reports_preserved": true,
+  "final_source_sha256": {
+    "backend/app/semantic/model.py": "87a9964050bb38fd3ffa6e31e6cf11ffb1ea9ba00268a6cd753c94818edb7adf",
+    "backend/app/semantic/service.py": "b400f1b358cd66b41ba882f52e13e203eb85a3915ab8137a3057e06e0a7f41b8",
+    "backend/app/semantic/contracts.py": "66aec2b5458f105d853ee9df3e767276edf68fb48f56f960028f10f59aab17a3",
+    "backend/app/graphs/negotiation/semantic_graph.py": "7eb0017cd4984ebd85794a78718e6c65dbef005142d73fa394c639cf50d5293f",
+    "backend/scripts/probe_p2_semantics.py": "9f65372076b2fc47bcfd24f83318811b0570ddea5f41e5589eafd6ce7791cc10",
+    "backend/evaluation/datasets/p2_semantic_labels.json": "e335135e54e41ec0353ea39900f15573bf54fcbfb2fdc0884b0d965a5e5d3b09",
+    "backend/evaluation/datasets/p2_semantic_extended.json": "ccf2f0108cb461a2623aee1be3272e42b88a32561b4b88bd142c4aa18824ca46",
+    "backend/tests/live/test_p2_semantics.py": "a1b2bc662f32542c58b3eaf812efbff808c1bb7a39de3f1de130f1275de18cd3"
+  }
+}

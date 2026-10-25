@@ -1,7 +1,7 @@
 {
   "stage": "17.3 P2",
-  "status": "implementation_and_deterministic_tests_passed_live_semantics_pending",
-  "recorded_at": "2026-10-25T00:34:12.629069+08:00",
+  "status": "passed",
+  "recorded_at": "2026-10-25T09:21:16.648261+08:00",
   "baseline_commit": "607e614",
   "implementation_commit": "fe77b15a92eb632eaf6e8c6cd258ba45e22489e8",
   "tests": {
@@ -70,8 +70,8 @@
       "sha256": "e30ec1c244ce3fa53fb4c5c52d585f26aad5ee33ec23b2a863575ffae0ea1c16"
     }
   },
-  "real_model_calls": 0,
-  "real_model_gate": "pending user budget authorization",
+  "real_model_calls": 494,
+  "real_model_gate": "passed; see p2-live-summary.json for all attempts and known usage gap",
   "browser_qa": "local synthetic API fixture, no production database or model calls",
   "checks": {
     "ruff": "passed",
@@ -90,5 +90,7 @@
     "ui-calls.json": "2e7245d0366bb9a7dc041f034f1d8005d239288799b26a236ddbda4b18671bdd",
     "ui-chat.png": "506d524feb92f693030fb0b2e9633136db3e7d4af1fb2f3f4ecad54903ffcd32",
     "ui-seller.png": "c76fba200e8cd14f68fd9bd420ff4a591aee22715b8cbfbf9430d852fd8680b3"
-  }
+  },
+  "followup_implementation_commit": "e8c36f61dbbbd1cebb4a431f3827e731b18f22c9",
+  "live_acceptance_summary": "p2-live-summary.json"
 }
