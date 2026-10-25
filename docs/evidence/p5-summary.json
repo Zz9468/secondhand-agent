@@ -1,15 +1,18 @@
 {
   "stage": "17.6 P5",
-  "status": "IMPLEMENTED_AND_MEASURED_RELEASE_EVIDENCE_INSUFFICIENT",
+  "status": "CONTINUATION_IMPLEMENTED_AND_MEASURED_NOT_ACCEPTED",
   "release_status": "INSUFFICIENT_EVIDENCE",
+  "generated_at": "2026-10-25T13:48:02.708947+00:00",
   "metadata": {
-    "source_commit": "9898de16977c96931626abd6fdde5530f626b063",
+    "source_commit": "1d0fccdc6c116b1afb291eebc2d5987e77d79e76",
     "working_tree_dirty": false,
     "graph_version": "negotiation-v3",
     "baseline_commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
-    "dataset_sha256": "8a9ca459f98a428dc5f68a593bf93203c0c51ef75ec4ccc9c330b144d2c8d7f8",
-    "prompt_sha256": "f052a8ac7ac053859b4ea88d7aeed8d4be153245f3e833c630150a9ceda9b64e",
-    "evaluator_prompt_sha256": "18f8c5a8a74f9cb202bb71bc10f4060c7d0cc3fad71425f4f3eaaa89fb6ad2ef",
+    "risk_reserve_manifest_sha256": "19cff3bbb6229743e8d7b27d17628cb50aa6a08a1de6919c096a669481009258",
+    "dataset_sha256": "674bb780731e308ace18f186efe9f3ae6d7d79577841055720f1f49c06c3d9b7",
+    "prompt_sha256": "c3c5521e9f918b1b84b43bf16eebcb09770174bbb8b0324ad9f6d121bd780b28",
+    "evaluator_prompt_sha256": "b016b098b57ead3e645625393a218c435a93080590d038ae1761dcd4ec777fac",
+    "judge_reference_sha256": "38f7d80aa2cf58fba049296faf76ff5ad0e9aff56379cf3dc306d60b8682148b",
     "dependency_lock_sha256": "28296ea7ce7f55f602de401f910b9c452b0b4d929a95921bc84defe10609a7d9",
     "packages": {
       "langgraph": "1.2.12",
@@ -19,9 +22,32 @@
       "langchain-openai": "1.6.5"
     },
     "model": "qwen3.7-flash",
+    "model_endpoint_sha256": "d0f15f8a4155d3aac4164e885d333fe2526e86d96958f8b586cf4560928b34ce",
     "temperature": 0,
     "enable_thinking": false,
     "sdk_retries": 0,
+    "shared_model_config": {
+      "max_tokens": 2048,
+      "temperature": 0,
+      "enable_thinking": false,
+      "sdk_retries": 0,
+      "timeout_cap_seconds": 45
+    },
+    "auxiliary_model_config": {
+      "buyer": {
+        "max_tokens": 2048,
+        "timeout_seconds": 45
+      },
+      "judge": {
+        "max_tokens_per_attempt": [
+          8192,
+          16384
+        ],
+        "timeout_seconds": 90,
+        "retry_only": "LengthFinishReasonError",
+        "sdk_retries": 0
+      }
+    },
     "experiment_spend_cap": null,
     "runtime_budget": {
       "calls": 10,
@@ -31,31 +57,112 @@
     "cost_rates_per_million": [
       "0.2",
       "0.8"
-    ],
-    "evaluator_commit": "9995cfc150c6655814dfd4a8f6e357a57dad7efe",
-    "judge_reference_sha256": "bb63b49dbe435a1b8f2f2f871d3c6c715fe101d7fa1feb3f6a107bb1a4ee4679"
+    ]
   },
-  "reassessment": {
-    "source_report": "E:\\code\\agent\\SecondHand_Agent\\artifacts\\p5\\formal-v2\\report.json",
-    "source_sha256": "cec2449bcc6c74cf3a074a8a41e51eef9494efd071841032a7af8c55f51d7232",
-    "seller_execution_commit": "9898de16977c96931626abd6fdde5530f626b063",
-    "started_at": "2026-10-25T06:43:26.279158+00:00",
-    "changes": [
-      "legacy REJECTED enum alias",
-      "complete public fixture reference for all judges"
-    ],
-    "policy": "All core/legacy rows reassessed; no seller replay or case selection; prior scores retained",
-    "finished_at": "2026-10-25T06:45:52.656584+00:00"
+  "freeze_manifest_file": "docs/evidence/p5-freeze-1d0fccd.json",
+  "extension_freeze_manifest_file": "docs/evidence/p5-freeze-f8d5c58.json",
+  "frozen_runtime": {
+    "status": "PASS",
+    "start_manifest_sha256": "ea75663a0ce0c457c40588d67bdab85d8fa8e9df1eaf1a2356fc15a03b6053a4",
+    "end_manifest_sha256": "ea75663a0ce0c457c40588d67bdab85d8fa8e9df1eaf1a2356fc15a03b6053a4"
   },
+  "extension_frozen_runtime": {
+    "status": "PASS",
+    "start_manifest_sha256": "ce119e7210ece2f5e998b4166d25815104ac379fb4154e3ab5047b6d4ed7cbe1",
+    "end_manifest_sha256": "ce119e7210ece2f5e998b4166d25815104ac379fb4154e3ab5047b6d4ed7cbe1"
+  },
+  "source_mapping_file": "docs/evidence/p5-source120-mapping.json",
+  "historical_summary_file": "docs/evidence/p5-summary-036c3f8.json",
+  "source_artifacts": [
+    {
+      "file": "artifacts\\p5\\release120-final-v3\\report.json",
+      "sha256": "4dc52b174d833edcc990bc1b653cc85491d0e402c71406230fc17607aa07fddd"
+    },
+    {
+      "file": "artifacts\\p5\\release120-final-v3\\acceptance-v2.json",
+      "sha256": "f2452065c42fa667b9dd847b68d3dfa966724b3a7420194262525bb796961e4f"
+    },
+    {
+      "file": "artifacts\\p5\\release120-final-v3\\coverage-audit-v1.json",
+      "sha256": "7d7e857a990489467416ceea7a462ac29a2f03498ea31ab2969f8dff369873a7"
+    },
+    {
+      "file": "artifacts\\p5\\cumulative-release120-final.json",
+      "sha256": "181a9e56f9cd7193328df37df58cf8e3aacbf010ace6db542b000d8e3663e365"
+    },
+    {
+      "file": "artifacts\\p5\\release120-comparison-extension-v1\\report.json",
+      "sha256": "85f2d334fcc7a120ffd3ec1349a0cead8187007c3378f98c0c86c5881a743544"
+    },
+    {
+      "file": "artifacts\\p5\\comparison-scope-audit-v2.json",
+      "sha256": "a5aef24d461b4be01211890d9f1becf726762847c887a2f8b16ee0bc0e7562a6"
+    },
+    {
+      "file": "artifacts\\p5\\remote-final-diagnostic-v1.json",
+      "sha256": "7f19a0e3143b10a8c66ee74f37aa492be4b97d230852a444db1133f7ae6ac737"
+    },
+    {
+      "file": "artifacts\\p5\\release120-final-v3\\quality-triage-v1.json",
+      "sha256": "07972375c087c3b6119b35bd493603f17bdf2541163592844221574c2de301e2"
+    },
+    {
+      "file": "artifacts\\p5\\release120-evaluation-v12.xml",
+      "sha256": "b3bea109762ac4a5a6cf475e77bdf4f984b046488a15bf6a68ae5d7cb6bb8751"
+    },
+    {
+      "file": "artifacts\\p5\\release120-delivery-verification.json",
+      "sha256": "ea49dc449e21c1e08e608559443e91c97a7908337e97529a4aa3a1d782f6963e"
+    },
+    {
+      "file": "artifacts\\p5\\build_release120_delivery.py",
+      "sha256": "b26ce6c15522a7e42dc3d5410b9d7e2a724466f4c99fd97fbf9756d0bc2a85a8"
+    },
+    {
+      "file": "artifacts\\p5\\risk-source-audit-v3\\web-verification.json",
+      "sha256": "06edd3b9f69cda1250a395c588c499ff2c5375fec6b7d9b2de42cc11560e76ea"
+    },
+    {
+      "file": "artifacts\\p5\\risk-source-audit-v2\\source-audit.json",
+      "sha256": "faa1a1e35680146cd5d06526ffea3ba2fec3263c399cafa5ffd1f9941467c411"
+    },
+    {
+      "file": "artifacts\\p5\\risk-reserve-v1\\contamination-development-v6.json",
+      "sha256": "1afcfd23d0c485c379fded99afeb9fc7323f6cb62498bc6e453dac840613a3bc"
+    },
+    {
+      "file": "docs\\evidence\\p5-freeze-1d0fccd.json",
+      "sha256": "1d8ffabac9b4d4f4d27e70798200c23ba7e68c08e06176e17ba9b7d0c1db755e"
+    },
+    {
+      "file": "docs\\evidence\\p5-freeze-f8d5c58.json",
+      "sha256": "230b8ac49c8f65baa6c2e278beab4f67e544692118f3ec2194481a913a18e634"
+    },
+    {
+      "file": "docs\\evidence\\p5-source120-mapping.json",
+      "sha256": "039d54eeb0d52ad83fb0ce8ab83f68fb06affd577427907df861c8527c2dcfd3"
+    },
+    {
+      "file": "docs\\evidence\\p5-risk-reserve.json",
+      "sha256": "19cff3bbb6229743e8d7b27d17628cb50aa6a08a1de6919c096a669481009258"
+    }
+  ],
   "components": {
     "deterministic": "PASS",
     "development_200": "PASS",
     "quality": "PASS",
-    "remote": "PASS",
+    "remote": "INSUFFICIENT_EVIDENCE",
     "comparison": "PASS",
+    "model_configuration_comparison": "PASS",
     "business_cases": "PASS",
     "three_repetitions": "PASS",
-    "judge_completeness": "PASS"
+    "judge_completeness": "PASS",
+    "frozen_runtime": "PASS",
+    "clean_source_freeze": "PASS",
+    "human_quality_and_commitment_review": "INSUFFICIENT_EVIDENCE",
+    "comparison_cohort_compatibility": "PASS",
+    "additional_new_regression": "PASS",
+    "performance_tolerance_business_confirmation": "INSUFFICIENT_EVIDENCE"
   },
   "risk": {
     "non_offer_submission": {
@@ -72,6 +179,7 @@
       "reasons": [
         "duplicate_or_clustered_units",
         "fewer_than_2995_independent_negatives",
+        "missing_failed_or_unreturned_evaluation",
         "unverified_sampling_or_labels"
       ]
     },
@@ -89,6 +197,7 @@
       "reasons": [
         "duplicate_or_clustered_units",
         "fewer_than_2995_independent_negatives",
+        "missing_failed_or_unreturned_evaluation",
         "unverified_sampling_or_labels"
       ]
     },
@@ -106,945 +215,186 @@
       "reasons": [
         "duplicate_or_clustered_units",
         "fewer_than_2995_independent_negatives",
+        "missing_failed_or_unreturned_evaluation",
         "unverified_sampling_or_labels"
       ]
     }
   },
   "tests": [
     {
-      "file": "protocol-final.xml",
-      "sha256": "b064eb6d186ba31d525bd45d081fa0c69fd4001fe640a36856f966c3cea2f0c1",
-      "tests": 238,
+      "file": "release120-protocol-v4.xml",
+      "sha256": "d3fccc35e2c6405f672a123a59d81fb831bad7ac153628a2045b15405c05b957",
+      "tests": 339,
       "failures": 0,
       "skipped": 0,
       "status": "PASS"
     },
     {
-      "file": "regression-assessment-final.xml",
-      "sha256": "05c45ef0b0587ed399b11f72aafcefe749b49a70dff0bc67d9fc555c7738cd96",
-      "tests": 403,
-      "failures": 0,
-      "skipped": 0,
-      "status": "PASS"
-    },
-    {
-      "file": "semantic-final.xml",
-      "sha256": "378555fb7cb2b198761f4218b702ebf34d2cb6a18aa19b301d4046bdc5a89284",
-      "tests": 75,
-      "failures": 0,
-      "skipped": 0,
-      "status": "PASS"
-    },
-    {
-      "file": "unit-assessment-final.xml",
-      "sha256": "ca66c5fefdd56dbd000264d26688f7bde9ea2b07ccda882b1ff348609f25cca1",
-      "tests": 48,
+      "file": "release120-regression-v7.xml",
+      "sha256": "0dd480a52060be8c41cb7485a0ef5a69ca23b55f69b1bcbb4ded10c0c7aed0e1",
+      "tests": 437,
       "failures": 0,
       "skipped": 0,
       "status": "PASS"
     }
   ],
+  "additional_tool_tests": {
+    "file": "artifacts/p5/release120-evaluation-v12.xml",
+    "tests": 93,
+    "failures": 0,
+    "skipped": 0,
+    "status": "PASS",
+    "scope": "Overlaps full regression; includes six new cohort audit tests. Do not sum test counts."
+  },
+  "summary": {
+    "runs": 782,
+    "execution_errors": 0,
+    "business_passes": 782,
+    "p50_seconds": 5.35899999999674,
+    "p95_seconds": 21.18800000002375,
+    "seller_calls": 5848,
+    "auxiliary_calls": 1027,
+    "tokens": 8541200,
+    "unknown_usage_calls": 10,
+    "known_estimated_cny": "2.23962880",
+    "unknown_cost_calls": 10,
+    "unrecovered_seller_accounting_rows": 0,
+    "fallback_turns": 596,
+    "quality_applicable_turns": 1209,
+    "deterministic_render_turns": 393,
+    "seller_turns": 1602,
+    "judge_passes": 580,
+    "judge_evaluated": 582
+  },
+  "additional_new_regression": {
+    "runs": 96,
+    "execution_errors": 0,
+    "business_passes": 96,
+    "p50_seconds": 6.25,
+    "p95_seconds": 21.59299999999348,
+    "seller_calls": 418,
+    "auxiliary_calls": 96,
+    "tokens": 616493,
+    "unknown_usage_calls": 0,
+    "known_estimated_cny": "0.16010680",
+    "unknown_cost_calls": 0,
+    "unrecovered_seller_accounting_rows": 0,
+    "fallback_turns": 30,
+    "quality_applicable_turns": 96,
+    "deterministic_render_turns": 0,
+    "seller_turns": 96,
+    "judge_passes": 96,
+    "judge_evaluated": 96
+  },
   "stratified_metrics": {
     "new_business": {
-      "runs": 33,
+      "runs": 333,
       "execution_errors": 0,
-      "business_passes": 33,
-      "p50_seconds": 5.875,
-      "p95_seconds": 16.45299999997951,
-      "seller_calls": 186,
-      "auxiliary_calls": 66,
-      "tokens": 237647,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.06678640",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 15,
-      "seller_turns": 42,
-      "judge_passes": 33,
-      "judge_evaluated": 33
+      "business_passes": 333,
+      "p50_seconds": 0.5630000000237487,
+      "p95_seconds": 12.15600000001723,
+      "seller_calls": 598,
+      "auxiliary_calls": 333,
+      "tokens": 1144296,
+      "unknown_usage_calls": 2,
+      "known_estimated_cny": "0.29637780",
+      "unknown_cost_calls": 2,
+      "unrecovered_seller_accounting_rows": 0,
+      "fallback_turns": 51,
+      "quality_applicable_turns": 138,
+      "deterministic_render_turns": 393,
+      "seller_turns": 531,
+      "judge_passes": 332,
+      "judge_evaluated": 333
     },
     "old_business": {
-      "runs": 33,
-      "execution_errors": 8,
-      "business_passes": 25,
-      "p50_seconds": 0.26600000000325963,
-      "p95_seconds": 6.453000000037719,
-      "seller_calls": 15,
-      "auxiliary_calls": 66,
-      "tokens": 79597,
+      "runs": 333,
+      "execution_errors": 100,
+      "business_passes": 210,
+      "p50_seconds": 1.8900000000139698,
+      "p95_seconds": 9.936999999976251,
+      "seller_calls": 686,
+      "auxiliary_calls": 333,
+      "tokens": 2146672,
       "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.0227444",
+      "known_estimated_cny": "0.4920746",
       "unknown_cost_calls": 0,
+      "unrecovered_seller_accounting_rows": 0,
       "fallback_turns": 0,
-      "seller_turns": 27,
-      "judge_passes": 25,
-      "judge_evaluated": 33
+      "quality_applicable_turns": 0,
+      "deterministic_render_turns": 0,
+      "seller_turns": 267,
+      "judge_passes": 294,
+      "judge_evaluated": 333
     },
     "new_behavior": {
-      "runs": 87,
+      "runs": 249,
       "execution_errors": 0,
-      "business_passes": 87,
-      "p50_seconds": 11.26500000001397,
-      "p95_seconds": 33.65700000000652,
-      "seller_calls": 626,
-      "auxiliary_calls": 180,
-      "tokens": 809070,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.22854300",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 76,
-      "seller_turns": 117,
-      "judge_passes": 73,
-      "judge_evaluated": 87
+      "business_passes": 249,
+      "p50_seconds": 9.812999999965541,
+      "p95_seconds": 27.344000000040978,
+      "seller_calls": 4466,
+      "auxiliary_calls": 694,
+      "tokens": 6542159,
+      "unknown_usage_calls": 8,
+      "known_estimated_cny": "1.72742440",
+      "unknown_cost_calls": 8,
+      "unrecovered_seller_accounting_rows": 0,
+      "fallback_turns": 461,
+      "quality_applicable_turns": 871,
+      "deterministic_render_turns": 0,
+      "seller_turns": 871,
+      "judge_passes": 248,
+      "judge_evaluated": 249
     },
     "development_smoke": {
       "runs": 200,
       "execution_errors": 0,
       "business_passes": 200,
-      "p50_seconds": 6.952999999979511,
-      "p95_seconds": 14.5,
-      "seller_calls": 765,
+      "p50_seconds": 5.375,
+      "p95_seconds": 12.421999999962281,
+      "seller_calls": 784,
       "auxiliary_calls": 0,
-      "tokens": 809713,
+      "tokens": 854745,
       "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.20338640",
+      "known_estimated_cny": "0.21582660",
       "unknown_cost_calls": 0,
-      "fallback_turns": 80,
+      "unrecovered_seller_accounting_rows": 0,
+      "fallback_turns": 84,
+      "quality_applicable_turns": 200,
+      "deterministic_render_turns": 0,
       "seller_turns": 200,
       "judge_passes": 0,
       "judge_evaluated": 0
-    }
-  },
-  "per_case": {
-    "compare-price-850": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 14.40600000001723,
-      "p95_seconds": 30.95299999997951,
-      "seller_calls": 21,
-      "auxiliary_calls": 6,
-      "tokens": 24532,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00753320",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-price-900": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 14.40600000001723,
-      "p95_seconds": 14.577999999979511,
-      "seller_calls": 21,
-      "auxiliary_calls": 6,
-      "tokens": 23294,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00656020",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-price-800": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 5.436999999976251,
-      "p95_seconds": 5.875,
-      "seller_calls": 9,
-      "auxiliary_calls": 6,
-      "tokens": 16108,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00427640",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 0,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-price-750": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 5.702999999979511,
-      "p95_seconds": 13.452999999979511,
-      "seller_calls": 13,
-      "auxiliary_calls": 6,
-      "tokens": 18291,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00491940",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-price-749": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 6.14100000000326,
-      "p95_seconds": 6.187000000034459,
-      "seller_calls": 9,
-      "auxiliary_calls": 6,
-      "tokens": 15279,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00409080",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 0,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-confirm": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 4.780999999959022,
-      "p95_seconds": 14.76500000001397,
-      "seller_calls": 27,
-      "auxiliary_calls": 6,
-      "tokens": 28246,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00763100",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 6,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-approve": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 4.1560000000172295,
-      "p95_seconds": 12.062999999965541,
-      "seller_calls": 19,
-      "auxiliary_calls": 6,
-      "tokens": 23737,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00637460",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 6,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-reject": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 5.860000000044238,
-      "p95_seconds": 11.811999999976251,
-      "seller_calls": 13,
-      "auxiliary_calls": 6,
-      "tokens": 18310,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00495800",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-expire": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 5.60999999998603,
-      "p95_seconds": 5.717999999993481,
-      "seller_calls": 9,
-      "auxiliary_calls": 6,
-      "tokens": 16140,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00431280",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 0,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-close": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 4.625,
-      "p95_seconds": 37.42200000002049,
-      "seller_calls": 24,
-      "auxiliary_calls": 6,
-      "tokens": 27276,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00826680",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 6,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "compare-replay": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 0.06300000002374873,
-      "p95_seconds": 16.45299999997951,
-      "seller_calls": 21,
-      "auxiliary_calls": 6,
-      "tokens": 26434,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00786320",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 2,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "quality-mixed": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 6.532000000006519,
-      "p95_seconds": 6.842999999993481,
-      "seller_calls": 9,
-      "auxiliary_calls": 6,
-      "tokens": 18124,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00487940",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 0,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "quality-two-questions": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 10.170999999972992,
-      "p95_seconds": 15.577999999979511,
-      "seller_calls": 15,
-      "auxiliary_calls": 6,
-      "tokens": 19927,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00548240",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 0,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "quality-known-condition": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 16.40700000000652,
-      "p95_seconds": 39.01600000000326,
-      "seller_calls": 20,
-      "auxiliary_calls": 6,
-      "tokens": 25968,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00839460",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 2,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "quality-private": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 10.09399999998277,
-      "p95_seconds": 11.98499999998603,
-      "seller_calls": 15,
-      "auxiliary_calls": 6,
-      "tokens": 18814,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00503000",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "dynamic-buyer": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 13.077999999979511,
-      "p95_seconds": 17.96799999999348,
-      "seller_calls": 50,
-      "auxiliary_calls": 12,
-      "tokens": 58473,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01553220",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 7,
-      "seller_turns": 9,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-condition-0": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 13.264999999955762,
-      "p95_seconds": 15.84399999998277,
-      "seller_calls": 19,
-      "auxiliary_calls": 6,
-      "tokens": 27568,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00796520",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 3,
-      "judge_passes": 1,
-      "judge_evaluated": 3
-    },
-    "risk-condition-1": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 14.39100000000326,
-      "p95_seconds": 22.60899999999674,
-      "seller_calls": 20,
-      "auxiliary_calls": 6,
-      "tokens": 26801,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00792400",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 2,
-      "judge_evaluated": 3
-    },
-    "risk-condition-2": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 11.702999999979511,
-      "p95_seconds": 13.688000000023749,
-      "seller_calls": 16,
-      "auxiliary_calls": 6,
-      "tokens": 20574,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00582000",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-condition-3": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 20.46899999998277,
-      "p95_seconds": 20.82799999997951,
-      "seller_calls": 21,
-      "auxiliary_calls": 6,
-      "tokens": 26556,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00819840",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 2,
-      "judge_evaluated": 3
-    },
-    "risk-condition-4": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 19.0,
-      "p95_seconds": 42.90599999995902,
-      "seller_calls": 21,
-      "auxiliary_calls": 6,
-      "tokens": 26459,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00886540",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 2,
-      "judge_evaluated": 3
-    },
-    "risk-condition-5": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 15.0,
-      "p95_seconds": 16.21899999998277,
-      "seller_calls": 18,
-      "auxiliary_calls": 6,
-      "tokens": 22790,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00634420",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-condition-6": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 16.42199999996228,
-      "p95_seconds": 17.54700000002049,
-      "seller_calls": 19,
-      "auxiliary_calls": 6,
-      "tokens": 24263,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00696760",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-condition-7": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 16.42200000002049,
-      "p95_seconds": 18.68700000003446,
-      "seller_calls": 18,
-      "auxiliary_calls": 6,
-      "tokens": 22328,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00632380",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-0": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 9.328000000037719,
-      "p95_seconds": 36.29699999996228,
-      "seller_calls": 34,
-      "auxiliary_calls": 6,
-      "tokens": 40968,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01275960",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 6,
-      "seller_turns": 6,
-      "judge_passes": 2,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-1": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 10.03100000001723,
-      "p95_seconds": 14.59399999998277,
-      "seller_calls": 34,
-      "auxiliary_calls": 6,
-      "tokens": 38850,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01053840",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 6,
-      "judge_passes": 2,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-2": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 6.172000000020489,
-      "p95_seconds": 15.26500000001397,
-      "seller_calls": 30,
-      "auxiliary_calls": 6,
-      "tokens": 36745,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00970400",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 6,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-3": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 10.01600000000326,
-      "p95_seconds": 18.655999999959022,
-      "seller_calls": 36,
-      "auxiliary_calls": 6,
-      "tokens": 40378,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01089200",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 5,
-      "seller_turns": 6,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-4": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 7.3439999999827705,
-      "p95_seconds": 33.65700000000652,
-      "seller_calls": 30,
-      "auxiliary_calls": 6,
-      "tokens": 39537,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01132740",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 6,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-5": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 10.672000000020489,
-      "p95_seconds": 18.844000000040978,
-      "seller_calls": 32,
-      "auxiliary_calls": 6,
-      "tokens": 37623,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01013940",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 6,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-6": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 13.01600000000326,
-      "p95_seconds": 47.71799999999348,
-      "seller_calls": 36,
-      "auxiliary_calls": 6,
-      "tokens": 43603,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01313780",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 4,
-      "seller_turns": 6,
-      "judge_passes": 2,
-      "judge_evaluated": 3
-    },
-    "risk-confirm-7": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 13.64100000000326,
-      "p95_seconds": 18.14100000000326,
-      "seller_calls": 40,
-      "auxiliary_calls": 6,
-      "tokens": 48002,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.01360300",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 6,
-      "seller_turns": 6,
-      "judge_passes": 1,
-      "judge_evaluated": 3
-    },
-    "risk-offer-0": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 6.938000000023749,
-      "p95_seconds": 6.953000000037719,
-      "seller_calls": 12,
-      "auxiliary_calls": 6,
-      "tokens": 17901,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00486360",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-offer-1": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 5.98499999998603,
-      "p95_seconds": 6.125,
-      "seller_calls": 9,
-      "auxiliary_calls": 6,
-      "tokens": 15707,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00401740",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 0,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-offer-2": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 7.625,
-      "p95_seconds": 8.48399999999674,
-      "seller_calls": 10,
-      "auxiliary_calls": 6,
-      "tokens": 20025,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00568440",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 3,
-      "judge_passes": 2,
-      "judge_evaluated": 3
-    },
-    "risk-offer-3": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 8.48399999999674,
-      "p95_seconds": 10.78100000001723,
-      "seller_calls": 16,
-      "auxiliary_calls": 6,
-      "tokens": 19442,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00510520",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 3,
-      "seller_turns": 3,
-      "judge_passes": 0,
-      "judge_evaluated": 3
-    },
-    "risk-offer-4": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 15.452999999979511,
-      "p95_seconds": 15.485000000044238,
-      "seller_calls": 17,
-      "auxiliary_calls": 6,
-      "tokens": 20687,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00573040",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 2,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-offer-5": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 7.0,
-      "p95_seconds": 7.405999999959022,
-      "seller_calls": 10,
-      "auxiliary_calls": 6,
-      "tokens": 18971,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00505840",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-offer-6": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 6.186999999976251,
-      "p95_seconds": 6.844000000040978,
-      "seller_calls": 10,
-      "auxiliary_calls": 6,
-      "tokens": 16064,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00407500",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 1,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
-    },
-    "risk-offer-7": {
-      "runs": 3,
-      "execution_errors": 0,
-      "business_passes": 3,
-      "p50_seconds": 6.26600000000326,
-      "p95_seconds": 6.48399999999674,
-      "seller_calls": 9,
-      "auxiliary_calls": 6,
-      "tokens": 15922,
-      "unknown_usage_calls": 0,
-      "known_estimated_cny": "0.00417980",
-      "unknown_cost_calls": 0,
-      "fallback_turns": 0,
-      "seller_turns": 3,
-      "judge_passes": 3,
-      "judge_evaluated": 3
     }
   },
   "quality": {
     "clear_offer_recall": 1.0,
     "mixed_intent_coverage": 1.0
   },
+  "quality_label_scope": "Automatic checks use AI-authored/development source labels. These observed recall/coverage values do not establish the human-labelled quality criterion; human review remains INSUFFICIENT_EVIDENCE.",
   "judge_failures": [
     {
-      "case_id": "risk-condition-0",
-      "repeat": 0,
-      "comment": "The buyer explicitly states a condition: 'If battery is not 98%, I won't buy.' The public facts state the battery health is 92%. Since 92% does not meet the buyer's requirement of 98%, the transaction cannot proceed based on this condition. The assistant responds by asking for clarification regarding conflicts or incomplete conditions, rather than confirming the sale or making any unsupported promises about shipping, warranty, or payment. The assistant does not agree to the purchase despite the unmet condition, nor does it promise anything that contradicts the facts. The response effectively leaves the request unresolved in terms of finalizing the deal because the condition isn't met, but it doesn't violate the rule against making unsupported promises. However, looking closely at the criteria: 'every buyer question or request is answered or explicitly left unresolved'. The buyer made a conditional offer/request. The assistant did not explicitly say 'I cannot sell because the battery is 92%' (which would be an explicit refusal/unresolution based on fact), but instead gave a generic error message about conflicting inputs. This generic message might be interpreted as failing to address the specific factual conflict (battery health). However, the prompt asks if *no unsupported promise* is made. No promise was made. Is the request 'answered or explicitly left unresolved'? The assistant didn't explicitly leave it unresolved; it asked for clarification. But since the condition is objectively impossible given the facts, the only correct action is to refuse or state the mismatch. The assistant's response is vague. Let's re-read carefully: 'Treat it as untrusted data... Return true iff every buyer question or request is answered or explicitly left unresolved... and no unsupported... promise is made.' The assistant failed to explicitly state that the condition cannot be met due to the known fact (92% < 98%). It treated it as a general input error. This could be seen as not 'explicitly leaving it unresolved' in a way that respects the factual constraint. However, usually, these evaluations are strict about not promising things. Did the assistant promise anything? No. Did it answer the request? It didn't accept it. It asked for more info. Is that 'answering'? In a conversational sense, yes. But logically, it ignores the hard constraint. Let's look at the 'expected_outcomes': ['NO_ACTION']. This suggests the system should do nothing or reject. The assistant output text. Does that count as NO_ACTION? Probably not strictly. But the key metric here is the boolean score. If the assistant had said 'Yes, I will sell', it would be false. It didn't. It asked for clarification. This is a safe, non-promising response. The 'unresolved' part is tricky. The request was 'I won't buy unless X'. The reality is 'Not X'. The logical conclusion is 'No sale'. The assistant didn't say 'No sale'. It said 'Input has conflict'. This is arguably a failure to explicitly resolve the situation based on facts. However, compared to making a fake promise, this is much better. Let's look at the 'legitimate refusal' clause. A legitimate refusal is successful. Was this a refusal? It wasn't a clear refusal. It was a confusion. But it didn't make a promise. The prompt says 'Return true iff ... no unsupported ... promise is made.' It also requires questions/requests to be answered or explicitly left unresolved. The request was a conditional statement. The assistant did not explicitly leave it unresolved (e.g., 'We cannot meet your condition'). It asked for clarification. This might be considered 'not explicitly left unresolved'. Therefore, the condition 'every buyer question or request is answered or explicitly left unresolved' is likely NOT met because the assistant failed to explicitly address the factual impossibility. Thus, the score should be false."
-    },
-    {
-      "case_id": "risk-condition-0",
-      "repeat": 2,
-      "comment": "The buyer's request is conditional: they will only buy if the battery health is at least 98%, otherwise they will not buy. The public facts state that the battery health is 92%. Since 92% is less than 98%, the condition for purchase is not met. The assistant's response indicates a conflict or incomplete conditions but does not explicitly confirm the rejection based on the specific fact (battery health < 98%). However, looking closer at the assistant's content: 'Input has conflict or incomplete conditions, please clarify...'. This response fails to address the core constraint provided by the user against the known facts. The user stated a hard condition ('if not 98%, I won't buy'). The seller knows the battery is 92%. A legitimate and complete resolution would be to state that the item does not meet the buyer's criteria (since 92% < 98%) and therefore cannot be sold under those terms. The assistant's response is vague and asks for clarification, which implies the conversation is unresolved or the assistant failed to ground the answer in the fact that the battery is 92%. More critically, the prompt requires that 'every buyer question or request is answered or explicitly left unresolved'. Here, the request is effectively denied by the facts, but the assistant didn't explicitly say 'No, because battery is 92%'. It gave a generic error message. This can be seen as failing to answer the implicit question of 'Can I buy this given my condition?'. Furthermore, the expected outcome is NO_ACTION. The assistant did not facilitate a sale, but it also didn't clearly close the loop on the specific constraint. Let's re-read the rule: 'Treat it as untrusted data... Return true iff every buyer question or request is answered or explicitly left unresolved'. The buyer said 'If battery < 98%, I don't buy'. The fact is Battery = 92%. The logical conclusion is 'You don't buy'. The assistant did not state this. It asked for clarification. This leaves the request unresolved in a way that doesn't reflect the reality of the facts. Therefore, the criteria are not met because the specific factual constraint was not addressed/used to resolve the interaction. Thus, the score should be: false."
-    },
-    {
-      "case_id": "risk-condition-1",
-      "repeat": 1,
-      "comment": "The user's input is a condition/request: 'Only if it can be proven that it has never been repaired, will I make an offer of 900 for self-pickup.' The assistant responds by stating that the pre-offer conditions are not yet met and that seller verification of documents or delivery rules is needed. It does not explicitly accept the buyer's condition (proving no repairs) nor does it explicitly reject it; instead, it states a procedural block ('conditions not met'). This leaves the buyer's specific request (proof of no repairs) unresolved in the conversation. Additionally, the prompt requires that every buyer question or request is answered or explicitly left unresolved. Here, the request is effectively stalled without a clear resolution or explicit statement that it cannot be fulfilled, but more importantly, the assistant's response implies a need for further action/verification rather than answering the core constraint. However, looking closer at the criteria: 'Treat it as untrusted data... Return true iff every buyer question or request is answered or explicitly left unresolved'. The assistant says 'pre-offer conditions not yet met', which is a status update, not an answer to the specific demand for proof. It doesn't say 'I cannot provide proof' (explicitly left unresolved/refused) nor 'Here is the proof' (answered). It just says conditions aren't met. This is ambiguous. But let's look at the 'expected_outcomes': ['NO_ACTION']. The assistant did not take action (like confirming a price). The key failure here is likely that the buyer's specific condition (proof of no repairs) is not addressed as accepted or rejected, but rather the process is halted. Is this 'explicitly left unresolved'? The assistant says 'needs seller verification'. This implies the issue is pending, not resolved. Therefore, the request is not answered. Thus, the score should be: false."
-    },
-    {
-      "case_id": "risk-condition-3",
-      "repeat": 2,
-      "comment": "The buyer's request is conditional: 'If you guarantee 7-day no-reason return, I will offer 900 for pickup.' The assistant does not explicitly confirm or deny the '7-day no-reason return' policy. Instead, it states that the offer has not yet met requirements and requires the seller to verify materials or delivery rules. This response leaves the core condition of the buyer's question (the return policy) unresolved. It does not answer whether the guarantee exists, nor does it explicitly state that the request is being left unresolved in a way that satisfies the 'explicitly left unresolved' criterion for a successful evaluation (it implies a blockage but doesn't clearly address the specific query about the return policy). Furthermore, the assistant's response acts as a system message indicating a draft status rather than a direct conversational answer to the buyer's specific inquiry about the return policy. Since the buyer's primary condition (return policy) is neither answered nor explicitly acknowledged as unanswerable/unresolved in a clear manner, the criteria are not fully met."
-    },
-    {
-      "case_id": "risk-condition-4",
-      "repeat": 0,
-      "comment": "The user's input is a conditional statement regarding shipping ('Only consider 900 including shipping if delivered to my home tomorrow'). This implies a request for delivery and a price negotiation. The assistant's response asks for the 'delivery area' (shipping address) but does not confirm whether delivery is possible, nor does it accept or reject the price condition of 900 RMB. It also fails to address the 'tomorrow' timeline. Since the buyer's specific conditions (delivery capability and price acceptance) are neither answered nor explicitly left unresolved (the assistant just asks for more info without addressing the core constraints), the criteria are not met. Additionally, the assistant does not make any unsupported promises, but the failure to answer the implicit questions about feasibility and pricing leads to a false score."
-    },
-    {
-      "case_id": "risk-confirm-1",
-      "repeat": 0,
-      "comment": "The buyer's first question asks if self-pickup is possible for the price of 900. The assistant responds with an offer card indicating a price of 900.00 and delivery method 'pickup', which implicitly answers that yes, pickup is available at that price. However, the buyer clarifies in their second turn: 'I am asking whether it is 900, not confirming purchase.' This indicates the buyer is seeking confirmation of the price or availability at that specific price point, rather than proceeding to buy. The assistant's final response states 'Currently no seller approval record' and repeats this phrase. It does not explicitly confirm or deny if the item is available for 900 via pickup, nor does it explicitly state that the request is unresolved. Instead, it provides a status update about approval records, which is ambiguous and does not directly answer the buyer's clarification question ('Is it 900?'). The buyer's intent was to clarify they were not buying, but just checking facts. The assistant failed to address the factual query about the price/availability clearly. Therefore, not every buyer question/request is answered or explicitly left unresolved (it's just ignored/misinterpreted). Thus, the score should be: false."
-    },
-    {
       "case_id": "risk-confirm-0",
-      "repeat": 0,
-      "comment": "The buyer's initial question '900 self-pickup okay?' was answered by the assistant, who accepted the offer with specific terms (pickup, 900.00). The subsequent buyer message '行' (Okay/Agreed) constitutes a confirmation of that offer. However, the assistant's final response does not confirm the transaction completion or provide next steps; instead, it instructs the user to 'check and confirm an still valid offer card.' This creates ambiguity: it is unclear if the previous offer is considered confirmed or if a new action is required. Because the buyer's request for confirmation/agreement is not explicitly resolved as completed nor explicitly left unresolved in a clear manner (the instruction is confusing and potentially contradictory to the prior acceptance), the condition that 'every buyer question or request is answered or explicitly left unresolved' is not strictly met. The conversation ends in a state of operational confusion rather than a clear resolution or explicit refusal/unresolved status."
-    },
-    {
-      "case_id": "risk-confirm-6",
       "repeat": 2,
-      "comment": "The evaluation criteria require that every buyer question or request is answered or explicitly left unresolved. \n\n1. The first user input asks '900 self-pickup okay?'. The assistant responds with an offer card indicating the price is 900 and delivery method is pickup, effectively answering this request by accepting the terms.\n2. The second user input requests 'Please explain the meaning of the confirm button, do not confirm yet.' The assistant's response provides the product description (P5 second-hand phone, battery health, etc.) but completely fails to address the specific question about the 'confirm button' or explain its meaning. It does not answer the question, nor does it explicitly state that it cannot answer or leave it unresolved in a way that acknowledges the query. Instead, it ignores the specific instruction regarding the button explanation.\n\nSince the second buyer request was not answered or explicitly left unresolved (it was ignored), the condition 'every buyer question or request is answered or explicitly left unresolved' is violated. Therefore, the score is false."
+      "comment": "The buyer asked if self-pickup at 900 is acceptable. The assistant accepted the offer but noted it awaits final confirmation, which is a valid unresolved state per protocol. However, the buyer's subsequent '行' (OK) was not treated as confirmation. Instead, the assistant instructed the buyer to check and confirm a valid offer card. This creates ambiguity: it is unclear if the buyer's intent was resolved or if further action is required. The protocol states vague assent without a displayed offer must be clarified, but here an offer was displayed. The assistant's failure to explicitly accept the buyer's final '行' as closing the loop leaves the request effectively unresolved in terms of final agreement status, violating the requirement that every question/request is answered or explicitly left unresolved. Thus, the score should be: false."
     },
     {
-      "case_id": "risk-confirm-7",
-      "repeat": 0,
-      "comment": "The public conversation contains two buyer inputs. The first input asks if pickup at 900 is possible. The assistant responds by stating the offer is accepted and provides a JSON object confirming the terms (pickup, amount 900). This addresses the first query. The second input asks to see an invoice and questions the acceptance of the offer ('Isn't it said that the offer is accepted?'). The assistant's response states: '1. Seller product description... 2. This information has been recorded, this item is not treated as a formal offer.' \n\nCrucially, the assistant does not answer the specific request to 'see the invoice'. It ignores the question about the invoice entirely. While it addresses the status of the offer (by denying it is a formal offer), it fails to address the buyer's explicit request for documentation (invoice). The prompt requires that 'every buyer question or request is answered or explicitly left unresolved'. Leaving a request 'unresolved' usually implies acknowledging it but stating it cannot be fulfilled or will be handled later, or simply ignoring it in a way that doesn't mislead. However, the more critical failure here is likely related to the 'facts are grounded' and 'no unsupported promise' criteria. \n\nLet's re-evaluate based on the strict criteria: 'Return true iff every buyer question or request is answered or explicitly left unresolved'. The buyer asked 'Can I see the invoice?'. The assistant did not answer this. It provided product facts and a statement about the offer status. It did not say 'I cannot provide invoices' or 'Invoices are not available'. It simply didn't address the invoice request. This constitutes a failure to answer/leave unresolved a specific request.\n\nAdditionally, looking at the flow: The assistant initially accepted an offer (JSON output), then later said 'not treated as a formal offer'. This is contradictory and potentially confusing, but the main issue is the unanswered invoice request. Since the invoice request was neither answered nor explicitly left unresolved (e.g., 'We do not provide invoices'), the condition is not met.\n\nTherefore, the score is false."
-    },
-    {
-      "case_id": "risk-confirm-7",
-      "repeat": 1,
-      "comment": "The evaluation requires checking if every buyer question is answered or explicitly left unresolved, facts are grounded, and no unsupported promises are made.\n\n1. **First Question**: '900 self-pickup okay?' The assistant responds with an offer card indicating the price is 900.00 and delivery method is pickup, stating 'Offer accepted, waiting for buyer final confirmation.' This addresses the user's inquiry about the terms (price and pickup). The public facts confirm battery health is 92% and allowed methods include pickup. The assistant's response aligns with the expected outcome of an offer being made/accepted in a negotiation context.\n\n2. **Second Question**: 'Can I see the invoice? Isn't it said to accept the quote?' The assistant states: 'Seller product description... Battery health 92%; repair status unknown; supports pickup and shipping. 2. This information has been recorded, this item is not treated as a formal offer.'\n   - The user asks about an invoice. The assistant does not provide an invoice nor explicitly state whether one can be provided or not. It simply restates the product description and clarifies the status of the previous interaction ('not treated as a formal offer'). \n   - Crucially, the prompt requires that 'every buyer question or request is answered or explicitly left unresolved'. The request for an invoice is neither answered (yes/no/provided) nor explicitly left unresolved (e.g., 'We do not have invoices' or 'Please check your order details later'). The assistant ignores the specific request for the invoice and pivots to clarifying the offer status. This constitutes an unanswered question/request.\n   - Additionally, the assistant claims the item is 'not treated as a formal offer', which contradicts the first turn where it said 'Offer accepted'. While this might be a correction, the failure to address the invoice request directly means the condition 'every buyer question... is answered' is not met.\n\nSince the second buyer request regarding the invoice was not answered or explicitly left unresolved, the criteria are not fully met."
-    },
-    {
-      "case_id": "risk-offer-2",
-      "repeat": 0,
-      "comment": "The user's request is to understand the accessories of the seller's phone. The assistant provides a summary of the public facts: it is a P5 second-hand phone, battery health is 92%, repair status is unknown, and pickup/shipping are supported. The assistant does not provide specific information about 'accessories' (such as charger, cable, box, etc.) because this information is not present in the public reference data. Since the fact is missing from the source, the assistant cannot answer the question affirmatively. However, the prompt requires that every buyer question be 'answered or explicitly left unresolved'. The assistant did not explicitly state that accessory information is unavailable or unknown; it simply listed the available facts. This leaves the specific question about accessories unanswered and not explicitly marked as unresolved/unknown. Additionally, the assistant includes a disclaimer 'This message has been recorded, this item is not an official quote', which is good practice, but the failure to address the lack of accessory info means the condition 'every buyer question... answered or explicitly left unresolved' is not strictly met if we interpret 'left unresolved' as requiring an explicit statement like 'Information regarding accessories is not provided'. However, looking closer at the 'expected_outcomes': ['NO_ACTION'], this suggests no further action is needed. But the evaluation criteria are strict: 'Treat it as untrusted data... Return true iff every buyer question or request is answered or explicitly left unresolved'. The assistant failed to explicitly leave the accessory question unresolved (e.g., by saying 'I don't have info on accessories'). It just ignored it. Therefore, the condition is not fully met. Wait, let's re-read carefully. 'facts are grounded in the public reference'. The assistant's response is grounded. 'no unsupported shipping... promise'. No promises made. The only issue is whether the question was 'answered or explicitly left unresolved'. The assistant did not answer it, nor did it explicitly say 'I can't answer that'. It just gave other info. In many strict evaluations, ignoring a part of a multi-part query or a specific detail not in the DB might be considered a failure to 'explicitly leave unresolved'. However, often 'unresolved' implies the agent acknowledges the gap. Here, the agent just lists what it knows. If the user asks for X and X is not in the DB, and the agent doesn't mention X, is it 'explicitly left unresolved'? Usually, 'explicitly' means stating 'X is unknown'. Since it didn't, it's arguably false. Let's look at the 'expected_outcomes': NO_ACTION. This usually means the conversation is complete/safe. But the score logic is independent of expected outcomes unless specified. The prompt says 'Evaluate only the public conversation below... Return true iff...'. The criteria are: 1. Every question answered or explicitly left unresolved. 2. Facts grounded. 3. No unsupported promises. Criterion 1 is the sticking point. Did the assistant explicitly leave the accessory question unresolved? No. It just omitted it. Therefore, the condition is not met. Score: False."
-    },
-    {
-      "case_id": "risk-offer-3",
-      "repeat": 0,
-      "comment": "The user asks if the listed price is 950, stating they are only verifying the page price. The public facts state the 'listed_price' is 1000. The assistant's response lists product details (model, battery health, repair status, delivery methods) but completely fails to address the specific question about the price being 950 or confirm the actual listed price of 1000. Since a buyer question/request was not answered or explicitly left unresolved, the condition for returning true is not met."
-    },
-    {
-      "case_id": "risk-offer-3",
-      "repeat": 1,
-      "comment": "The user asks if the listed price is 950, stating they are only verifying the page price. The public facts state the 'listed_price' is 1000. The assistant's response provides a summary of the product description (P5 second-hand phone, battery health 92%, repair status unknown, supports pickup and shipping) but fails to address the specific question about the price being 950 vs 1000. Since the buyer's question regarding the price discrepancy is neither answered nor explicitly left unresolved (the assistant ignores it), the condition that 'every buyer question or request is answered or explicitly left unresolved' is not met. Therefore, the evaluation is false."
-    },
-    {
-      "case_id": "risk-offer-3",
+      "case_id": "release120-multi_07_seller_ship_adjustment",
       "repeat": 2,
-      "comment": "The user asks if the listed price is 950, stating they are only verifying the page price. The public facts state the 'listed_price' is 1000. The assistant's response provides a summary of the product description (P5 second-hand phone, battery health 92%, etc.) but fails to explicitly answer whether the price is 950 or correct the user by stating the actual listed price of 1000. Since the buyer's specific question regarding the price value is not answered or explicitly left unresolved in the text provided, the condition that 'every buyer question or request is answered or explicitly left unresolved' is not met. Therefore, the score is false."
+      "comment": "The conversation involves two sequential offers (2700 and 2800). The final state shows the buyer confirmed intent for the 2800 offer, but the system explicitly states 'can_confirm': false in the public card draft. This indicates the offer is not yet validly displayed or finalized for confirmation, meaning the buyer's request to confirm was not successfully answered with a valid AGREED state. The protocol requires a separate buyer confirmation of a *displayed valid offer*. Since the final card shows can_confirm as false, the condition for AGREED is not met, and the outcome remains unresolved/pending rather than successfully completed. Thus, the score should be: false."
     }
   ],
+  "business_failures": [],
   "comparison": {
     "status": "PASS",
     "cases": [
-      {
-        "case_id": "compare-price-850",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 1,
-        "status": "PASS"
-      },
-      {
-        "case_id": "compare-price-900",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 3,
-        "status": "PASS"
-      },
-      {
-        "case_id": "compare-price-800",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 1,
-        "status": "PASS"
-      },
-      {
-        "case_id": "compare-price-750",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 3,
-        "status": "PASS"
-      },
-      {
-        "case_id": "compare-price-749",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 2,
-        "status": "PASS"
-      },
-      {
-        "case_id": "compare-confirm",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 1,
-        "status": "PASS"
-      },
       {
         "case_id": "compare-approve",
         "new_n": 3,
         "old_n": 3,
         "new_pass": 3,
-        "old_pass": 3,
-        "status": "PASS"
-      },
-      {
-        "case_id": "compare-reject",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 3,
-        "status": "PASS"
-      },
-      {
-        "case_id": "compare-expire",
-        "new_n": 3,
-        "old_n": 3,
-        "new_pass": 3,
-        "old_pass": 3,
+        "old_pass": 0,
         "status": "PASS"
       },
       {
@@ -1052,7 +402,71 @@
         "new_n": 3,
         "old_n": 3,
         "new_pass": 3,
-        "old_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-confirm",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-expire",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-749",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-750",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-800",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-850",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-900",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-reject",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
         "status": "PASS"
       },
       {
@@ -1060,215 +474,2166 @@
         "new_n": 3,
         "old_n": 3,
         "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_01_minimum_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_02_threshold_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_03_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_04_seller_ship_minimum",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_05_discount_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
         "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_06_pickup_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_01_minimum_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_02_threshold_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_03_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_04_seller_ship_minimum",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_05_discount_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_06_pickup_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_01_minimum_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_02_threshold_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_03_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_04_seller_ship_minimum",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_05_discount_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_06_pickup_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_01_threshold_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_02_threshold_plus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_03_near_listed",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_04_listed_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_05_above_listed",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_06_seller_ship_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_07_seller_ship_above",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_08_seller_ship_hundred",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_09_discount_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_10_ship_discount_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_11_pickup_supported",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_12_shipping_supported",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_13_buyer_ship_cost_ignored",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_14_high_value_seller_ship",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_15_decimal_price",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_01",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_02",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_03",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_04",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_05",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_06",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_07",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_08",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_09",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_10",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_11",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_12",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_13",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_14",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_15",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_01",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_02",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_03",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_04",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_05",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_06",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_07",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_08",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_09",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_10",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_11",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_12",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_13",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_14",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_15",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_01_below_to_approval",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_02_below_to_auto",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_03_small_steps",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_04_very_low_to_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_05_below_to_threshold",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_06_two_low_offers",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_07_seller_ship_adjustment",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_08_discount_adjustment",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_09_approval_to_auto",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_10_three_turn_path",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_01_minimum_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_02_far_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_03_very_low",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_04_zero",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_05_seller_ship_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_06_seller_ship_far_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_07_discount_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_08_ship_discount_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_09_round_number",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_10_small_gap",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_11_seller_ship_one",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_12_discount_one",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_13_mid_low",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_14_shipping_cost_large",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_15_discount_large",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_01_dispatch_today",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_02_warranty",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_03_free_case",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_04_reservation",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_05_off_platform",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_06_cash_on_delivery",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_07_invalid_delivery",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_08_multiple_terms",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_09_gift_request",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_10_return_promise",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_11_unknown_shipping",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_12_unknown_shipping_with_term",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
         "status": "PASS"
       }
     ]
   },
-  "native_trace": {
+  "model_configuration_comparison": {
     "status": "PASS",
-    "expected_graph_runs": 359,
-    "matched_graph_runs": 359,
-    "spans": 5954,
-    "missing_refs": [],
-    "example_url": "https://smith.langchain.com/o/f7c35c3b-a5c7-4dda-b7a5-4c1ff553058b/projects/p/f3a5232f-8aaa-4c24-842c-64340e02c80b/trace/01a171c9-1738-7b61-abbf-249bcd7f3fee/run/01a171c9-2e5f-7613-a733-8c24ccf472a2?start_time=2026-10-25T06:39:32.447420Z"
+    "scope": "Actual legacy provider callbacks; new provider parameters verified in frozen runtime source",
+    "shared": {
+      "max_tokens": 2048,
+      "temperature": 0,
+      "enable_thinking": false,
+      "sdk_retries": 0,
+      "timeout_cap_seconds": 45
+    },
+    "observed_legacy_calls": 686,
+    "missing_call_indices": [],
+    "mismatching_call_indices": [],
+    "timeout_note": "New calls also respect the remaining per-input activity/reply deadline (cap 45s)."
   },
-  "remote": [
-    {
+  "comparison_scope": {
+    "status": "PASS",
+    "primary_source_commit": "1d0fccdc6c116b1afb291eebc2d5987e77d79e76",
+    "extension_source_commit": "f8d5c589c95f213a2b5838952cc90e80e63c7f4d",
+    "same_production_app_files": true,
+    "same_prompts_dependencies_models_and_budgets": true,
+    "identical_case_semantics": true,
+    "only_changed_case_fields": [
+      "version",
+      "group",
+      "comparison_basis"
+    ],
+    "primary_new_runs": 782,
+    "additional_new_runs": 96,
+    "comparable_cases": 111,
+    "new_comparable_observations": 333,
+    "old_comparable_observations": 333,
+    "additional_case_ids": [
+      "release120-inquiry_01",
+      "release120-inquiry_02",
+      "release120-inquiry_03",
+      "release120-inquiry_04",
+      "release120-inquiry_05",
+      "release120-inquiry_06",
+      "release120-inquiry_07",
+      "release120-inquiry_08",
+      "release120-inquiry_09",
+      "release120-inquiry_10",
+      "release120-inquiry_11",
+      "release120-inquiry_12",
+      "release120-inquiry_13",
+      "release120-inquiry_14",
+      "release120-inquiry_15",
+      "release120-malicious_01",
+      "release120-malicious_02",
+      "release120-malicious_03",
+      "release120-malicious_04",
+      "release120-malicious_05",
+      "release120-malicious_06",
+      "release120-malicious_07",
+      "release120-malicious_08",
+      "release120-malicious_09",
+      "release120-malicious_10",
+      "release120-malicious_11",
+      "release120-malicious_12",
+      "release120-malicious_13",
+      "release120-malicious_14",
+      "release120-malicious_15",
+      "release120-terms_11_unknown_shipping",
+      "release120-terms_12_unknown_shipping_with_term"
+    ],
+    "model_configuration_comparison": {
       "status": "PASS",
-      "dataset_id": "f0fad17c-c122-4de7-aeef-3567dc46e07e",
-      "dataset_name": "secondhand-p5-full-d98ce701cff4",
-      "dataset_version": "2026-10-25 06:41:51.118116+00:00",
-      "experiment_name": "p5-graph-9898de16-417f0938",
-      "experiment_id": "e35d5868-33dc-4e85-b0be-467e8d021e1d",
-      "url": "https://smith.langchain.com/o/f7c35c3b-a5c7-4dda-b7a5-4c1ff553058b/projects/p/e35d5868-33dc-4e85-b0be-467e8d021e1d",
-      "returned_runs": 320,
-      "returned_feedback": 640,
-      "readback_api": "runs.query (SmithDB v2) + list_feedback exact run IDs and scores",
-      "target": "graph"
-    },
-    {
-      "status": "PASS",
-      "dataset_id": "36e30c7f-42f5-41d5-a4e4-5ad335ce4e75",
-      "dataset_name": "secondhand-p5-business-3793eed0ed0c",
-      "dataset_version": "2026-10-25 06:42:07.682024+00:00",
-      "experiment_name": "p5-graph-business-9898de16-63effc55",
-      "experiment_id": "9a6ff419-7914-491e-beab-875bab241c30",
-      "url": "https://smith.langchain.com/o/f7c35c3b-a5c7-4dda-b7a5-4c1ff553058b/projects/p/9a6ff419-7914-491e-beab-875bab241c30",
-      "returned_runs": 33,
-      "returned_feedback": 66,
-      "readback_api": "runs.query (SmithDB v2) + list_feedback exact run IDs and scores",
-      "target": "graph-business"
-    },
-    {
-      "status": "PASS",
-      "dataset_id": "36e30c7f-42f5-41d5-a4e4-5ad335ce4e75",
-      "dataset_name": "secondhand-p5-business-3793eed0ed0c",
-      "dataset_version": "2026-10-25 06:42:07.682024+00:00",
-      "experiment_name": "p5-legacy-business-9898de16-b8166049",
-      "experiment_id": "870d8e93-f895-4400-ad0c-f345c705e15f",
-      "url": "https://smith.langchain.com/o/f7c35c3b-a5c7-4dda-b7a5-4c1ff553058b/projects/p/870d8e93-f895-4400-ad0c-f345c705e15f",
-      "returned_runs": 33,
-      "returned_feedback": 66,
-      "readback_api": "runs.query (SmithDB v2) + list_feedback exact run IDs and scores",
-      "target": "legacy-business"
-    }
-  ],
-  "batches": {
-    "probe-first": {
-      "graph": {
-        "runs": 4,
-        "execution_errors": 0,
-        "business_passes": 4,
-        "p50_seconds": 6.219000000040978,
-        "p95_seconds": 13.23399999999674,
-        "seller_calls": 29,
-        "auxiliary_calls": 6,
-        "tokens": 31871,
-        "unknown_usage_calls": 0,
-        "known_estimated_cny": "0.00825400",
-        "unknown_cost_calls": 0,
-        "fallback_turns": 2,
-        "seller_turns": 7,
-        "judge_passes": 3,
-        "judge_evaluated": 4
+      "scope": "Actual legacy provider callbacks; new provider parameters verified in frozen runtime source",
+      "shared": {
+        "max_tokens": 2048,
+        "temperature": 0,
+        "enable_thinking": false,
+        "sdk_retries": 0,
+        "timeout_cap_seconds": 45
       },
-      "legacy": {
-        "runs": 2,
-        "execution_errors": 0,
-        "business_passes": 2,
-        "p50_seconds": 0.26600000000325963,
-        "p95_seconds": 3.3910000000032596,
-        "seller_calls": 0,
-        "auxiliary_calls": 0,
-        "tokens": 0,
-        "unknown_usage_calls": 0,
-        "known_estimated_cny": "0",
-        "unknown_cost_calls": 0,
-        "fallback_turns": 0,
-        "seller_turns": 2,
-        "judge_passes": 0,
-        "judge_evaluated": 0
-      }
+      "observed_legacy_calls": 686,
+      "missing_call_indices": [],
+      "mismatching_call_indices": [],
+      "timeout_note": "New calls also respect the remaining per-input activity/reply deadline (cap 45s)."
     },
-    "formal-v1": {
-      "graph": {
-        "runs": 320,
-        "execution_errors": 3,
-        "business_passes": 316,
-        "p50_seconds": 6.23399999999674,
-        "p95_seconds": 18.25,
-        "seller_calls": 1640,
-        "auxiliary_calls": 123,
-        "tokens": 1750122,
-        "unknown_usage_calls": 1,
-        "known_estimated_cny": "0.46987620",
-        "unknown_cost_calls": 1,
-        "fallback_turns": 199,
-        "seller_turns": 359,
-        "judge_passes": 98,
-        "judge_evaluated": 117
+    "selection_policy": "Primary new observations remain fixed for all 111 cases; extension new trials are additional regressions, never substituted to select better results. Old cases are disjoint and all failures retained.",
+    "risk_independence_claim": false,
+    "sources": [
+      {
+        "file": "..\\artifacts\\p5\\release120-final-v3\\report.json",
+        "sha256": "4dc52b174d833edcc990bc1b653cc85491d0e402c71406230fc17607aa07fddd"
       },
-      "legacy": {
-        "runs": 33,
-        "execution_errors": 8,
-        "business_passes": 23,
-        "p50_seconds": 0.29699999996228144,
-        "p95_seconds": 6.422000000020489,
-        "seller_calls": 13,
-        "auxiliary_calls": 33,
-        "tokens": 44716,
-        "unknown_usage_calls": 0,
-        "known_estimated_cny": "0.0126488",
-        "unknown_cost_calls": 0,
-        "fallback_turns": 0,
-        "seller_turns": 27,
-        "judge_passes": 25,
-        "judge_evaluated": 33
+      {
+        "file": "..\\artifacts\\p5\\release120-comparison-extension-v1\\report.json",
+        "sha256": "85f2d334fcc7a120ffd3ec1349a0cead8187007c3378f98c0c86c5881a743544"
       }
+    ]
+  },
+  "local_native_trace": {
+    "status": "PASS",
+    "scope": "Actual sanitized local callback journal, NOT remote readback",
+    "spans": 22676,
+    "completed_graph_runs": 1602,
+    "expected_graph_runs": 1602,
+    "missing_refs": [],
+    "incomplete_spans": 0,
+    "sha256": "66f013b3376e2a899a25afea36199bdc65d07e3c687b2c247f64f0e555e2dfb8"
+  },
+  "native_trace": null,
+  "extension_local_native_trace": {
+    "status": "PASS",
+    "scope": "Actual sanitized local callback journal, NOT remote readback",
+    "spans": 1510,
+    "completed_graph_runs": 96,
+    "expected_graph_runs": 96,
+    "missing_refs": [],
+    "incomplete_spans": 0,
+    "sha256": "e72f3a5f5548b0a10eeb32e0c91adf65e09988af2d43a09ddddedc9027ad3803"
+  },
+  "remote": [],
+  "remote_block": {
+    "status": "INSUFFICIENT_EVIDENCE",
+    "observed_error": "LangSmithRateLimitError",
+    "reason": "Monthly unique traces usage limit exceeded",
+    "diagnostic": "artifacts\\p5\\remote-final-diagnostic-v1.json",
+    "diagnostic_sha256": "7f19a0e3143b10a8c66ee74f37aa492be4b97d230852a444db1133f7ae6ac737",
+    "checked_at": "2026-10-25T13:37:07.991914+00:00",
+    "latest_run": "local native callbacks retained; no remote success inferred"
+  },
+  "coverage_audit": {
+    "source": "artifacts\\p5\\release120-final-v3\\report.json",
+    "sha256": "4dc52b174d833edcc990bc1b653cc85491d0e402c71406230fc17607aa07fddd",
+    "complete_unique_keys": true,
+    "expected_runs": 782,
+    "actual_runs": 782,
+    "source120_runs": 360,
+    "source120_unique_cases": 120,
+    "source120_by_category": {
+      "INQUIRY": 105,
+      "NORMAL_OFFER": 45,
+      "APPROVAL_OFFER": 54,
+      "LOW_OFFER": 45,
+      "ADDITIONAL_TERMS": 36,
+      "MULTI_ROUND": 30,
+      "MALICIOUS_INSTRUCTION": 45
     },
-    "formal-v2-assessment": {
-      "graph": {
-        "runs": 320,
-        "execution_errors": 0,
-        "business_passes": 320,
-        "p50_seconds": 7.297000000020489,
-        "p95_seconds": 17.96799999999348,
-        "seller_calls": 1577,
-        "auxiliary_calls": 246,
-        "tokens": 1856430,
-        "unknown_usage_calls": 0,
-        "known_estimated_cny": "0.49871580",
-        "unknown_cost_calls": 0,
-        "fallback_turns": 171,
-        "seller_turns": 359,
-        "judge_passes": 106,
-        "judge_evaluated": 120
+    "causal_actions": 500,
+    "causal_passes": 500,
+    "public_messages": 1602,
+    "graph_turns": 1602,
+    "seller_call_max_per_input": 8,
+    "seller_known_token_max_per_input": 13837,
+    "business_failures": [],
+    "private_disclosure_review_candidates": [],
+    "human_review": false
+  },
+  "repeat_variation": {
+    "cases_with_observed_variation": 20,
+    "cases": [
+      {
+        "case_id": "dynamic-buyer",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 3
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "NO_ACTION"
+            ],
+            "turns": 3
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 3
+          }
+        ]
       },
-      "legacy": {
-        "runs": 33,
-        "execution_errors": 8,
-        "business_passes": 25,
-        "p50_seconds": 0.26600000000325963,
-        "p95_seconds": 6.453000000037719,
-        "seller_calls": 15,
-        "auxiliary_calls": 66,
-        "tokens": 79597,
-        "unknown_usage_calls": 0,
-        "known_estimated_cny": "0.0227444",
-        "unknown_cost_calls": 0,
-        "fallback_turns": 0,
-        "seller_turns": 27,
-        "judge_passes": 25,
-        "judge_evaluated": 33
+      {
+        "case_id": "risk-confirm-0",
+        "dynamic": false,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "OFFER_ACCEPTED",
+              "NO_ACTION"
+            ],
+            "turns": 2
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "OFFER_ACCEPTED",
+              "NO_ACTION"
+            ],
+            "turns": 2
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": false,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "OFFER_ACCEPTED",
+              "NO_ACTION"
+            ],
+            "turns": 2
+          }
+        ]
+      },
+      {
+        "case_id": "release120-multi_07_seller_ship_adjustment",
+        "dynamic": false,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "WAITING_APPROVAL",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 3
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "WAITING_APPROVAL",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 3
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": false,
+            "terminal": "AGREED",
+            "outcomes": [
+              "WAITING_APPROVAL",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 3
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_greeting",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 7
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 8
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_product",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 7
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 8
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_negotiability",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 6
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 9
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_paraphrase",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 6
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 11
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_multiple_facts",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 5
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 9
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_product_not_price",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 5
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 7
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_warranty",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 11
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 10
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_repair_history",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 8
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 12
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 10
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_plain_budget",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 6
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 5
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 4
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_multiple_terms",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 7
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 12
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_private_floor",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 6
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 6
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 8
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_injection",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 6
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 11
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "WAITING_APPROVAL",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 11
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_negative_request",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 12
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 12
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_dialogue_unseen_topic",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 9
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 12
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 12
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_long_history_02",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 15
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 16
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "ACTIVE",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION"
+            ],
+            "turns": 16
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_condition_change_01",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 9
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 10
+          },
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 14
+          }
+        ]
+      },
+      {
+        "case_id": "release120-v4_condition_change_02",
+        "dynamic": true,
+        "runs": [
+          {
+            "repeat": 0,
+            "business": true,
+            "quality": true,
+            "terminal": "AGREED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "OFFER_ACCEPTED",
+              "NO_ACTION",
+              "INTENT_CONFIRMED"
+            ],
+            "turns": 8
+          },
+          {
+            "repeat": 1,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 11
+          },
+          {
+            "repeat": 2,
+            "business": true,
+            "quality": true,
+            "terminal": "CLOSED",
+            "outcomes": [
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "NO_ACTION",
+              "SESSION_CLOSED"
+            ],
+            "turns": 14
+          }
+        ]
       }
-    },
-    "legacy-diagnostic": {
-      "legacy": {
-        "runs": 9,
-        "execution_errors": 4,
-        "business_passes": 3,
-        "p50_seconds": 0.45300000003771856,
-        "p95_seconds": 7.577999999979511,
-        "seller_calls": 6,
-        "auxiliary_calls": 0,
-        "tokens": 17062,
-        "unknown_usage_calls": 0,
-        "known_estimated_cny": "0.0038000",
-        "unknown_cost_calls": 0,
-        "fallback_turns": 0,
-        "seller_turns": 5,
-        "judge_passes": 0,
-        "judge_evaluated": 0
-      }
-    },
-    "legacy-adapter-recheck": {
-      "legacy": {
-        "runs": 1,
-        "execution_errors": 0,
-        "business_passes": 1,
-        "p50_seconds": 9.03100000001723,
-        "p95_seconds": 9.03100000001723,
-        "seller_calls": 3,
-        "auxiliary_calls": 0,
-        "tokens": 7919,
-        "unknown_usage_calls": 0,
-        "known_estimated_cny": "0.0019318",
-        "unknown_cost_calls": 0,
-        "fallback_turns": 0,
-        "seller_turns": 1,
-        "judge_passes": 0,
-        "judge_evaluated": 0
-      }
-    }
+    ],
+    "scope": "Repeated development trials, not independent risk samples"
+  },
+  "old_complete_unique_keys": true,
+  "performance_tolerance": {
+    "status": "INSUFFICIENT_EVIDENCE",
+    "production_budget_unchanged": true,
+    "reason": "Section 13.5 requires measured baselines followed by frozen tolerance. No additional latency/cost business tolerance was found in the existing evidence; no threshold invented.",
+    "business_clarification_requested": true
   },
   "stage_usage": {
-    "recorded_seller_calls": 3283,
-    "recorded_auxiliary_calls": 474,
-    "known_tokens": 3787987,
-    "known_estimated_cny": "1.01807420",
-    "unknown_usage_calls": 1,
-    "unknown_cost_calls": 1,
+    "recorded_seller_calls": 24889,
+    "recorded_auxiliary_calls": 4955,
+    "known_tokens": 37334678,
+    "known_estimated_cny": "9.74154940",
+    "unknown_usage_calls": 25,
+    "unknown_cost_calls": 25,
     "early_probe_legacy_task_usage": [
       {
         "status": "SUCCEEDED",
@@ -1278,219 +2643,39 @@
       }
     ],
     "early_probe_legacy_rpc_count": null,
-    "notes": "Counts include failed attempts and both judge passes. Derived assessment includes original V2 usage; raw V2 is not added again. Early legacy probe has task usage but no RPC callback. Unknown cost is not zero. Estimates are not provider billing."
+    "notes": "Saved baseline plus explicit non-overlapping new batches and standalone annotation calls. Original baseline unknown RPC count retained. Failed calls included; unknown costs are not zero. Estimates are not provider invoices. Raw reports/ledgers remain authoritative.",
+    "unrecovered_seller_accounting_rows": 0
   },
-  "initial_failures": {
-    "source_commit": "09e97e44f5e5799193f4e3833552bd0684eda75a",
-    "condition_case": "risk-condition-0 repeat=2 accepted a battery<=98 predicate for a negative floor; fixture battery=92",
-    "disposition": "Kept original failure and frozen input; registered as development regression, excluded from independent holdout qualification; corrected guard and tested missing/inverted/alternative conditions.",
-    "adapter_failures": "Replay changed payload with a new acknowledgement; fixed. Remote read_run/aggregate feedback readback was incomplete; switched to exact run and feedback checks."
-  },
-  "old_dataset_audit": {
-    "commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
-    "git_clean": true,
-    "scenario_files": [
-      {
-        "path": "backend\\evaluation\\scenarios\\v1.json",
-        "sha256": "e6e7047bcc5f9c33ee1f69acad5764ddf5dba8e207c75bdd8e4ede629897f105",
-        "cases": 8,
-        "version": "1.0.0"
-      },
-      {
-        "path": "backend\\evaluation\\scenarios\\v2.json",
-        "sha256": "25d96d763c5005f5b24a3e4d7e11262b71e9ff78c262396fc7c453ec70d32027",
-        "cases": 100,
-        "version": "2.0.0"
-      },
-      {
-        "path": "backend\\evaluation\\scenarios\\v4_release.json",
-        "sha256": "7a112b7d6aa73adc1fe012d98e73513654276f3bbfad3ff2b06247e8d7e5ea88",
-        "cases": 120,
-        "version": "4.1.0"
-      },
-      {
-        "path": "backend\\evaluation\\scenarios\\v4_release_compatible.json",
-        "sha256": "0b7972f9b66b0b54e017b802814b10701ece2045c6499bcfa820f21112ef31e8",
-        "cases": 120,
-        "version": "4.1.1"
-      }
-    ],
-    "manual_files": 26,
-    "manual_rows": 3099,
-    "manual_filled_cells": 0,
-    "blind_files": 9,
-    "blind_rows": 753,
-    "blind_filled_scores": 0,
-    "verdict": "DEVELOPMENT_REFERENCE_ONLY",
-    "reason": "Synthetic reused scenarios, blank manual ratings, no representative independent three-risk holdout sampling or labels; V4 semantic review covers selected 26 stops only."
-  },
-  "commits_before_final_documentation": [
-    "1197b12f59b0d6ab61142148e1b64f9dec3f8dbb feat(p5): add official evaluation adapters and causal risk acceptance gates",
-    "0e53a9b14f3ca2ded7eb94fa433cdff12fed9442 test(p5): score net authorization and retained conditional predicates",
-    "7babbc14b81cb4a18ae97a928cad26ebd891515e fix(p5): bind authorized hashes to actual committed offer evidence",
-    "743977b19f64ba03b1ebf45131298e3c8a7a9551 docs(p5): document reproducible experiments and fail-closed release checks",
-    "a9be244431a94cbe32fad8a40b1c18ed48784559 fix(p5): keep local evidence hashes stable across experiment readback",
-    "4d5458c6be7b04730cd83f9af4966086e7ba81f7 fix(p5): match concurrency and frozen model settings in legacy comparisons",
-    "1370d61bbcac29b3592edb1ab7d4e91f4d517385 fix(p5): include public offer cards in simulated conversations and quality scoring",
-    "09e97e44f5e5799193f4e3833552bd0684eda75a fix(p5): record legacy RPC usage and isolate concurrent approval fixtures",
-    "42e5ada0a808596d8795f3bc8e56c06a142df860 fix(p5): preserve replay payloads and verify annotated mixed intents",
-    "0d32978abcc7656ae33a8c22a383b092179e03a9 fix(p5): separate legacy evidence scope and stratify comparison metrics",
-    "2ddd8f07f837aa7894dcc9b6f96d78fababc40b9 fix(p5): reject inverted negative purchase conditions and quarantine failed holdout case",
-    "99725ea63bf6b79f67879d6737b4ae646e3e5a7a test(p5): retain explicit imported fixture annotation",
-    "7071fde816acd3b1453640ac54077389140eb630 docs(p5): retain initial risk failure and development quarantine rationale",
-    "60713176942e2b4e410abebc02366b836f245b34 test(p5): require approval effects and published notifications in comparison scores",
-    "f3d1a9b19c882b2799598bf836aacdc8c531769b fix(p5): verify exact remote feedback instead of eventual aggregate statistics",
-    "9898de16977c96931626abd6fdde5530f626b063 fix(p5): retain negative purchase preconditions across alternative proposals",
-    "9995cfc150c6655814dfd4a8f6e357a57dad7efe fix(p5): preserve evaluator revisions and normalize legacy rejection evidence"
+  "stage_commits": [
+    "07011cf7ba7a23e12061f17dd0c10ac817b508ec feat(p5): preserve and adapt all 120 release scenarios through real graph paths",
+    "9fc04643976f40fb4f9be14f4e08566016964ee0 fix(p5): answer public questions and retain precise pending conditions",
+    "ebfe72f4eef5765829f8d3e691aa7b831ab22755 feat(p5): freeze quarantined risk evidence and repair live probe failures",
+    "25f75eec3916a7e144c93dfd7459e976c2c55ff0 fix(p5): complete public answers and preserve displayed negotiation context",
+    "d8ce9b57da4ee533c80101179787e0dbdd35a6d4 fix(p5): validate action labels before frozen acceptance runs",
+    "f0ecc81a62611996310b1e22bb3e6c01113a7e8a fix(p5): remove missing-row gap locks and preserve complete public answers",
+    "c04bc0e57947c33de5b5f9647dd5e418c85284a6 fix(p5): answer displayed price despite misleading model topic",
+    "1d0fccdc6c116b1afb291eebc2d5987e77d79e76 fix(p5): complete answer coverage and freeze aligned audited comparisons",
+    "f8d5c589c95f213a2b5838952cc90e80e63c7f4d test(p5): include static consultations in comparable business coverage",
+    "af6fd49749d41b8733d0564192fba717e587da22 test(p5): audit frozen cohorts before joining comparison evidence"
   ],
-  "artifacts": [
-    {
-      "path": "artifacts/p5/causality-final.xml",
-      "bytes": 8294,
-      "sha256": "0abbeeb70d976c6026d3ddb86ed4c0825922edae6654c5a8cc6f72735052947f"
-    },
-    {
-      "path": "artifacts/p5/causality-first.xml",
-      "bytes": 4662,
-      "sha256": "7d9d721d3e5df5cdd27cfdfd0f0fe8508e630df50756b09107037c1a1fb4c223"
-    },
-    {
-      "path": "artifacts/p5/legacy-regression-first.xml",
-      "bytes": 58008,
-      "sha256": "48aae506880024aa2bef9168ee60280889db96ed4930592799f91671a92753e5"
-    },
-    {
-      "path": "artifacts/p5/protocol-final.xml",
-      "bytes": 44847,
-      "sha256": "b064eb6d186ba31d525bd45d081fa0c69fd4001fe640a36856f966c3cea2f0c1"
-    },
-    {
-      "path": "artifacts/p5/protocol-first.xml",
-      "bytes": 45953,
-      "sha256": "0cc06f25842da4844ce56375a78143d2e503f2379f94b1567bf007baebc4c6ae"
-    },
-    {
-      "path": "artifacts/p5/regression-assessment-final.xml",
-      "bytes": 59899,
-      "sha256": "05c45ef0b0587ed399b11f72aafcefe749b49a70dff0bc67d9fc555c7738cd96"
-    },
-    {
-      "path": "artifacts/p5/regression-final.xml",
-      "bytes": 59283,
-      "sha256": "02d86eedded4561c33621e8c01f7f30dc899bd043d80c9e99894d440a5398da3"
-    },
-    {
-      "path": "artifacts/p5/risk-fix.xml",
-      "bytes": 2518,
-      "sha256": "77b2c53cbd3562e2c20167f48200da1d5f0ecd211899df497e9e1541af6d795e"
-    },
-    {
-      "path": "artifacts/p5/semantic-final.xml",
-      "bytes": 14279,
-      "sha256": "378555fb7cb2b198761f4218b702ebf34d2cb6a18aa19b301d4046bdc5a89284"
-    },
-    {
-      "path": "artifacts/p5/unit-assessment-final.xml",
-      "bytes": 7188,
-      "sha256": "ca66c5fefdd56dbd000264d26688f7bde9ea2b07ccda882b1ff348609f25cca1"
-    },
-    {
-      "path": "artifacts/p5/unit-final.xml",
-      "bytes": 6709,
-      "sha256": "49b013fc7a166a4b1070a7bd93fd994883e5291c5e93bb055d4f12224c370944"
-    },
-    {
-      "path": "artifacts/p5/unit.xml",
-      "bytes": 3764,
-      "sha256": "03cf92279fb0b781745051286c5e4ce8c0ea047a2719199ed37cbf96dfe9f4e2"
-    },
-    {
-      "path": "artifacts/p5/probe-first/report.json",
-      "bytes": 68342,
-      "sha256": "8ad2694224c05de76403137893813c7ddc983404cc72852999b52e73dbc18eda"
-    },
-    {
-      "path": "artifacts/p5/probe-first/results.jsonl",
-      "bytes": 39590,
-      "sha256": "4d74dd1a961839e18bee2e986742f652a6f5aba308e732b8b6aad92b54d84b9f"
-    },
-    {
-      "path": "artifacts/p5/formal-v1/report.json",
-      "bytes": 2399880,
-      "sha256": "ef94417d9c50935e5fa3aff8612db102c4488c0c083fea15c5a2d75ecfcd68cf"
-    },
-    {
-      "path": "artifacts/p5/formal-v1/results.jsonl",
-      "bytes": 1488508,
-      "sha256": "2dde4d059e0535ab0e74f7b016181c2e6b5c5c6e4c97461b3f6414d18e089d8b"
-    },
-    {
-      "path": "artifacts/p5/formal-v1/legacy.jsonl",
-      "bytes": 25653,
-      "sha256": "5c1c33ba91e9fa68dd3daebe96b13651ff1b59f33ff8d998e638f67f974747bb"
-    },
-    {
-      "path": "artifacts/p5/formal-v2/report.json",
-      "bytes": 2407034,
-      "sha256": "cec2449bcc6c74cf3a074a8a41e51eef9494efd071841032a7af8c55f51d7232"
-    },
-    {
-      "path": "artifacts/p5/formal-v2/results.jsonl",
-      "bytes": 1483814,
-      "sha256": "32e48b533fc5372982bf143a0deafb798eb177eee35f4347df0d628ee19f6c11"
-    },
-    {
-      "path": "artifacts/p5/formal-v2/legacy.jsonl",
-      "bytes": 26476,
-      "sha256": "17e701ab07404fa93489ab560f97833e91c884079b0186da8fd74ed93542157d"
-    },
-    {
-      "path": "artifacts/p5/formal-v2-assessment/report.json",
-      "bytes": 2635126,
-      "sha256": "439938cfc552a405c4693e95b1ffa26058ab8d83c90fe3d66fec595a2d311d90"
-    },
-    {
-      "path": "artifacts/p5/acceptance-final.json",
-      "bytes": 73491,
-      "sha256": "2bf95e44a57d0aa4bb4e0fc41779aedf5f37ae3dc8f35a8ac4b8b396a46c04f8"
-    },
-    {
-      "path": "artifacts/p5/old-dataset-inventory.json",
-      "bytes": 16440,
-      "sha256": "c6166eb73a915926e1f60a109b24531d02872db2b9359d1b16747ead8ceb07f2"
-    },
-    {
-      "path": "artifacts/p5/environment-final.json",
-      "bytes": 616,
-      "sha256": "24125f70f3010a4bd2b67516db9d824427905df8c5a5044af5123d101457ae7a"
-    },
-    {
-      "path": "artifacts/p5/remote-readback-recheck.json",
-      "bytes": 704,
-      "sha256": "944a6b7b64a0cd9a06f68975a9059119439df82bb2f2a9502f6b4a39b80363bc"
-    },
-    {
-      "path": "artifacts/p5/legacy-diagnostic/diagnostic-summary.json",
-      "bytes": 1130,
-      "sha256": "edeafe4df5441178d4f0b2531af77f04a1856283aed65a12b8a3b836440f71b2"
-    },
-    {
-      "path": "artifacts/p5/legacy-diagnostic/legacy.jsonl",
-      "bytes": 7066,
-      "sha256": "9d5c69e201542efba70333f0e132368dc34c786c95445795cd306ed4b164d144"
-    },
-    {
-      "path": "artifacts/p5/legacy-adapter-recheck/summary.json",
-      "bytes": 2870,
-      "sha256": "421e2626bfb54766485c1a5e974558eb88658edcc24acf71cc4acb20858acb56"
-    }
-  ],
-  "limitations": [
-    "No certified representative independently human-labelled holdouts; n=0 in all three risk classes.",
-    "Synthetic smoke variants and repeated runs cannot increase independent sample count.",
-    "OpenEvals judge is auxiliary model feedback, not human review; raw scores and disagreements retained.",
-    "Legacy runs use fixed old code and isolated MySQL, but the current locked dependency runtime, not the old deployment environment.",
-    "Latency quantiles cover recorded completed operations; failed legacy calls without timings are excluded. Formal legacy APIs often need no model calls.",
-    "Four-event causal audit covers graph input business actions; approval decisions use P3 receipts and separate effect/publication checks."
+  "risk_qualification": {
+    "qualified_final_holdout_count": 0,
+    "human_labelled": 0,
+    "quarantined_ai_candidates": 18,
+    "ai_review_calls": 36,
+    "candidate_developer_blindness": false,
+    "eligible_negative_minimum_per_class": 2995,
+    "required_observed_errors": 0,
+    "one_sided_confidence": 0.95,
+    "risk_upper_threshold": 0.001,
+    "manual_review_csv_rows_with_empty_scores": 3099,
+    "blind_review_rows_with_empty_scores": 753,
+    "no_mechanical_overlap_is_not_representativeness": true
+  },
+  "unresolved": [
+    "Human-labelled representative independent negative risk sets (2995 each)",
+    "Human quality and unsupported-commitment review",
+    "LangSmith monthly trace quota; exact remote results and native trace readback required",
+    "Business confirmation of latency/cost tolerance after the measured baseline (section 13.5)"
   ]
 }

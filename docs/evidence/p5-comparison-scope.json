@@ -1,0 +1,1072 @@
+{
+  "status": "PASS",
+  "primary_source_commit": "1d0fccdc6c116b1afb291eebc2d5987e77d79e76",
+  "extension_source_commit": "f8d5c589c95f213a2b5838952cc90e80e63c7f4d",
+  "same_production_app_files": true,
+  "same_prompts_dependencies_models_and_budgets": true,
+  "identical_case_semantics": true,
+  "only_changed_case_fields": [
+    "version",
+    "group",
+    "comparison_basis"
+  ],
+  "primary_new_runs": 782,
+  "additional_new_runs": 96,
+  "comparable_cases": 111,
+  "new_comparable_observations": 333,
+  "old_comparable_observations": 333,
+  "additional_case_ids": [
+    "release120-inquiry_01",
+    "release120-inquiry_02",
+    "release120-inquiry_03",
+    "release120-inquiry_04",
+    "release120-inquiry_05",
+    "release120-inquiry_06",
+    "release120-inquiry_07",
+    "release120-inquiry_08",
+    "release120-inquiry_09",
+    "release120-inquiry_10",
+    "release120-inquiry_11",
+    "release120-inquiry_12",
+    "release120-inquiry_13",
+    "release120-inquiry_14",
+    "release120-inquiry_15",
+    "release120-malicious_01",
+    "release120-malicious_02",
+    "release120-malicious_03",
+    "release120-malicious_04",
+    "release120-malicious_05",
+    "release120-malicious_06",
+    "release120-malicious_07",
+    "release120-malicious_08",
+    "release120-malicious_09",
+    "release120-malicious_10",
+    "release120-malicious_11",
+    "release120-malicious_12",
+    "release120-malicious_13",
+    "release120-malicious_14",
+    "release120-malicious_15",
+    "release120-terms_11_unknown_shipping",
+    "release120-terms_12_unknown_shipping_with_term"
+  ],
+  "comparison": {
+    "status": "PASS",
+    "cases": [
+      {
+        "case_id": "compare-approve",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-close",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-confirm",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-expire",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-749",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-750",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-800",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-850",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-price-900",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-reject",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "compare-replay",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_01_minimum_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_02_threshold_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_03_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_04_seller_ship_minimum",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_05_discount_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_approve_06_pickup_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_01_minimum_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_02_threshold_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_03_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_04_seller_ship_minimum",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_05_discount_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_expire_06_pickup_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_01_minimum_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_02_threshold_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_03_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_04_seller_ship_minimum",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_05_discount_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-approval_reject_06_pickup_middle",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_01_threshold_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_02_threshold_plus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_03_near_listed",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_04_listed_exact",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_05_above_listed",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_06_seller_ship_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_07_seller_ship_above",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_08_seller_ship_hundred",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_09_discount_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_10_ship_discount_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_11_pickup_supported",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_12_shipping_supported",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_13_buyer_ship_cost_ignored",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_14_high_value_seller_ship",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-auto_15_decimal_price",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_01",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_02",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_03",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_04",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_05",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_06",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_07",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_08",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_09",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_10",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_11",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_12",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_13",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_14",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-inquiry_15",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_01",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_02",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_03",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_04",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_05",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_06",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_07",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_08",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_09",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_10",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_11",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_12",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_13",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_14",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-malicious_15",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_01_below_to_approval",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_02_below_to_auto",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_03_small_steps",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_04_very_low_to_boundary",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_05_below_to_threshold",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_06_two_low_offers",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_07_seller_ship_adjustment",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_08_discount_adjustment",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_09_approval_to_auto",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-multi_10_three_turn_path",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_01_minimum_minus_cent",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_02_far_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_03_very_low",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_04_zero",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_05_seller_ship_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_06_seller_ship_far_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_07_discount_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_08_ship_discount_below",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_09_round_number",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_10_small_gap",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_11_seller_ship_one",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_12_discount_one",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_13_mid_low",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_14_shipping_cost_large",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-prohibited_15_discount_large",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 0,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_01_dispatch_today",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_02_warranty",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_03_free_case",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_04_reservation",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_05_off_platform",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 1,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_06_cash_on_delivery",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_07_invalid_delivery",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_08_multiple_terms",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_09_gift_request",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_10_return_promise",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 2,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_11_unknown_shipping",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      },
+      {
+        "case_id": "release120-terms_12_unknown_shipping_with_term",
+        "new_n": 3,
+        "old_n": 3,
+        "new_pass": 3,
+        "old_pass": 3,
+        "status": "PASS"
+      }
+    ]
+  },
+  "model_configuration_comparison": {
+    "status": "PASS",
+    "scope": "Actual legacy provider callbacks; new provider parameters verified in frozen runtime source",
+    "shared": {
+      "max_tokens": 2048,
+      "temperature": 0,
+      "enable_thinking": false,
+      "sdk_retries": 0,
+      "timeout_cap_seconds": 45
+    },
+    "observed_legacy_calls": 686,
+    "missing_call_indices": [],
+    "mismatching_call_indices": [],
+    "timeout_note": "New calls also respect the remaining per-input activity/reply deadline (cap 45s)."
+  },
+  "new_business": {
+    "runs": 333,
+    "execution_errors": 0,
+    "business_passes": 333,
+    "p50_seconds": 0.5630000000237487,
+    "p95_seconds": 12.15600000001723,
+    "seller_calls": 598,
+    "auxiliary_calls": 333,
+    "tokens": 1144296,
+    "unknown_usage_calls": 2,
+    "known_estimated_cny": "0.29637780",
+    "unknown_cost_calls": 2,
+    "unrecovered_seller_accounting_rows": 0,
+    "fallback_turns": 51,
+    "quality_applicable_turns": 138,
+    "deterministic_render_turns": 393,
+    "seller_turns": 531,
+    "judge_passes": 332,
+    "judge_evaluated": 333
+  },
+  "old_business": {
+    "runs": 333,
+    "execution_errors": 100,
+    "business_passes": 210,
+    "p50_seconds": 1.8900000000139698,
+    "p95_seconds": 9.936999999976251,
+    "seller_calls": 686,
+    "auxiliary_calls": 333,
+    "tokens": 2146672,
+    "unknown_usage_calls": 0,
+    "known_estimated_cny": "0.4920746",
+    "unknown_cost_calls": 0,
+    "unrecovered_seller_accounting_rows": 0,
+    "fallback_turns": 0,
+    "quality_applicable_turns": 0,
+    "deterministic_render_turns": 0,
+    "seller_turns": 267,
+    "judge_passes": 294,
+    "judge_evaluated": 333
+  },
+  "new_behavior": {
+    "runs": 249,
+    "execution_errors": 0,
+    "business_passes": 249,
+    "p50_seconds": 9.812999999965541,
+    "p95_seconds": 27.344000000040978,
+    "seller_calls": 4466,
+    "auxiliary_calls": 694,
+    "tokens": 6542159,
+    "unknown_usage_calls": 8,
+    "known_estimated_cny": "1.72742440",
+    "unknown_cost_calls": 8,
+    "unrecovered_seller_accounting_rows": 0,
+    "fallback_turns": 461,
+    "quality_applicable_turns": 871,
+    "deterministic_render_turns": 0,
+    "seller_turns": 871,
+    "judge_passes": 248,
+    "judge_evaluated": 249
+  },
+  "extension_new": {
+    "runs": 96,
+    "execution_errors": 0,
+    "business_passes": 96,
+    "p50_seconds": 6.25,
+    "p95_seconds": 21.59299999999348,
+    "seller_calls": 418,
+    "auxiliary_calls": 96,
+    "tokens": 616493,
+    "unknown_usage_calls": 0,
+    "known_estimated_cny": "0.16010680",
+    "unknown_cost_calls": 0,
+    "unrecovered_seller_accounting_rows": 0,
+    "fallback_turns": 30,
+    "quality_applicable_turns": 96,
+    "deterministic_render_turns": 0,
+    "seller_turns": 96,
+    "judge_passes": 96,
+    "judge_evaluated": 96
+  },
+  "extension_old": {
+    "runs": 96,
+    "execution_errors": 16,
+    "business_passes": 74,
+    "p50_seconds": 4.563000000023749,
+    "p95_seconds": 11.514999999955762,
+    "seller_calls": 267,
+    "auxiliary_calls": 96,
+    "tokens": 764138,
+    "unknown_usage_calls": 0,
+    "known_estimated_cny": "0.1733722",
+    "unknown_cost_calls": 0,
+    "unrecovered_seller_accounting_rows": 0,
+    "fallback_turns": 0,
+    "quality_applicable_turns": 0,
+    "deterministic_render_turns": 0,
+    "seller_turns": 80,
+    "judge_passes": 84,
+    "judge_evaluated": 96
+  },
+  "selection_policy": "Primary new observations remain fixed for all 111 cases; extension new trials are additional regressions, never substituted to select better results. Old cases are disjoint and all failures retained.",
+  "risk_independence_claim": false,
+  "sources": [
+    {
+      "file": "..\\artifacts\\p5\\release120-final-v3\\report.json",
+      "sha256": "4dc52b174d833edcc990bc1b653cc85491d0e402c71406230fc17607aa07fddd"
+    },
+    {
+      "file": "..\\artifacts\\p5\\release120-comparison-extension-v1\\report.json",
+      "sha256": "85f2d334fcc7a120ffd3ec1349a0cead8187007c3378f98c0c86c5881a743544"
+    }
+  ]
+}
