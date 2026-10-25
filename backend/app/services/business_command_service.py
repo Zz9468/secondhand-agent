@@ -103,10 +103,15 @@ class BusinessCommandService:
                             )
                         )
                     draft.status = "SUBMITTED"
+                    if result.get("approval_id"):
+                        from app.db.models import ApprovalRequest
+
+                        approval = db.get(ApprovalRequest, result["approval_id"])
+                        approval.expires_at = min(approval.expires_at, quote.expires_at)
             elif payload.kind == "CONFIRM":
                 result = confirm_in_transaction(db, session, product, policy, payload, run, now)
             elif payload.kind in {"WITHDRAW", "CLOSE"}:
-                result = lifecycle_in_transaction(db, session, payload)
+                result = lifecycle_in_transaction(db, session, payload, now)
             else:
                 raise Conflict("查询不是业务命令")
             result = {**result, "business_version": session.version}

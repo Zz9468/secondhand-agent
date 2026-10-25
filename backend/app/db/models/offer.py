@@ -2,7 +2,16 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, BigInteger, CheckConstraint, DateTime, ForeignKey, Numeric, func
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Numeric,
+    String,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -62,6 +71,9 @@ class Offer(Base):
         default=OfferStatus.PROPOSED,
     )
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    invalid_reason: Mapped[str | None] = mapped_column(String(100))
+    invalidated_at: Mapped[datetime | None] = mapped_column(DateTime)
+    superseded_by: Mapped[int | None] = mapped_column(BigInteger)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,

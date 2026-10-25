@@ -38,7 +38,7 @@ class NegotiationInput(Base):
 class BusinessActionReceipt(Base):
     __tablename__ = "business_action_receipts"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    input_id: Mapped[str] = mapped_column(ForeignKey("negotiation_inputs.id"), unique=True)
+    input_id: Mapped[str | None] = mapped_column(ForeignKey("negotiation_inputs.id"), unique=True)
     command_hash: Mapped[str] = mapped_column(String(64))
     result: Mapped[dict] = mapped_column(JSON)
     before_version: Mapped[int]
@@ -57,7 +57,11 @@ class GraphOfferEvidence(Base):
 class NotificationDelivery(Base):
     __tablename__ = "notification_deliveries"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    input_id: Mapped[str] = mapped_column(ForeignKey("negotiation_inputs.id"), unique=True)
+    input_id: Mapped[str | None] = mapped_column(ForeignKey("negotiation_inputs.id"), unique=True)
+    session_id: Mapped[int | None] = mapped_column(
+        ForeignKey("negotiation_sessions.id"), index=True
+    )
+    approval_id: Mapped[int | None] = mapped_column(ForeignKey("approval_requests.id"), index=True)
     source_thread_id: Mapped[str] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(24), default="PENDING", index=True)
     result: Mapped[dict] = mapped_column(JSON)
@@ -72,9 +76,27 @@ class NotificationDelivery(Base):
 class OutboxEvent(Base):
     __tablename__ = "outbox_events"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    delivery_id: Mapped[str] = mapped_column(ForeignKey("notification_deliveries.id"), unique=True)
+    delivery_id: Mapped[str | None] = mapped_column(
+        ForeignKey("notification_deliveries.id"), unique=True
+    )
+    approval_id: Mapped[int | None] = mapped_column(ForeignKey("approval_requests.id"), index=True)
     payload: Mapped[dict] = mapped_column(JSON)
     status: Mapped[str] = mapped_column(String(24), default="PENDING", index=True)
+
+
+class ApprovalExecution(Base):
+    """Execution ownership only; graph position remains in the official checkpoint."""
+
+    __tablename__ = "approval_executions"
+    approval_id: Mapped[int] = mapped_column(ForeignKey("approval_requests.id"), primary_key=True)
+    graph_version: Mapped[str] = mapped_column(String(32), default="approval-v1")
+    lease_token: Mapped[str | None] = mapped_column(String(64))
+    lease_until: Mapped[datetime | None] = mapped_column(TIME)
+    ownership_epoch: Mapped[int] = mapped_column(default=0)
+    checkpoint_ref: Mapped[str | None] = mapped_column(String(100))
+    recovery_required: Mapped[bool] = mapped_column(default=False)
+    attempts: Mapped[int] = mapped_column(default=0)
+    next_retry_at: Mapped[datetime | None] = mapped_column(TIME, index=True)
 
 
 class PublicInteractionContext(Base):

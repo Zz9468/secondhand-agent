@@ -7,6 +7,7 @@ from uuid import uuid4
 from sqlalchemy import select
 
 from app.db.models import (
+    ApprovalRequest,
     Message,
     MessageRole,
     ModelExecutionTask,
@@ -25,7 +26,7 @@ from app.db.models.graph import (
 from app.runtime.contracts import Conflict, StaleOwner, utcnow
 from app.runtime.input_queue import bounded_transaction, lock_owner, owned_session
 from app.services.agent_message_service import AgentMessageService
-from app.services.graph_business_operations import terms_hash, valid_offer
+from app.services.graph_business_operations import confirmation_expiry, terms_hash, valid_offer
 
 TEXT = {
     "OFFER_ACCEPTED": "报价已接受，等待买家最终确认。",
@@ -35,6 +36,9 @@ TEXT = {
     "INTENT_CONFIRMED": "已记录交易意向，不代表已付款或已完成交易。",
     "OFFER_WITHDRAWN": "报价已撤回。",
     "SESSION_CLOSED": "协商已关闭。",
+    "APPROVAL_REJECTED": "卖家已拒绝该报价，可继续协商。",
+    "APPROVAL_INVALIDATED": "该审批已到期或关联报价已失效，不能用于确认。",
+    "OFFER_INVALIDATED": "该报价或其事实、成本、策略依据已失效，请重新协商。",
 }
 
 
@@ -45,9 +49,10 @@ class NotificationService:
     def claim(self, source):
         """仅在来源线程锁内调用；通知有独立租约，不运行旧图。"""
         with self.factory() as db, db.begin():
+            bounded_transaction(db)
             item = db.get(NotificationDelivery, source)
-            run = db.get(NegotiationInput, item.input_id)
-            task = db.get(ModelExecutionTask, run.task_id, with_for_update=True)
+            run = db.get(NegotiationInput, item.input_id) if item.input_id else None
+            task = db.get(ModelExecutionTask, run.task_id, with_for_update=True) if run else None
             item = db.get(
                 NotificationDelivery, source, with_for_update=True, populate_existing=True
             )
@@ -58,7 +63,8 @@ class NotificationService:
                 (item.lease_until and item.lease_until > now)
                 or (item.next_retry_at and item.next_retry_at > now)
                 or (
-                    task.lease_expires_at
+                    task
+                    and task.lease_expires_at
                     and task.lease_expires_at > now
                     and item.reply_deadline > now
                 )
@@ -78,16 +84,22 @@ class NotificationService:
             item.status = "MANUAL_REQUIRED" if item.attempts >= 3 else "RETRY_WAIT"
             item.next_retry_at = self.clock() + timedelta(seconds=2**item.attempts)
             item.lease_token = item.lease_until = None
+            if item.approval_id:
+                db.get(NegotiationSession, item.session_id, with_for_update=True)
+                approval = db.get(ApprovalRequest, item.approval_id, with_for_update=True)
+                if approval.effect_revision == item.result.get("effect_revision"):
+                    approval.notification_status = item.status
 
-    def publish(self, run_id, *, owner=None, notification_token=None):
+    def publish(self, run_id, *, owner=None, notification_token=None, source=None):
+        source = source or f"turn:{run_id}:reply"
         with self.factory() as db, db.begin():
             bounded_transaction(db)
             now = self.clock()
             if owner:
                 run, _ = lock_owner(db, run_id, owner, now)
             else:
-                run = db.get(NegotiationInput, run_id)
-                item = db.get(NotificationDelivery, f"turn:{run_id}:reply", with_for_update=True)
+                run = db.get(NegotiationInput, run_id) if run_id else None
+                item = db.get(NotificationDelivery, source, with_for_update=True)
                 if (
                     not notification_token
                     or item.lease_token != notification_token
@@ -95,7 +107,9 @@ class NotificationService:
                     or item.lease_until <= now
                 ):
                     raise StaleOwner("通知所有权已失效")
-            session = db.get(NegotiationSession, run.session_id, with_for_update=True)
+            session = db.get(
+                NegotiationSession, run.session_id if run else item.session_id, with_for_update=True
+            )
             product = db.get(Product, session.product_id, with_for_update=True)
             policy = db.scalar(
                 select(SellerPolicy)
@@ -104,7 +118,6 @@ class NotificationService:
                 )
                 .with_for_update()
             )
-            source = f"turn:{run_id}:reply"
             item = db.get(NotificationDelivery, source, with_for_update=True)
             if item.status == "PUBLISHED":
                 return item.public_message_id
@@ -140,6 +153,9 @@ class NotificationService:
                 "OFFER_ACCEPTED",
                 "COUNTER_OFFERED",
                 "WAITING_APPROVAL",
+                "APPROVAL_REJECTED",
+                "APPROVAL_INVALIDATED",
+                "OFFER_INVALIDATED",
             }:
                 content = (
                     f"历史结果：{TEXT[result['outcome']]} 此结果已不是当前可操作方案；"
@@ -159,7 +175,9 @@ class NotificationService:
                 }
             from app.semantic.presentation import decorate
 
-            content, card, draft_refs = decorate(db, run, session, result, content, card, now)
+            draft_refs = None
+            if run:
+                content, card, draft_refs = decorate(db, run, session, result, content, card, now)
             if draft_refs and card and card.get("kind") == "drafts":
                 context_id = card["context_id"]
             message = Message(
@@ -187,7 +205,7 @@ class NotificationService:
                         terms_hash=terms_hash(offer) if offer else "drafts-v1",
                         draft_refs=draft_refs,
                         business_version=session.version,
-                        expires_at=min(offer.expires_at, now + timedelta(minutes=30))
+                        expires_at=confirmation_expiry(db, offer, now)
                         if offer
                         else now + timedelta(minutes=30),
                     )
@@ -198,6 +216,10 @@ class NotificationService:
             item.lease_token = item.lease_until = None
             event = db.get(OutboxEvent, source, with_for_update=True)
             event.status = "DELIVERED"
+            if item.approval_id:
+                approval = db.get(ApprovalRequest, item.approval_id, with_for_update=True)
+                if approval.effect_revision == result.get("effect_revision"):
+                    approval.notification_status = "PUBLISHED"
             return message.id
 
     def display(self, sid, buyer_id, context_id, view_id, request_id):

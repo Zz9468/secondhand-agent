@@ -284,7 +284,12 @@ def plan_turn(factory, run_id, owner, frame_value, now):
         for intent in ordered:
             status, answer, evidence = "CLARIFY", "请明确本次希望执行的操作。", None
             if intent.type in {"ASK_PRODUCT", "ASK_TERMS"}:
-                status, answer, evidence = public_answer(db, product, intent.topic)
+                if intent.topic == "approval_status":
+                    from app.services.approval_lifecycle import public_approval_status
+
+                    status, answer, evidence = public_approval_status(db, session, now)
+                else:
+                    status, answer, evidence = public_answer(db, product, intent.topic)
             elif not safe or conflict:
                 answer = "输入有冲突或条件不完整，请明确要保留的方案和条件。"
             elif intent.type in {"PROPOSE_OFFER", "CHANGE_TERMS"} or intent in changes:

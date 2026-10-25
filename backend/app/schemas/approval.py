@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_serializer, field_validator
 
 from app.db.models import (
     ApprovalFollowupStatus,
@@ -45,6 +45,16 @@ class ApprovalResponse(BaseModel):
     followup_request_id: str | None
     created_at: datetime
     updated_at: datetime
+    effect_status: str | None = None
+    effect_revision: int = 0
+    notification_status: str | None = None
+    invalid_reason: str | None = None
+    invalidated_at: datetime | None = None
+    superseded_by: int | None = None
+
+    @field_serializer("expires_at", "reviewed_at", "invalidated_at")
+    def graph_utc_time(self, value):
+        return value.replace(tzinfo=UTC) if value and self.effect_status is not None else value
 
 
 class ApprovalListResponse(BaseModel):
@@ -62,6 +72,7 @@ class SellerApprovalDecisionRequest(BaseModel):
         pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]*$",
     )
     comment: str | None = Field(default=None, max_length=2000)
+    expected_effect_revision: int | None = Field(default=None, ge=0)
 
     @field_validator("comment")
     @classmethod

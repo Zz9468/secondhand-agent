@@ -1,0 +1,1 @@
+"""Independent approval lifecycle graph."""

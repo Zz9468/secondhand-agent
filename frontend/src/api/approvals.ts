@@ -29,6 +29,12 @@ export interface SellerApproval {
   offer_id: number
   policy_version: number
   status: ApprovalStatus
+  effect_status: 'NOT_APPLIED' | 'APPLIED' | 'INVALIDATED' | null
+  effect_revision: number
+  notification_status: string | null
+  invalid_reason: string | null
+  invalidated_at: string | null
+  superseded_by: number | null
   reason: string
   seller_comment: string | null
   expires_at: string
@@ -65,12 +71,14 @@ export function reviewSellerApproval(
   action: 'approve' | 'reject',
   requestId: string,
   comment: string | null,
+  expectedEffectRevision?: number,
 ): Promise<SellerApproval> {
   return requestJson<SellerApproval>(
     `/api/seller/approvals/${approvalId}/${action}`,
     {
       method: 'POST',
-      body: JSON.stringify({ request_id: requestId, comment }),
+      body: JSON.stringify({ request_id: requestId, comment,
+        expected_effect_revision: expectedEffectRevision }),
     },
   )
 }

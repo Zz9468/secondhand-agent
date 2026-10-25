@@ -71,6 +71,7 @@ class NegotiationSession(TimestampMixin, Base):
     round_count: Mapped[int] = mapped_column(nullable=False, default=0)
     version: Mapped[int] = mapped_column(nullable=False, default=1)
     graph_version: Mapped[str | None] = mapped_column(String(32))
+    lifecycle_checked_at: Mapped[datetime | None] = mapped_column(DateTime, index=True)
     next_input_seq: Mapped[int] = mapped_column(default=1, server_default="1")
     last_resolved_input_seq: Mapped[int] = mapped_column(default=0, server_default="0")
     next_public_seq: Mapped[int] = mapped_column(default=1, server_default="1")

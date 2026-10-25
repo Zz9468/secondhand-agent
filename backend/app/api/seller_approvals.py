@@ -17,8 +17,30 @@ from app.services.errors import (
     ApprovalNotFoundError,
     ServiceError,
 )
+from app.services.graph_approval_service import GraphApprovalService
 
 router = APIRouter(prefix="/seller/approvals", tags=["seller-approvals"])
+
+
+def review(factory, seller_id, approval_id, payload, approved):
+    service = ApprovalService(factory)
+    snapshot = service.get_for_seller(seller_id=seller_id, approval_id=approval_id)
+    if snapshot.effect_status is not None:
+        return GraphApprovalService(factory).review(
+            seller_id=seller_id,
+            approval_id=approval_id,
+            request_id=payload.request_id,
+            comment=payload.comment,
+            approved=approved,
+            expected_revision=payload.expected_effect_revision,
+        )
+    operation = service.approve_request if approved else service.reject_request
+    return operation(
+        seller_id=seller_id,
+        approval_id=approval_id,
+        request_id=payload.request_id,
+        comment=payload.comment,
+    )
 
 
 @router.get("", response_model=SellerApprovalListResponse)
@@ -34,9 +56,7 @@ def list_seller_approvals(
         limit=limit,
     )
     return SellerApprovalListResponse(
-        approvals=[
-            SellerApprovalResponse.model_validate(approval) for approval in approvals
-        ]
+        approvals=[SellerApprovalResponse.model_validate(approval) for approval in approvals]
     )
 
 
@@ -64,12 +84,7 @@ def approve_seller_approval(
     session_factory: SessionFactoryDependency,
 ) -> SellerApprovalResponse:
     try:
-        approval = ApprovalService(session_factory).approve_request(
-            seller_id=user.id,
-            approval_id=approval_id,
-            request_id=payload.request_id,
-            comment=payload.comment,
-        )
+        approval = review(session_factory, user.id, approval_id, payload, True)
     except ServiceError as exc:
         _raise_http_error(exc)
     ObservabilityService(session_factory).record(
@@ -94,12 +109,7 @@ def reject_seller_approval(
     session_factory: SessionFactoryDependency,
 ) -> SellerApprovalResponse:
     try:
-        approval = ApprovalService(session_factory).reject_request(
-            seller_id=user.id,
-            approval_id=approval_id,
-            request_id=payload.request_id,
-            comment=payload.comment,
-        )
+        approval = review(session_factory, user.id, approval_id, payload, False)
     except ServiceError as exc:
         _raise_http_error(exc)
     ObservabilityService(session_factory).record(

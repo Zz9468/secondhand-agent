@@ -131,7 +131,7 @@ class GraphRunner:
             token = notifications.claim(source)
             if token:
                 try:
-                    return notifications.publish(run_id, notification_token=token)
+                    return notifications.publish(run_id, source=source, notification_token=token)
                 except Exception:
                     notifications.retry(source, token)
                     raise

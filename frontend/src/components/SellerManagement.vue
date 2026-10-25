@@ -73,6 +73,8 @@ const pendingReviewRequest = ref<{
   approvalId: number
   action: 'approve' | 'reject'
   requestId: string
+  comment: string | null
+  effectRevision: number | undefined
 } | null>(null)
 const loading = ref(true)
 const saving = ref(false)
@@ -283,21 +285,28 @@ async function reviewApproval(action: 'approve' | 'reject'): Promise<void> {
   errorMessage.value = ''
   successMessage.value = ''
   try {
+    const comment = approvalComment.value.trim() || null
+    const effectRevision = approval.effect_status ? approval.effect_revision : undefined
     if (
       pendingReviewRequest.value?.approvalId !== approval.id ||
-      pendingReviewRequest.value.action !== action
+      pendingReviewRequest.value.action !== action ||
+      pendingReviewRequest.value.comment !== comment ||
+      pendingReviewRequest.value.effectRevision !== effectRevision
     ) {
       pendingReviewRequest.value = {
         approvalId: approval.id,
         action,
         requestId: `${action}-${crypto.randomUUID()}`,
+        comment,
+        effectRevision,
       }
     }
     const saved = await reviewSellerApproval(
       approval.id,
       action,
       pendingReviewRequest.value.requestId,
-      approvalComment.value.trim() || null,
+      pendingReviewRequest.value.comment,
+      pendingReviewRequest.value.effectRevision,
     )
     await loadApprovals(saved.id)
     await loadNegotiations(approval.session_id)
@@ -861,7 +870,7 @@ onUnmounted(() => {
               <strong>{{ formatDate(selectedApproval.created_at) }}</strong>
             </div>
             <div>
-              <span>有效期至</span>
+              <span>审批响应截止</span>
               <strong>{{ formatDate(selectedApproval.expires_at) }}</strong>
             </div>
           </div>
@@ -881,6 +890,16 @@ onUnmounted(() => {
             <p>{{ selectedApproval.reason }}</p>
           </div>
 
+          <div v-if="selectedApproval.effect_status" class="approval-reason">
+            <span>审批效力</span>
+            <p>{{ { NOT_APPLIED: '等待处理', APPLIED: '已应用', INVALIDATED: '已失效' }[selectedApproval.effect_status] }}</p>
+            <p v-if="selectedApproval.invalid_reason">关联报价已撤回、被替代或依据失效，历史决定仍保留。</p>
+            <p v-if="selectedApproval.superseded_by">替代报价 #{{ selectedApproval.superseded_by }}</p>
+            <p>买家通知：{{ selectedApproval.notification_status === 'PUBLISHED' ? '已发布' :
+              selectedApproval.notification_status === 'MANUAL_REQUIRED' ? '需要人工恢复' :
+              selectedApproval.notification_status ? '等待发送' : '等待审批结果应用' }}</p>
+          </div>
+
           <label v-if="selectedApproval.status === 'PENDING'" class="approval-comment">
             <span>卖家意见（选填）</span>
             <textarea
@@ -898,7 +917,7 @@ onUnmounted(() => {
           <p class="approval-warning">
             同意只表示卖家授权当前报价，不代表交易已经成交；系统通知买家后，仍需买家明确确认才会记录交易意向。
           </p>
-          <p v-if="selectedApproval.status !== 'PENDING'" class="approval-warning">
+          <p v-if="selectedApproval.status !== 'PENDING' && !selectedApproval.effect_status" class="approval-warning">
             后续状态：{{ followupStatusLabel(selectedApproval.followup_status) }}
           </p>
           <p v-if="errorMessage" class="error-banner" role="alert">{{ errorMessage }}</p>

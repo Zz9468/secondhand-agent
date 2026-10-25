@@ -74,6 +74,12 @@ class ApprovalSnapshot:
     followup_request_id: str | None
     created_at: datetime
     updated_at: datetime
+    effect_status: str | None = None
+    effect_revision: int = 0
+    notification_status: str | None = None
+    invalid_reason: str | None = None
+    invalidated_at: datetime | None = None
+    superseded_by: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +105,12 @@ class SellerApprovalSnapshot:
     session_status: NegotiationStatus
     current_offer_id: int | None
     offer: OfferSnapshot
+    effect_status: str | None = None
+    effect_revision: int = 0
+    notification_status: str | None = None
+    invalid_reason: str | None = None
+    invalidated_at: datetime | None = None
+    superseded_by: int | None = None
 
 
 class ApprovalService:
@@ -142,9 +154,7 @@ class ApprovalService:
             pending = self._get_pending(db, session_id=session_id, for_update=True)
             if pending is not None:
                 if self._is_due(pending.expires_at):
-                    raise ApprovalConflictError(
-                        "待审批请求已经到期，请先执行过期处理并提交新报价"
-                    )
+                    raise ApprovalConflictError("待审批请求已经到期，请先执行过期处理并提交新报价")
                 if (
                     negotiation.status is NegotiationStatus.WAITING_APPROVAL
                     and pending.offer_id == offer_id
@@ -201,9 +211,7 @@ class ApprovalService:
             try:
                 db.flush()
             except IntegrityError as exc:
-                raise ApprovalConflictError(
-                    "当前会话或报价已经存在审批请求"
-                ) from exc
+                raise ApprovalConflictError("当前会话或报价已经存在审批请求") from exc
             return self._snapshot(approval)
 
     def get_request(
@@ -272,9 +280,7 @@ class ApprovalService:
                 .limit(limit)
             )
             if approval_status is not None:
-                statement = statement.where(
-                    ApprovalRequest.status == approval_status
-                )
+                statement = statement.where(ApprovalRequest.status == approval_status)
             rows = db.execute(statement)
             return tuple(
                 self._seller_snapshot(
@@ -306,7 +312,8 @@ class ApprovalService:
                 for_update=False,
             )
             is_due = (
-                approval.status is ApprovalStatus.PENDING
+                negotiation.graph_version is None
+                and approval.status is ApprovalStatus.PENDING
                 and self._is_due(approval.expires_at)
             )
             snapshot = self._seller_snapshot(
@@ -447,9 +454,7 @@ class ApprovalService:
         comparison_time = self._as_database_datetime(now or datetime.now(UTC))
         with self._session_factory() as db, db.begin():
             session_id = db.scalar(
-                select(ApprovalRequest.session_id).where(
-                    ApprovalRequest.id == approval_id
-                )
+                select(ApprovalRequest.session_id).where(ApprovalRequest.id == approval_id)
             )
             if session_id is None:
                 raise ApprovalNotFoundError("审批请求不存在")
@@ -551,9 +556,7 @@ class ApprovalService:
                 raise ApprovalConflictError("审批请求已经处理，不能重复变更结果")
 
             policy = db.scalar(
-                select(SellerPolicy)
-                .where(SellerPolicy.product_id == product.id)
-                .with_for_update()
+                select(SellerPolicy).where(SellerPolicy.product_id == product.id).with_for_update()
             )
             conflict_message = self._review_conflict(
                 negotiation=negotiation,
@@ -745,9 +748,7 @@ class ApprovalService:
         product_id: int,
         for_update: bool = False,
     ) -> SellerPolicy:
-        statement = select(SellerPolicy).where(
-            SellerPolicy.product_id == product_id
-        )
+        statement = select(SellerPolicy).where(SellerPolicy.product_id == product_id)
         if for_update:
             statement = statement.with_for_update()
         policy = db.scalar(statement)
@@ -800,9 +801,7 @@ class ApprovalService:
         if offer.status is not OfferStatus.PROPOSED:
             raise ApprovalConflictError("报价已失效或已处理")
         if offer.expires_at is not None:
-            offer_expiration = ApprovalService._as_database_datetime(
-                offer.expires_at
-            )
+            offer_expiration = ApprovalService._as_database_datetime(offer.expires_at)
             if ApprovalService._is_due(offer_expiration):
                 raise ApprovalConflictError("报价已经过期")
             if approval_expires_at > offer_expiration:
@@ -862,6 +861,12 @@ class ApprovalService:
     @staticmethod
     def _snapshot(approval: ApprovalRequest) -> ApprovalSnapshot:
         return ApprovalSnapshot(
+            effect_status=approval.effect_status,
+            effect_revision=approval.effect_revision,
+            notification_status=approval.notification_status,
+            invalid_reason=approval.invalid_reason,
+            invalidated_at=approval.invalidated_at,
+            superseded_by=approval.superseded_by,
             id=approval.id,
             session_id=approval.session_id,
             offer_id=approval.offer_id,
@@ -886,6 +891,12 @@ class ApprovalService:
         offer: Offer,
     ) -> SellerApprovalSnapshot:
         return SellerApprovalSnapshot(
+            effect_status=approval.effect_status,
+            effect_revision=approval.effect_revision,
+            notification_status=approval.notification_status,
+            invalid_reason=approval.invalid_reason,
+            invalidated_at=approval.invalidated_at,
+            superseded_by=approval.superseded_by,
             id=approval.id,
             session_id=approval.session_id,
             product_id=product.id,

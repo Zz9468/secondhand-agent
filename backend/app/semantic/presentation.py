@@ -10,7 +10,7 @@ from app.db.models.graph import PublicInteractionContext
 from app.db.models.semantic import OfferDraft, SemanticTurn
 from app.runtime.contracts import Conflict, digest
 from app.semantic.service import usable_draft
-from app.services.graph_business_operations import terms_hash, valid_offer
+from app.services.graph_business_operations import confirmation_expiry, terms_hash, valid_offer
 
 
 def decorate(db, run, session, result, content, card, now):
@@ -18,8 +18,18 @@ def decorate(db, run, session, result, content, card, now):
     if not turn:
         return content, card, None
     items = []
+    progress_ids = {
+        i["id"]
+        for i in turn.frame.get("parsed", {}).get("intents", [])
+        if i.get("topic") == "approval_status"
+    }
     for item in turn.results:
-        if item["status"] == "READY":
+        if item["id"] in progress_ids:
+            from app.services.approval_lifecycle import public_approval_status
+
+            status, text, _ = public_approval_status(db, session, now)
+            items.append({**item, "status": status, "text": text})
+        elif item["status"] == "READY":
             items.append({**item, "status": result["outcome"], "text": content})
         else:
             items.append(item)
@@ -69,7 +79,7 @@ def check_object(db, context, session, now):
             or terms_hash(offer) != context.terms_hash
         ):
             raise Conflict("报价或授权依据已失效，请重新协商")
-        return offer.expires_at
+        return confirmation_expiry(db, offer, now)
     refs = context.draft_refs or []
     drafts = [db.get(OfferDraft, ref["id"]) for ref in refs]
     if not refs or any(

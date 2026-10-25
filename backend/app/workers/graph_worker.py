@@ -5,16 +5,53 @@ import time
 
 from sqlalchemy import or_, select
 
-from app.db.models import ModelExecutionTask, ModelTaskStatus, NegotiationSession
-from app.db.models.graph import NegotiationInput, NotificationDelivery
+from app.db.models import ModelExecutionTask, ModelTaskStatus, NegotiationSession, NegotiationStatus
+from app.db.models.graph import (
+    ApprovalExecution,
+    NegotiationInput,
+    NotificationDelivery,
+    OutboxEvent,
+)
 from app.persistence.checkpointer import ThreadBusy
+from app.runtime.approval_runner import ApprovalRunner
 from app.runtime.contracts import utcnow
 from app.runtime.graph_runner import GraphRunner
+from app.services.graph_approval_service import GraphApprovalService
 
 
 def run_batch(factory, postgres_url, *, limit=20):
     runner = GraphRunner(factory, postgres_url)
     now = utcnow()
+    result = {
+        "completed": 0,
+        "notified": 0,
+        "approvals": 0,
+        "reconciled": 0,
+        "busy": 0,
+        "failed": 0,
+    }
+    lifecycle = GraphApprovalService(factory)
+    with factory() as db:
+        sessions = list(
+            db.scalars(
+                select(NegotiationSession.id)
+                .where(
+                    NegotiationSession.graph_version.is_not(None),
+                    NegotiationSession.current_offer_id.is_not(None),
+                    NegotiationSession.status.in_(
+                        [NegotiationStatus.ACTIVE, NegotiationStatus.WAITING_APPROVAL]
+                    ),
+                )
+                .order_by(NegotiationSession.lifecycle_checked_at, NegotiationSession.id)
+                .limit(limit)
+            )
+        )
+    for sid in sessions:
+        try:
+            lifecycle.reconcile_offer(sid)
+            result["reconciled"] += 1
+        except Exception:
+            result["failed"] += 1
     with factory() as db:
         candidates = list(
             db.scalars(
@@ -66,7 +103,30 @@ def run_batch(factory, postgres_url, *, limit=20):
                 .limit(limit)
             )
         )
-    result = {"completed": 0, "notified": 0, "busy": 0, "failed": 0}
+        approvals = list(
+            db.scalars(
+                select(ApprovalExecution.approval_id)
+                .where(
+                    ApprovalExecution.recovery_required.is_(False),
+                    or_(
+                        ApprovalExecution.lease_until.is_(None),
+                        ApprovalExecution.lease_until <= now,
+                    ),
+                    or_(
+                        ApprovalExecution.next_retry_at.is_(None),
+                        ApprovalExecution.next_retry_at <= now,
+                    ),
+                    select(OutboxEvent.id)
+                    .where(
+                        OutboxEvent.approval_id == ApprovalExecution.approval_id,
+                        OutboxEvent.status == "PENDING",
+                    )
+                    .exists(),
+                )
+                .order_by(ApprovalExecution.approval_id)
+                .limit(limit)
+            )
+        )
     # 到期通知优先履行，即使当前输入无法从 checkpoint 恢复。
     for source in notifications:
         try:
@@ -78,6 +138,15 @@ def run_batch(factory, postgres_url, *, limit=20):
     for run_id in candidates:
         try:
             result["completed"] += int(runner.run(run_id) is not None)
+        except ThreadBusy:
+            result["busy"] += 1
+        except Exception:
+            result["failed"] += 1
+    for approval_id in approvals:
+        try:
+            result["approvals"] += int(
+                ApprovalRunner(factory, postgres_url).run(approval_id) is not None
+            )
         except ThreadBusy:
             result["busy"] += 1
         except Exception:

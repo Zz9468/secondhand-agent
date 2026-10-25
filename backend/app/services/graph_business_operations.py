@@ -62,12 +62,12 @@ def authorized(terms, policy):
     )
 
 
-def valid_offer(db, session, product, policy, offer, now):
+def basis_valid(db, session, product, policy, offer, now):
     if (
         not offer
         or offer.session_id != session.id
         or session.current_offer_id != offer.id
-        or session.status != NegotiationStatus.ACTIVE
+        or session.status not in {NegotiationStatus.ACTIVE, NegotiationStatus.WAITING_APPROVAL}
         or product.status != ProductStatus.AVAILABLE
         or offer.status not in {OfferStatus.PROPOSED, OfferStatus.ACCEPTED}
         or not offer.expires_at
@@ -88,32 +88,58 @@ def valid_offer(db, session, product, policy, offer, now):
         )
     except ValueError:
         return False
+    if offer.proposer == OfferProposer.AGENT and not current_authorization.can_submit_counter_offer:
+        return False
+    if (
+        offer.status == OfferStatus.ACCEPTED
+        and not current_authorization.can_accept_automatically
+        and not db.scalar(select(ApprovalRequest.id).where(ApprovalRequest.offer_id == offer.id))
+    ):
+        return False
     return bool(
         proof
-        and current_authorization.can_accept_automatically
+        and not current_authorization.is_acceptance_prohibited
+        and current_authorization.conditions_valid
         and proof.policy_version == policy.version
         and proof.product_hash == product_hash(product)
         and proof.terms_hash == terms_hash(offer)
-        and (offer.status == OfferStatus.ACCEPTED or offer.proposer == OfferProposer.AGENT)
     )
 
 
-def cancel_pending_in_transaction(db, session):
-    approvals = db.scalars(
-        select(ApprovalRequest)
-        .where(
-            ApprovalRequest.session_id == session.id,
-            ApprovalRequest.status == ApprovalStatus.PENDING,
+def valid_offer(db, session, product, policy, offer, now):
+    if session.status != NegotiationStatus.ACTIVE or not basis_valid(
+        db, session, product, policy, offer, now
+    ):
+        return False
+    authorization = authorize_offer(
+        terms=NegotiationService._terms_from_offer(offer),
+        policy=PricingPolicy(policy.minimum_net_price, policy.auto_accept_threshold),
+        additional_terms=offer.terms,
+    )
+    if offer.proposer == OfferProposer.AGENT:
+        return offer.status == OfferStatus.PROPOSED and authorization.can_submit_counter_offer
+    if offer.status != OfferStatus.ACCEPTED:
+        return False
+    approval = db.scalar(select(ApprovalRequest).where(ApprovalRequest.offer_id == offer.id))
+    if approval:
+        return bool(
+            approval.status == ApprovalStatus.APPROVED
+            and approval.effect_status == "APPLIED"
+            and approval.policy_version == policy.version
+            and approval.reviewed_at
+            and approval.reviewed_at < approval.expires_at
         )
-        .order_by(ApprovalRequest.id)
-        .with_for_update()
-    )
-    for approval in approvals:
-        approval.status = ApprovalStatus.CANCELLED
-    if session.status == NegotiationStatus.WAITING_APPROVAL:
-        session.status = NegotiationStatus.ACTIVE
-    # 唯一 pending_session_id 索引须在新审批写入之前释放。
-    db.flush()
+    return authorization.can_accept_automatically
+
+
+def confirmation_expiry(db, offer, now):
+    from app.db.models.semantic import CostQuote, SemanticOfferBasis
+
+    expiry = min(offer.expires_at, now + timedelta(minutes=30))
+    basis = db.get(SemanticOfferBasis, offer.id)
+    if basis:
+        expiry = min(expiry, db.get(CostQuote, basis.cost_quote_id).expires_at)
+    return expiry
 
 
 def new_offer_in_transaction(db, session, product, policy, terms, proposer, now):
@@ -208,9 +234,9 @@ def resolve_offer_in_transaction(
     # 价格过低的正式提案仍计轮，但不得取消之前有效的报价或审批。
     rejected = authorization.is_acceptance_prohibited and not payload.counter_terms
     if not rejected:
-        if current and current.status in {OfferStatus.PROPOSED, OfferStatus.ACCEPTED}:
-            current.status = OfferStatus.WITHDRAWN
-        cancel_pending_in_transaction(db, session)
+        from app.services.approval_lifecycle import invalidate_offer
+
+        invalidate_offer(db, session, current, now, "REPLACED")
     buyer_offer = new_offer_in_transaction(
         db,
         session,
@@ -221,6 +247,10 @@ def resolve_offer_in_transaction(
         now,
     )
     fault("offer")
+    if not rejected:
+        from app.services.approval_lifecycle import supersede
+
+        supersede(db, current, buyer_offer)
     session.round_count += 1
     session.version += 1
     db.flush()
@@ -243,6 +273,9 @@ def resolve_offer_in_transaction(
         )
         db.add(approval)
         db.flush()
+        from app.services.approval_lifecycle import start_approval
+
+        start_approval(db, approval)
         result.update(outcome="WAITING_APPROVAL", approval_id=approval.id)
     else:
         buyer_offer.status = OfferStatus.REJECTED
@@ -298,12 +331,15 @@ def confirm_in_transaction(db, session, product, policy, payload, run, now):
         if offer.proposer == OfferProposer.AGENT
         else ConfirmationSource.AUTO_ACCEPTED_BUYER_OFFER
     )
+    approval = db.scalar(select(ApprovalRequest).where(ApprovalRequest.offer_id == offer.id))
+    if approval and approval.effect_status == "APPLIED":
+        session.confirmation_source = ConfirmationSource.SELLER_APPROVED_BUYER_OFFER
     offer.status = OfferStatus.ACCEPTED
     session.version += 1
     return {"outcome": "INTENT_CONFIRMED", "offer_id": offer.id}
 
 
-def lifecycle_in_transaction(db, session, payload):
+def lifecycle_in_transaction(db, session, payload, now):
     offer = (
         db.get(Offer, session.current_offer_id, with_for_update=True)
         if session.current_offer_id
@@ -312,12 +348,15 @@ def lifecycle_in_transaction(db, session, payload):
     if payload.kind == "WITHDRAW" and (
         not offer
         or offer.id != payload.offer_id
+        or offer.proposer != OfferProposer.BUYER
         or offer.status not in {OfferStatus.PROPOSED, OfferStatus.ACCEPTED}
     ):
         raise Conflict("只能撤回当前有效报价")
-    if offer and offer.status in {OfferStatus.PROPOSED, OfferStatus.ACCEPTED}:
-        offer.status = OfferStatus.WITHDRAWN
-    cancel_pending_in_transaction(db, session)
+    from app.services.approval_lifecycle import close_drafts, invalidate_offer
+
+    invalidate_offer(db, session, offer, now, "CLOSED" if payload.kind == "CLOSE" else "WITHDRAWN")
+    if payload.kind == "CLOSE":
+        close_drafts(db, session)
     session.current_offer_id = None
     session.status = (
         NegotiationStatus.CLOSED if payload.kind == "CLOSE" else NegotiationStatus.ACTIVE

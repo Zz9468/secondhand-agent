@@ -61,6 +61,14 @@ class ApprovalRequest(TimestampMixin, Base):
     )
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     seller_comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # NULL belongs to the legacy runtime; graph approvals separate decision from effect.
+    effect_status: Mapped[str | None] = mapped_column(String(24))
+    effect_revision: Mapped[int] = mapped_column(default=0, server_default="0")
+    invalid_reason: Mapped[str | None] = mapped_column(String(100))
+    invalidated_at: Mapped[datetime | None] = mapped_column(DateTime)
+    superseded_by: Mapped[int | None] = mapped_column(BigInteger)
+    decision_hash: Mapped[str | None] = mapped_column(String(64))
+    notification_status: Mapped[str | None] = mapped_column(String(24))
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     followup_status: Mapped[ApprovalFollowupStatus | None] = mapped_column(

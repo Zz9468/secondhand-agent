@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select
 
-from app.db.models import Message, NegotiationSession
+from app.db.models import ApprovalRequest, Message, NegotiationSession
 from app.db.models.graph import BusinessActionReceipt, ModelCallLedger, NegotiationInput
 from app.db.models.semantic import SemanticTurn
 from app.semantic.model import PROMPT_VERSION, SemanticModel, SemanticResponseError
@@ -147,6 +147,20 @@ def live_case(live_evidence, semantic_case, request):  # noqa: F811
                 "session_status": session.status.value,
                 "rounds": session.round_count,
                 "runs": records,
+                "approvals": [
+                    {
+                        "id": a.id,
+                        "offer_id": a.offer_id,
+                        "status": a.status.value,
+                        "effect_status": a.effect_status,
+                        "effect_revision": a.effect_revision,
+                        "notification_status": a.notification_status,
+                        "invalid_reason": a.invalid_reason,
+                    }
+                    for a in db.scalars(
+                        select(ApprovalRequest).where(ApprovalRequest.session_id == c.sid)
+                    )
+                ],
                 "test_outcome": getattr(request.node, "live_outcome", "unknown"),
             }
         )
