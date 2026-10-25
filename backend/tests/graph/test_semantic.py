@@ -174,6 +174,26 @@ def test_change_terms_without_current_patch_cannot_resubmit_previous_terms(seman
         assert session.current_offer_id == card["offer_id"] and session.round_count == 1
 
 
+@pytest.mark.parametrize(
+    "text,kind",
+    [
+        ("不行", "CONFIRM_INTENT"),
+        ("不同意", "CONFIRM_INTENT"),
+        ("不要结束协商", "CLOSE_SESSION"),
+        ("900自提太贵了，我先看看", "CLOSE_SESSION"),
+    ],
+)
+def test_negated_confirmation_or_close_cannot_mutate_session(semantic_case, text, kind):
+    c = semantic_case
+    first = turn(c, "900自提")
+    card, ack = show(c, first)
+    rejected = turn(c, text, [intent(text, kind)], display_receipt_id=ack)
+    assert result(c, rejected) is None
+    with c.factory() as db:
+        session = db.get(NegotiationSession, c.sid)
+        assert session.status.value == "ACTIVE" and session.current_offer_id == card["offer_id"]
+
+
 @pytest.mark.parametrize("omit_condition", [False, True])
 @pytest.mark.parametrize("whole_quote", [False, True])
 def test_branch_local_condition_is_preserved_without_affecting_other_choice(

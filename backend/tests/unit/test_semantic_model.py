@@ -48,7 +48,14 @@ def test_known_endpoint_cost_bound_and_unknown_price_refusal():
 
 @pytest.mark.parametrize(
     "prompt_version",
-    ["p2-intents-v1", "p2-intents-v2", "p2-intents-v3", "p2-intents-v4", PROMPT_VERSION],
+    [
+        "p2-intents-v1",
+        "p2-intents-v2",
+        "p2-intents-v3",
+        "p2-intents-v4",
+        "p2-intents-v5",
+        PROMPT_VERSION,
+    ],
 )
 def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch, prompt_version):
     captured = {}
@@ -127,7 +134,7 @@ def test_frozen_v1_prompt_remains_replayable():
     new = model_messages("900自提", {})
     assert old[0]["content"].startswith(LEGACY_PROMPT)
     assert "补充约束" not in old[0]["content"]
-    assert "你是买家输入语义解析器" in new[0]["content"]
+    assert "修改条款也必须提取candidate" in new[0]["content"]
 
 
 @pytest.mark.parametrize("text", ["我不接受900自提", "900太贵了", "不要撤回报价", "不撤回"])

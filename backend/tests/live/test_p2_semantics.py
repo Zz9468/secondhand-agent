@@ -208,6 +208,17 @@ def test_rejection_is_not_withdrawal_of_existing_offer(live_case):
         assert db.get(NegotiationSession, c.sid).current_offer_id == card["offer_id"]
 
 
+def test_short_negative_is_not_confirmation(live_case):
+    c = live_case
+    first = turn(c, "900自提可以吗？")
+    card, ack = show(c, first)
+    rejected = turn(c, "不行", display_receipt_id=ack)
+    assert result(c, rejected) is None
+    with c.factory() as db:
+        session = db.get(NegotiationSession, c.sid)
+        assert session.status.value == "ACTIVE" and session.current_offer_id == card["offer_id"]
+
+
 def test_local_condition_does_not_block_other_alternative(live_case):
     c = live_case
     first = turn(c, "900自提，或者如果电池至少90%就950包邮到上海")

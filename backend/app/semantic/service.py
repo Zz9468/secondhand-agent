@@ -197,6 +197,18 @@ def safe_frame(frame, text):
     if re.search(r"不(?:接受|考虑|同意|想要|愿意).*(?:自提|包邮|报价)", text) and actions:
         return ordered, False
     for item in actions:
+        if item.type == "CONFIRM_INTENT" and re.search(
+            r"不行|不要|不想|不接受|不同意|不确认|别确认|勿确认|不能|拒绝", item.source_quote
+        ):
+            return ordered, False
+        if item.type == "CLOSE_SESSION" and (
+            not re.search(r"结束|关闭|终止|不买", item.source_quote)
+            or re.search(
+                r"(?:不|不要|不用|不想|不必|别|不能|不是).{0,4}(?:结束|关闭|终止|不买)",
+                item.source_quote,
+            )
+        ):
+            return ordered, False
         if item.type == "WITHDRAW_OFFER" and (
             not re.search(r"撤回|撤销|收回|取消.{0,8}(?:报价|提议|方案)", item.source_quote)
             or re.search(

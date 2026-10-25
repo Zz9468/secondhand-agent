@@ -9,7 +9,7 @@ from openai import OpenAI
 
 from app.semantic.contracts import IntentFrame
 
-PROMPT_VERSION = "p2-intents-v5"
+PROMPT_VERSION = "p2-intents-v6"
 LEGACY_PROMPT = """你只解释买家当前输入，输出符合给定schema的JSON，不作业务决定。
 逐项提取所有问题、报价、条件、纠正、撤回与关闭。source_quote必须逐字来自当前输入。
 800可以吗/800包邮可以吗是PROPOSE_OFFER；别人卖800、预算800先看看是PROVIDE_INFO，不能报价。
@@ -69,7 +69,7 @@ conditions与commitments只允许放在candidate内，禁止放在intent顶层�
 """
 )
 
-PROMPTS[PROMPT_VERSION] = """你是买家输入语义解析器，只输出符合schema的JSON，不作业务决定。
+PROMPTS["p2-intents-v5"] = """你是买家输入语义解析器，只输出符合schema的JSON，不作业务决定。
 只提取current_input；context只说明是否绑定历史对象，不提供任何新事实或默认条款。
 1. 意图：实际问题为ASK_PRODUCT/ASK_TERMS；明确金额提案为PROPOSE_OFFER；改历史条款为CHANGE_TERMS；
 明确同意已展示报价为CONFIRM_INTENT；明确撤回为WITHDRAW_OFFER；结束协商为CLOSE_SESSION。
@@ -97,6 +97,17 @@ payer自提/到付/运费我出为buyer，包邮/你出运费为seller；region�
 "conditions":[],"commitments":[]}}],"ambiguous":false}
 金额、方式、条件都从当前输入提取，不复制例子。输出schema如下：
 """
+PROMPTS[PROMPT_VERSION] = (
+    PROMPTS["p2-intents-v4"]
+    + """
+修改条款也必须提取candidate，不能仅输出CHANGE_TERMS而candidate=null，否则会遗漏买家的修改。
+“行，但是得包邮”只有一个CHANGE_TERMS，其candidate必须为
+{"amount":null,"delivery":"shipping","payer":"seller","region":null,"conditions":[],"commitments":[]}。
+短补充“自提”用PROVIDE_INFO并填candidate.delivery=pickup、payer=buyer；
+短补充“上海”用PROVIDE_INFO并填candidate.region=上海；只有“继续/选第一个”没有新条款可用null。
+“先看看”不能结束协商；“不行/不同意”不能确认或撤回报价。
+"""
+)
 
 
 class SemanticResponseError(ValueError):
