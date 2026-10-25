@@ -1,0 +1,255 @@
+{
+  "phase": "17.7 P6",
+  "engineering_status": "PASS",
+  "public_release_status": "BLOCKED_BY_P5",
+  "commits": {
+    "implementation": "96126a9845427912c166aea423da39921b68663c",
+    "dependency_fixes": "eda103632ceb33920d58ae1290cf5bfa30a89d58"
+  },
+  "tests": {
+    "protocol": {
+      "tests": 344,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 488.906
+    },
+    "recovery-final": {
+      "tests": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 121.377
+    },
+    "business-final": {
+      "tests": 446,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 193.183
+    },
+    "unit-patched": {
+      "tests": 293,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 27.746
+    }
+  },
+  "delivery": {
+    "project": "secondhand-p6-f5a0b1a347",
+    "status": "PASS",
+    "checks": [
+      "fresh_volumes_migration_checkpoint_roles_services_ready",
+      "container_application_matches_verified_source",
+      "runtime_credentials_exclude_admin_and_cleaner",
+      "accounts_product_and_new_graph_session",
+      "real_model_consultation_and_request_replay",
+      "approval_after_worker_restart_and_notification",
+      "display_confirm_agreed_and_idempotency",
+      "official_checkpoint_node_history",
+      "quiescent_dual_database_backup",
+      "restore_to_disposable_databases"
+    ],
+    "sessions": [
+      1
+    ],
+    "git_commit": "96126a9845427912c166aea423da39921b68663c",
+    "worktree_dirty": false,
+    "app_sha256_lf": "927669b5c606b3bc5d474335f51742f3059bd5e64966f3c20dc8d8bd05e83b17",
+    "model_calls": 8,
+    "unknown_cost_calls": 0,
+    "known_estimated_cost": "0.00211660",
+    "message_count": 7,
+    "backup": {
+      "format": "p6-quiescent-v1",
+      "created_at": "2026-10-25T15:34:52.710778+00:00",
+      "mysql_server_uuid": "6746cf62-d089-11f1-b799-1234e8f40ff8",
+      "sha256": {
+        "mysql.sql": "36f0ee7936a915fdde41050c82cded8b1163ee4458d9e633e8cf15dcd28730d5",
+        "checkpoint.dump": "3d16e9c3dcefdfd0ac05fb2b929c89b9492671b1044eafc8efd6772e2f2c29de"
+      },
+      "audit_retained": true,
+      "configuration_secrets_included": false,
+      "contains_private_business_data": true
+    },
+    "restore_drill": {
+      "status": "PASS",
+      "restored_table_counts": {
+        "negotiation_sessions": 1,
+        "messages": 7,
+        "business_action_receipts": 4,
+        "model_call_ledger": 8,
+        "graph_execution_instances": 3,
+        "alembic_version": 1,
+        "checkpoints": 33,
+        "checkpoint_blobs": 16,
+        "checkpoint_writes": 112,
+        "checkpoint_migrations": 10
+      }
+    }
+  },
+  "evaluation_smokes": {
+    "evaluation-smoke": {
+      "summary": {
+        "runs": 2,
+        "execution_errors": 0,
+        "business_passes": 2,
+        "p50_seconds": 17.23399999999674,
+        "p95_seconds": 18.094000000040978,
+        "seller_calls": 16,
+        "auxiliary_calls": 2,
+        "tokens": 15808,
+        "unknown_usage_calls": 0,
+        "known_estimated_cny": "0.00407300",
+        "unknown_cost_calls": 0,
+        "unrecovered_seller_accounting_rows": 0,
+        "fallback_turns": 2,
+        "quality_applicable_turns": 3,
+        "deterministic_render_turns": 0,
+        "seller_turns": 3,
+        "judge_passes": 2,
+        "judge_evaluated": 2
+      },
+      "local_native_trace": {
+        "status": "PASS",
+        "scope": "Actual sanitized local callback journal, NOT remote readback",
+        "spans": 60,
+        "completed_graph_runs": 3,
+        "expected_graph_runs": 3,
+        "missing_refs": [],
+        "incomplete_spans": 0,
+        "sha256": "881d3dab9436562b13356f3e0db1c6e2412d355e689dc203f12e68304c5c5247"
+      },
+      "release_status": "INSUFFICIENT_EVIDENCE",
+      "source_commit": "96126a9845427912c166aea423da39921b68663c",
+      "working_tree_dirty": false,
+      "frozen_runtime": {
+        "status": "PASS",
+        "start_manifest_sha256": "878e6a5879c5bbc2dd04ea60c9298e60875467ec445ef59db9e3ea0edd3c319b",
+        "end_manifest_sha256": "878e6a5879c5bbc2dd04ea60c9298e60875467ec445ef59db9e3ea0edd3c319b"
+      }
+    },
+    "evaluation-patched": {
+      "summary": {
+        "runs": 2,
+        "execution_errors": 0,
+        "business_passes": 2,
+        "p50_seconds": 11.25,
+        "p95_seconds": 19.93699999997625,
+        "seller_calls": 12,
+        "auxiliary_calls": 2,
+        "tokens": 13824,
+        "unknown_usage_calls": 0,
+        "known_estimated_cny": "0.00360420",
+        "unknown_cost_calls": 0,
+        "unrecovered_seller_accounting_rows": 0,
+        "fallback_turns": 1,
+        "quality_applicable_turns": 3,
+        "deterministic_render_turns": 0,
+        "seller_turns": 3,
+        "judge_passes": 1,
+        "judge_evaluated": 2
+      },
+      "local_native_trace": {
+        "status": "PASS",
+        "scope": "Actual sanitized local callback journal, NOT remote readback",
+        "spans": 50,
+        "completed_graph_runs": 3,
+        "expected_graph_runs": 3,
+        "missing_refs": [],
+        "incomplete_spans": 0,
+        "sha256": "58e8f05efc39c0e0cad450ea7f764d1b55f205b95aa7c6fda42dcab08d93639f"
+      },
+      "release_status": "INSUFFICIENT_EVIDENCE",
+      "source_commit": "eda103632ceb33920d58ae1290cf5bfa30a89d58",
+      "working_tree_dirty": false,
+      "frozen_runtime": {
+        "status": "PASS",
+        "start_manifest_sha256": "b359a0b4673a0ee97428059c3c84f87f8e78c3ef0718a23eff4dd845a2a6e7d6",
+        "end_manifest_sha256": "b359a0b4673a0ee97428059c3c84f87f8e78c3ef0718a23eff4dd845a2a6e7d6"
+      }
+    }
+  },
+  "dependency_audit": {
+    "python_known_vulnerabilities": 0,
+    "npm_known_vulnerabilities": 0,
+    "certifi": "2026.10.19",
+    "filelock": "4.2.1",
+    "vite": "7.3.7",
+    "source_map_js": "1.2.2"
+  },
+  "runtime": {
+    "url": "http://127.0.0.1:5174",
+    "api_url": "http://127.0.0.1:8100",
+    "readiness": {
+      "status": "ready",
+      "database": "ok",
+      "model": "configured",
+      "authentication": "configured",
+      "checkpoint": "ok",
+      "worker": "ok",
+      "watchdog": "ok"
+    },
+    "image": "sha256:0c2f77b48017035e9ae78bce9743ca4cab5284b4f40b7369976c9193bc9f5827"
+  },
+  "old_project": {
+    "commit": "9fa17569010763860b45d541ce4e2dde46bb7b55",
+    "git_status_clean": true,
+    "env_sha256_unchanged": "e619b6205ecb605466e293f12136095f018958c40a5510488929fd6ba8dee8d9",
+    "readonly_volume_archive_sha256_before_after": "19587c473cd2c5914fa4e1831fd300dece28f70f05c8fa8fd48d18694888dfb5"
+  },
+  "failures_retained": [
+    {
+      "artifact": "initial-graph.xml",
+      "reason": "Old downgrade assertion did not include the new P6 audit guard; corrected and retested."
+    },
+    {
+      "artifact": "delivery-v1/report.json",
+      "reason": "Smoke harness used POST /api/seller/products instead of POST /api/products; no model calls."
+    },
+    {
+      "artifact": "delivery-v2/report.json",
+      "reason": "Model parsed proposal plus submit wording as proposal and confirmation; safely clarified; retained for P5 semantic review."
+    },
+    {
+      "artifact": "evaluation-patched/report.json",
+      "reason": "Business 2/2; automated public-quality judge 1/2, requires human review; no relabeling."
+    },
+    {
+      "artifact": "pip-audit.json",
+      "reason": "Four known advisories in certifi/filelock, patched; subsequent full pinned-list audit has zero known vulnerabilities."
+    }
+  ],
+  "next_steps": [
+    "Complete P5 independent human-labelled risk and quality evidence.",
+    "Review retained semantic and automated judge disagreement cases without changing business meaning silently.",
+    "Restore LangSmith account quota and replay preserved callbacks, then recover remote evidence.",
+    "Confirm section 13.5 latency/cost tolerances before public trial.",
+    "Run remote CI and configure external alert receivers when account access is supplied."
+  ],
+  "model_accounting": {
+    "calls": 52,
+    "known_estimated_cny": "0.01257320",
+    "unknown_cost_calls": 0,
+    "stage_total_budget": "unlimited",
+    "production_input_budgets": "unchanged"
+  },
+  "artifact_sha256": {
+    "artifacts\\p6\\protocol.xml": "d7e9ddc7a515178c9b7333a4341bb14d58f42257a74359646f737d6da4b11ea8",
+    "artifacts\\p6\\recovery-final.xml": "7e062d1d6239707e4bf5103187082e672361f4a75c5cb2baf9bb13721ac263e8",
+    "artifacts\\p6\\business-final.xml": "ecb4f347c6787ec9c0e0eb1fdf563e99b1d9a2a7908346a70f2283c75d808719",
+    "artifacts\\p6\\unit-patched.xml": "53c272b40edba4a0c2dca1c24b455e20171d446707e05c040b1999bcc496d11e",
+    "artifacts\\p6\\initial-graph.xml": "f5f7777085178dfbd89c17e8d3ddc86e762915595bcf82b61c5d0fe76c95e96b",
+    "artifacts\\p6\\pip-audit.json": "172820f2a7efad017bf9cd795b1a5a8b9dc22a5bb974218d57926f2bab6abe26",
+    "artifacts\\p6\\pip-audit-final.json": "5a8c9cd20dd35b36c358f14b4676b8b0f52667f841bf0b05e269a8e23c24c4c6",
+    "artifacts\\p6\\delivery-v1\\report.json": "8c273e537d81bb1683c886214dffc82fde9bb9f19b7727078dda3b7b03d907d4",
+    "artifacts\\p6\\delivery-v2\\report.json": "7b64c7f9b49617c999ec3f48495bc04dd93c5b03e384a488093718f1433e8bc5",
+    "artifacts\\p6\\delivery-v3\\report.json": "3959cdb6fb40e72d3540dce9a8b2610f026dde0761360d594f8f11502c237ef2",
+    "artifacts\\p6\\delivery-v3\\node-history.json": "69122980fe39b25124a45b756f237ec55fa4feb64f239635a5f9bd78822e5524",
+    "artifacts\\p6\\delivery-v3\\backup\\manifest.json": "7f3a0ea2e8083c2871c73b7579b6e5bbc363b8b066fb8151a52afab9a5d1dfc9",
+    "artifacts\\p6\\evaluation-smoke\\report.json": "453b33c1c39df2a67110e3298bf0f8e79928f986dc17978f8b8c546d7ae442bb",
+    "artifacts\\p6\\evaluation-patched\\report.json": "786e13413ee678c53139faa37fb49f67f5050832fa8e8ef82357e5696b993319",
+    "artifacts\\p6\\running-services-final.json": "e3646af1eb774a20d14748c5293debf2e7699f85d61809cc3bcc3ec3edb28d00"
+  }
+}

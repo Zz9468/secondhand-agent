@@ -1,3 +1,5 @@
+> 本文件为 P6 前的 README 历史快照。当前启动和恢复以 [项目 README](../README.md) 与 [P6 手册](P6_运行与复验.md) 为准。
+
 # SecondHand Agent
 
 当前分支 `refactor/langgraph` 已完成兼容120场景的完整适配、开发回归扩充、回答遗漏及并发死锁修复。
@@ -9,20 +11,20 @@
 开发场景、重复运行、AI标注或本地轨迹完整均不能补足该门槛。
 累计29,844次已记录调用、已知估算费用¥9.74154940，另25次用量/费用未知；生产每输入安全预算未变。
 §13.5的延迟/费用业务容忍范围也尚待确认，未自行降低或设置验收阈值。
-结果与适用范围见 [120场景复验报告](docs/P5_120场景最终复验报告.md)，
-提交、测试、失败和费用见 [分阶段记录](docs/P5_120场景续验记录.md)，
-机器摘要见 [P5证据](docs/evidence/p5-summary.json)，命令及真实轨迹重传见 [运行文档](docs/P5_运行与复验.md)。
-旧320次实验为历史基线，保存在 [首轮实施记录](docs/P5_实施与验收记录.md)。
+结果与适用范围见 [120场景复验报告](P5_120场景最终复验报告.md)，
+提交、测试、失败和费用见 [分阶段记录](P5_120场景续验记录.md)，
+机器摘要见 [P5证据](evidence/p5-summary.json)，命令及真实轨迹重传见 [运行文档](P5_运行与复验.md)。
+旧320次实验为历史基线，保存在 [首轮实施记录](P5_实施与验收记录.md)。
 此前成果见
-[P4 实施与验收记录](docs/P4_实施与验收记录.md)，启动、恢复和归档见 [P4 运行与复验](docs/P4_运行与复验.md)。
-此前审批与生命周期交付见 [P3 实施与验收记录](docs/P3_实施与验收记录.md)。
-P2 统一聊天、条件报价、草案、可信事实及展示因果见 [P2 实施记录](docs/P2_实施与验收记录.md)，
-此前的真实模型校准见 [P2 真实模型验收记录](docs/P2_真实模型验收记录.md)。新聊天需要单独运行
+[P4 实施与验收记录](P4_实施与验收记录.md)，启动、恢复和归档见 [P4 运行与复验](P4_运行与复验.md)。
+此前审批与生命周期交付见 [P3 实施与验收记录](P3_实施与验收记录.md)。
+P2 统一聊天、条件报价、草案、可信事实及展示因果见 [P2 实施记录](P2_实施与验收记录.md)，
+此前的真实模型校准见 [P2 真实模型验收记录](P2_真实模型验收记录.md)。新聊天需要单独运行
 `app.workers.graph_worker`；继承的旧 Worker 不领取新图任务。`GRAPH_CHAT_ENABLED=false`
 可停止为新建会话绑定图；新图会话使用 `negotiation-v3`，已绑定会话保持版本，不回退给旧 Runtime。
-P1 基线见 [P1 实施与验收记录](docs/P1_实施与验收记录.md)。
-隔离环境沿用 [P0 运行与复验](docs/P0_运行与复验.md)，基础协议证据见
-[P0 实施与验收记录](docs/P0_实施与验收记录.md)。新开发库当前迁移为 `f56ca103e8b2`。
+P1 基线见 [P1 实施与验收记录](P1_实施与验收记录.md)。
+隔离环境沿用 [P0 运行与复验](P0_运行与复验.md)，基础协议证据见
+[P0 实施与验收记录](P0_实施与验收记录.md)。新开发库当前迁移为 `f56ca103e8b2`。
 下文保留继承的 V4 功能说明，作为后续迁移对照。
 
 面向个人闲置交易的自主协商卖家助手。V4 通过有界 ReAct 工具循环、完整执行消息流、上下文压缩和协商记忆，让 Agent 连续处理商品咨询、价格讨论与交易条件变更；正式报价、接受、卖家审批和买家确认由后端确定性规则校验并执行。
@@ -145,7 +147,7 @@ Copy-Item .env.example .env
 
 两个数据库 URL 中的账号、密码和数据库名应与 MySQL 配置一致；密码包含特殊字符时，URL 中的密码部分需要编码。模型地址应与 API Key 所属地域一致，所选模型需要满足项目的结构化输出与模型能力检查。
 
-`.env` 已被 Git 忽略。完整配置说明见 [.env.example](.env.example)，模型与认证配置由后端启动时读取；修改后需要重启 API 和 Worker。
+`.env` 已被 Git 忽略。完整配置说明见 [.env.example](../.env.example)，模型与认证配置由后端启动时读取；修改后需要重启 API 和 Worker。
 
 **使用当前 V4 功能时，在 `.env` 中设置以下选项。** 模板的 `AGENT_RUNTIME=V3` 保留旧路径默认值，必须改为 `V4` 才启用新运行时：
 
@@ -314,7 +316,7 @@ python -m pip_audit -r requirements.lock
 python -m scripts.run_isolated_mysql_tests
 ~~~
 
-该脚本要求 Compose 的 `secondhand-agent-mysql-1` 已健康，且 `.env` 配置有效；自动创建测试库、迁移、运行 Pytest，最后清理测试库，避免与正在运行的 Worker 共用业务数据。使用其他 MySQL 环境时，需按 [迁移测试](backend/tests/integration/test_v21_account_migration.py) 和测试夹具要求单独配置测试库。
+该脚本要求 Compose 的 `secondhand-agent-mysql-1` 已健康，且 `.env` 配置有效；自动创建测试库、迁移、运行 Pytest，最后清理测试库，避免与正在运行的 Worker 共用业务数据。使用其他 MySQL 环境时，需按 [迁移测试](../backend/tests/integration/test_v21_account_migration.py) 和测试夹具要求单独配置测试库。
 
 在 `frontend/` 执行：
 
@@ -346,7 +348,7 @@ python -m evaluation.dynamic_runner --groups G4 --count 20 --repeats 3 --model s
 
 真实模型批次需要显式选择 `--model qwen --buyer-model qwen --allow-real-model`，配置每百万 Token 单价和币种，并在执行前设定 `--max-cost`、`--max-calls`、`--max-tokens` 和 `--timeout`。`--max-cost` 按配置币种解释；输出目录必须是新目录，不能覆盖已记录批次。每次 RPC 前预留预算，未知用量保留预留值，失败调用同样记账。
 
-可使用 `--scenario-file` 和 `--profiles-file` 指定冻结输入，使用 `--protocol-file` 记录预先确定的实验口径。评测与复核入口见 [动态评测执行器](backend/evaluation/dynamic_runner.py)、[独立安全检查](backend/evaluation/dynamic_safety.py)、[动态报告](backend/evaluation/dynamic_report.py)、[运行稳定性复算](backend/scripts/recompute_v4_runtime_stability.py) 和 [停止案例职责复核](backend/scripts/review_v4_agent_duties.py)。
+可使用 `--scenario-file` 和 `--profiles-file` 指定冻结输入，使用 `--protocol-file` 记录预先确定的实验口径。评测与复核入口见 [动态评测执行器](../backend/evaluation/dynamic_runner.py)、[独立安全检查](../backend/evaluation/dynamic_safety.py)、[动态报告](../backend/evaluation/dynamic_report.py)、[运行稳定性复算](../backend/scripts/recompute_v4_runtime_stability.py) 和 [停止案例职责复核](../backend/scripts/review_v4_agent_duties.py)。
 
 ### 最近一次真实模型结果
 
@@ -388,7 +390,7 @@ python -m evaluation.cli
 
 默认使用可控模拟模型，三组均通过隔离内存适配器运行，不访问真实模型或业务数据库。每次生成独立批次目录，保存运行明细、事件、报告和门禁结果；确定性门禁失败时返回非零退出码。
 
-真实模型评测需要显式传入 `--model qwen --allow-real-model`，配置模型单价与币种，并设置费用等预算。模型冒烟脚本 `python scripts/smoke_model.py` 也会访问真实模型并可能产生费用。详细命令与实验协议见 [离线评测](docs/V3_阶段7_离线模拟买家与三组对比实验.md) 和 [正式效果评测报告](docs/V3_正式效果评测方案与结果.md)。
+真实模型评测需要显式传入 `--model qwen --allow-real-model`，配置模型单价与币种，并设置费用等预算。模型冒烟脚本 `python scripts/smoke_model.py` 也会访问真实模型并可能产生费用。详细命令与实验协议见 [离线评测](V3_阶段7_离线模拟买家与三组对比实验.md) 和 [正式效果评测报告](V3_正式效果评测方案与结果.md)。
 
 ## 任务恢复与故障排查
 
@@ -435,15 +437,15 @@ compose.yaml         本地容器配置
 
 ## 实现入口与历史文档
 
-- [V4 工具循环](backend/app/agent/runtime.py)
-- [上下文构建与压缩](backend/app/agent/context_builder.py)
-- [协商记忆与来源校验](backend/app/agent/negotiation_memory.py)
-- [自然回复审核](backend/app/agent/conversation_reply.py)
-- [执行流与短事务适配](backend/app/services/agent_runtime_service.py)
-- [V4 数据迁移](backend/migrations/versions/5991c96c16b8_v4_agent_execution_stream_contexts_and_.py)
-- [人工验收流程](docs/V2.1_验收清单.md)
-- [短事务与迟到结果防护](docs/V3_阶段3_短事务模型调用与迟到结果防护.md)
-- [有界重试与人工恢复](docs/V3_阶段4_有界重试与人工恢复.md)
-- [可观测性与成本采集](docs/V3_阶段6_结构化可观测性与成本采集.md)
-- [评测报告与可复现交付](docs/V3_阶段8_评测报告回归门禁与可复现交付.md)
-- [正式效果评测方案与结果](docs/V3_正式效果评测方案与结果.md)
+- [V4 工具循环](../backend/app/agent/runtime.py)
+- [上下文构建与压缩](../backend/app/agent/context_builder.py)
+- [协商记忆与来源校验](../backend/app/agent/negotiation_memory.py)
+- [自然回复审核](../backend/app/agent/conversation_reply.py)
+- [执行流与短事务适配](../backend/app/services/agent_runtime_service.py)
+- [V4 数据迁移](../backend/migrations/versions/5991c96c16b8_v4_agent_execution_stream_contexts_and_.py)
+- [人工验收流程](V2.1_验收清单.md)
+- [短事务与迟到结果防护](V3_阶段3_短事务模型调用与迟到结果防护.md)
+- [有界重试与人工恢复](V3_阶段4_有界重试与人工恢复.md)
+- [可观测性与成本采集](V3_阶段6_结构化可观测性与成本采集.md)
+- [评测报告与可复现交付](V3_阶段8_评测报告回归门禁与可复现交付.md)
+- [正式效果评测方案与结果](V3_正式效果评测方案与结果.md)
