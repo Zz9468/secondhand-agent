@@ -40,6 +40,7 @@ def test_simulator_sees_public_card_terms_without_confirmation_credentials():
 
 def test_missing_or_failed_remote_feedback_never_completes():
     assert not feedback_complete(SimpleNamespace(feedback_stats=None))
+    assert not feedback_complete(SimpleNamespace(feedback_stats={"business_correct": None}))
     assert not feedback_complete(
         SimpleNamespace(
             feedback_stats={
@@ -53,6 +54,8 @@ def test_missing_or_failed_remote_feedback_never_completes():
 def test_official_readback_checks_ids_and_feedback():
     row = SimpleNamespace(
         id="run",
+        end_time="complete",
+        error=None,
         feedback_stats={
             "business_correct": {"n": 1},
             "public_quality": {"n": 1},

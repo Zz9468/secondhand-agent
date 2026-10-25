@@ -202,6 +202,29 @@ def export_experiment(rows, metadata, *, label, dataset_label=None):
     run_ids = [row["run"].id for row in local]
     project = client.read_project(project_name=result.experiment_name)
     returned = asyncio.run(readback(client, str(project.id), {str(rid) for rid in run_ids}))
+    feedback = []
+    expected_keys = {
+        (str(rid), key) for rid in run_ids for key in ("business_correct", "public_quality")
+    }
+    for _ in range(8):
+        feedback = [
+            f
+            for offset in range(0, len(run_ids), 50)
+            for f in client.list_feedback(run_ids=run_ids[offset : offset + 50])
+        ]
+        if expected_keys <= {(str(f.run_id), f.key) for f in feedback}:
+            break
+        time.sleep(2)
+    expected_scores = {}
+    for run in returned:
+        output = run.outputs or {}
+        expected_scores[(str(run.id), "business_correct")] = float(
+            output.get("status") == "OK" and output.get("business_pass") is True
+        )
+        quality_score = output.get("quality_score")
+        expected_scores[(str(run.id), "public_quality")] = (
+            float(quality_score) if type(quality_score) is bool else 0.0
+        )
     ok = (
         len(returned) == len(rows)
         and all(
@@ -210,7 +233,12 @@ def export_experiment(rows, metadata, *, label, dataset_label=None):
             and r.outputs == index[(r.inputs["case_id"], r.inputs["repeat"])]
             for r in returned
         )
-        and all(feedback_complete(r) for r in returned)
+        and expected_keys <= {(str(f.run_id), f.key) for f in feedback}
+        and all(
+            f.score == expected_scores[(str(f.run_id), f.key)]
+            for f in feedback
+            if (str(f.run_id), f.key) in expected_keys
+        )
     )
     return {
         "status": "PASS" if ok else "INSUFFICIENT_EVIDENCE",
@@ -222,15 +250,15 @@ def export_experiment(rows, metadata, *, label, dataset_label=None):
         "url": project.url,
         "run_ids": [str(rid) for rid in run_ids],
         "returned_runs": len(returned),
-        "returned_feedback": sum(len(r.feedback_stats or {}) for r in returned),
-        "readback_api": "runs.query (SmithDB v2), including feedback stats",
+        "returned_feedback": len({(str(f.run_id), f.key) for f in feedback} & expected_keys),
+        "readback_api": "runs.query (SmithDB v2) + list_feedback exact run IDs and scores",
     }
 
 
 def feedback_complete(run):
     return all(
-        (run.feedback_stats or {}).get(key, {}).get("n", 0) >= 1
-        and (run.feedback_stats or {}).get(key, {}).get("errors", 0) == 0
+        ((run.feedback_stats or {}).get(key) or {}).get("n", 0) >= 1
+        and ((run.feedback_stats or {}).get(key) or {}).get("errors", 0) == 0
         for key in ("business_correct", "public_quality")
     )
 
@@ -249,7 +277,7 @@ async def readback(client, project_id, run_ids):
             )
             if row.id in run_ids
         ]
-        if len(rows) == len(run_ids) and all(feedback_complete(r) for r in rows):
+        if len(rows) == len(run_ids) and all(r.end_time and not r.error for r in rows):
             return rows
         await asyncio.sleep(2)
     return rows
