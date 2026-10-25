@@ -1,5 +1,6 @@
 """Real graph adapter for OpenEvals, with local immutable database evidence export."""
 
+import json
 import time
 from datetime import timedelta
 from decimal import Decimal
@@ -37,6 +38,18 @@ from app.semantic.maintenance import EvidenceMaintenance
 from app.services.graph_approval_service import GraphApprovalService
 from app.services.notification_service import NotificationService
 from evaluation.p5.scoring import auxiliary_trajectory, causal_score
+
+
+def public_reply(message):
+    """Simulation/judge must see the same public offer card as the UI, without bearer IDs."""
+    card = {
+        key: value
+        for key, value in (message.card or {}).items()
+        if key in {"kind", "amount", "shipping_paid_by", "terms", "can_confirm"}
+    }
+    return message.content + (
+        "\n公开报价卡片：" + json.dumps(card, ensure_ascii=False) if card else ""
+    )
 
 
 def create_fixture(factory, case):
@@ -128,7 +141,7 @@ class GraphTarget:
             if not reply:
                 raise RuntimeError("graph did not publish a result")
             self.card = reply.card
-            output = {"role": "assistant", "content": reply.content}
+            output = {"role": "assistant", "content": public_reply(reply)}
         self.outputs.append(output)
         if index == 0 and self.case.get("approval"):
             self.environment(self.case["approval"])

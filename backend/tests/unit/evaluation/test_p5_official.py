@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from evaluation.p5.datasets import load_cases
 from evaluation.p5.official import feedback_complete, readback, safe_result
 from evaluation.p5.runner import comparison
+from evaluation.p5.target import public_reply
 
 
 def test_export_allowlist_excludes_private_payloads_and_credentials():
@@ -19,6 +20,22 @@ def test_export_allowlist_excludes_private_payloads_and_credentials():
     value = safe_result(row)
     assert "SYNTHETIC_PRIVATE_MARKER" not in str(value)
     assert value["quality_score"] is True
+
+
+def test_simulator_sees_public_card_terms_without_confirmation_credentials():
+    reply = public_reply(
+        SimpleNamespace(
+            content="报价已接受",
+            card={
+                "amount": "900.00",
+                "terms": {"delivery_method": "pickup"},
+                "context_id": "private-display-context",
+                "offer_id": 54321,
+            },
+        )
+    )
+    assert "900.00" in reply and "pickup" in reply
+    assert "private-display-context" not in reply and "54321" not in reply
 
 
 def test_missing_or_failed_remote_feedback_never_completes():
