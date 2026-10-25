@@ -15,6 +15,11 @@ from app.runtime.input_queue import lock_owner
 from app.semantic.contracts import Candidate, ChatInput, IntentFrame
 from app.semantic.evidence import assess, public_answer, quote_in_transaction
 
+NEGATIVE_BATTERY_FLOOR = re.compile(
+    r"电池[^，。；！？!?]{0,30}?(?:不到|低于|少于|小于)\s*(\d+(?:\.\d+)?)\s*%"
+    r"[^，。；！？!?]{0,12}?(?:不买|不接受|不考虑|不成交)"
+)
+
 
 def usable_draft(draft, session, now, version):
     return bool(
@@ -114,6 +119,7 @@ def condition_scope(intent, actions, text):
         and all(i.alternative_group == intent.alternative_group for i in actions)
         and intent.alternative_group
         and not re.search(r"如果|只要|前提|的话", parts[0])
+        and not NEGATIVE_BATTERY_FLOOR.search(parts[0])
         and not re.search(r"都|均|共同|两个方案|两种方案", text)
     ):
         matching = [part for part in parts if intent.source_quote in part]
@@ -157,11 +163,7 @@ def safe_frame(frame, text):
         scope = condition_scope(item, actions, text)
         # A negative purchase condition reverses the comparison in the quoted fragment.
         # Validate against the whole branch, not only the model's potentially truncated quote.
-        negative_floor = re.search(
-            r"电池[^，。；！？!?]{0,30}?(?:不到|低于|少于|小于)\s*(\d+(?:\.\d+)?)\s*%"
-            r"[^，。；！？!?]{0,12}?(?:不买|不接受|不考虑|不成交)",
-            scope,
-        )
+        negative_floor = NEGATIVE_BATTERY_FLOOR.search(scope)
         if negative_floor and not any(
             p.fact == "battery_health_pct" and p.operator == ">="
             and re.fullmatch(r"\d+(?:\.\d+)?", p.value)

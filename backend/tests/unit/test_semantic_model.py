@@ -155,3 +155,46 @@ def test_withdrawal_requires_positive_explicit_instruction(text):
         {"intents": [{"id": "i", "type": "WITHDRAW_OFFER", "source_quote": text}]}
     )
     assert safe_frame(frame, text)[1] is False
+
+
+def test_negative_purchase_condition_applies_to_both_alternatives():
+    text = "电池不到98%我就不买，900自提或者950包邮到上海。"
+    predicate = {
+        "fact": "battery_health_pct",
+        "operator": ">=",
+        "value": "98",
+        "source_quote": "电池不到98%",
+    }
+    frame = IntentFrame.model_validate(
+        {
+            "intents": [
+                {
+                    "id": "a",
+                    "type": "PROPOSE_OFFER",
+                    "source_quote": "900自提",
+                    "alternative_group": "choices",
+                    "candidate": {
+                        "amount": "900",
+                        "delivery": "pickup",
+                        "payer": "buyer",
+                        "conditions": [predicate],
+                    },
+                },
+                {
+                    "id": "b",
+                    "type": "PROPOSE_OFFER",
+                    "source_quote": "950包邮到上海",
+                    "alternative_group": "choices",
+                    "candidate": {
+                        "amount": "950",
+                        "delivery": "shipping",
+                        "payer": "seller",
+                        "region": "上海",
+                    },
+                },
+            ]
+        }
+    )
+    assert safe_frame(frame, text)[1] is False
+    frame.intents[1].candidate.conditions = frame.intents[0].candidate.conditions
+    assert safe_frame(frame, text)[1] is True
