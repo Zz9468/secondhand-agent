@@ -1,5 +1,6 @@
 """Typed seller evidence and deterministic evaluation; never infer costs from chat."""
 
+import re
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from uuid import uuid4
@@ -195,13 +196,65 @@ def valid_basis(db, product, offer, now):
     return not missing and snapshot == quote.snapshot and evaluations == basis.evaluations
 
 
-def public_answer(db, product, topic):
+def public_answer(db, product, topic, source_quote=""):
     aliases = {
         "battery_health": "battery_health_pct",
         "repair": "repair_history",
         "delivery": "allowed_delivery_methods",
+        "price": "listed_price",
+        "listing_price": "listed_price",
+        "confirmation": "confirmation_button",
     }
     topic = aliases.get(topic, topic)
+    # A free-form model topic must not hide a concrete question from the fallback renderer.
+    topics = []
+    for name, pattern in {
+        "listed_price": r"标价|页面价格|挂牌价|公开价格",
+        "accessories": r"配件|充电线|充电器|包装盒",
+        "invoice": r"发票|购买凭证",
+        "confirmation_button": r"确认按钮|确认入口|点.{0,4}确认|确认.{0,5}(?:含义|意思)",
+    }.items():
+        if re.search(pattern, source_quote):
+            topics.append(name)
+    if topics:
+        if topic in {*FACTS, "description", "product", "title"} and topic not in topics:
+            topics.insert(0, topic)
+        answers = [public_answer(db, product, name) for name in topics]
+        return (
+            "UNKNOWN" if any(a[0] == "UNKNOWN" for a in answers) else "ANSWERED",
+            " ".join(a[1] for a in answers),
+            None,
+        )
+    if topic == "listed_price":
+        return "ANSWERED", f"页面公开标价为{product.listed_price}元；标价不表示已成交。", None
+    if topic == "confirmation_button":
+        return (
+            "ANSWERED",
+            (
+                "确认按钮用于确认你已查看的、当前有效报价及其条款，记录双方交易意向；"
+                "不会自动付款或发货。请先核对金额、配送方式和条件；未同意时不要点击。"
+            ),
+            None,
+        )
+    labels = {
+        "accessories": ("配件及包装", r"配件|包装|充电线|充电器"),
+        "invoice": ("发票或购买凭证", r"发票|凭证"),
+        "warranty": ("原厂保修期限", r"保修"),
+        "screen": ("屏幕划痕或坏点", r"屏幕"),
+        "condition": ("成色和使用痕迹", r"成新|新|痕迹"),
+    }
+    if topic in labels:
+        label, pattern = labels[topic]
+        if re.search(pattern, product.description or ""):
+            return (
+                "ANSWERED",
+                (
+                    f"关于{label}，卖家描述原文为：{product.description}"
+                    " 未在描述中写明的具体项目仍未知，不能据此保证。"
+                ),
+                None,
+            )
+        return "UNKNOWN", f"卖家尚未提供可核实的{label}资料，当前未知。", None
     fact = facts_for(db, product.id).get(topic)
     if fact and fact.value["value"] not in (None, "UNKNOWN"):
         value = fact.value["value"]
@@ -214,4 +267,33 @@ def public_answer(db, product, topic):
         return "ANSWERED", f"卖家提供的资料：{answer}。", fact.version
     if topic in {"description", "product", "title"}:
         return "ANSWERED", f"卖家商品描述：{product.title}；{product.description}", None
-    return "UNKNOWN", "卖家尚未提供可核实的这项资料。", None
+    label = source_quote[:120] if source_quote else "这项"
+    return "UNKNOWN", f"关于“{label}”，卖家尚未提供可核实的资料，当前未知。", None
+
+
+def clarification(candidate, missing):
+    """Explain the actual pending fields and predicates without changing their scope."""
+    labels = {
+        "amount": "报价金额",
+        "delivery": "自提或快递",
+        "payer": "运费由谁承担",
+        "region": "收货区域（无需完整地址）",
+        "cost_unknown": "卖家核实该区域运费",
+        "cost_ambiguous": "卖家消除冲突的运费规则",
+        "delivery_not_allowed": "当前不支持所选配送方式",
+        "fact:allowed_delivery_methods": "卖家核实支持的配送方式",
+        "dependency_unresolved": "先解决报价所依赖的问题",
+    }
+    parts = [labels[m] for m in missing if m in labels]
+    statuses = {
+        "UNKNOWN": "资料未知，需核实",
+        "UNSATISFIED": "现有资料不满足",
+        "UNSUPPORTED": "当前无法核实该条件",
+    }
+    for predicate in candidate.conditions:
+        for status, text in statuses.items():
+            if f"condition:{predicate.fact}:{status}" in missing:
+                parts.append(f"“{predicate.source_quote}”：{text}")
+    if "unsupported_commitment" in missing:
+        parts.append("当前不支持承诺：" + "、".join(candidate.commitments))
+    return "报价尚未提交，已保留原条件。待解决：" + "；".join(parts or ["核实原报价前提"]) + "。"

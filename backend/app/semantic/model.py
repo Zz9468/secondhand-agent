@@ -139,9 +139,23 @@ has_displayed_offer=true时才用CHANGE_TERMS修改正式报价。不要复制�
 )
 
 
+P4_PROMPT_VERSION = "p5-intents-v1"
+PROMPTS[P4_PROMPT_VERSION] = (
+    PROMPTS["p4-intents-v1"]
+    + """
+公开问题topic细分：标价=listed_price，配件及包装=accessories，发票或购买凭证=invoice，
+确认按钮含义=confirmation_button，保修期限=warranty，屏幕状态=screen，成色=condition。
+“请解释确认按钮，先别确认”是ASK_TERMS，不是CONFIRM_INTENT。
+“只是问问/暂不报价/不提交正式报价”的金额询问不是PROPOSE_OFFER；问题仍须分别回答。
+关于购买前提的否定条件：电池不到98%就不买，表示battery_health_pct >= 98；
+只有电池不超过98%才买，才表示<=98。每个备选均保留共同的必要条件。
+"""
+)
+
+
 def parsing_contexts(context, prompt_version):
     yield context
-    if prompt_version in {"p2-intents-v8", "p3-intents-v1", P4_PROMPT_VERSION}:
+    if prompt_version in {"p2-intents-v8", "p3-intents-v1", "p4-intents-v1", P4_PROMPT_VERSION}:
         yield {
             **context,
             "validation_feedback": (
@@ -152,7 +166,13 @@ def parsing_contexts(context, prompt_version):
 
 
 def output_format(prompt_version):
-    if prompt_version not in {"p2-intents-v7", "p2-intents-v8", "p3-intents-v1", P4_PROMPT_VERSION}:
+    if prompt_version not in {
+        "p2-intents-v7",
+        "p2-intents-v8",
+        "p3-intents-v1",
+        "p4-intents-v1",
+        P4_PROMPT_VERSION,
+    }:
         return {"type": "json_object"}
     schema = IntentFrame.model_json_schema()
     schema["$defs"]["Intent"]["allOf"] = [

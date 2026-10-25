@@ -13,7 +13,7 @@ from app.db.models.semantic import OfferDraft, SemanticOfferBasis, SemanticTurn,
 from app.runtime.contracts import Conflict, TypedInput
 from app.runtime.input_queue import lock_owner
 from app.semantic.contracts import Candidate, ChatInput, IntentFrame
-from app.semantic.evidence import assess, public_answer, quote_in_transaction
+from app.semantic.evidence import assess, clarification, public_answer, quote_in_transaction
 
 NEGATIVE_BATTERY_FLOOR = re.compile(
     r"电池[^，。；！？!?]{0,30}?(?:不到|低于|少于|小于)\s*(\d+(?:\.\d+)?)\s*%"
@@ -165,7 +165,8 @@ def safe_frame(frame, text):
         # Validate against the whole branch, not only the model's potentially truncated quote.
         negative_floor = NEGATIVE_BATTERY_FLOOR.search(scope)
         if negative_floor and not any(
-            p.fact == "battery_health_pct" and p.operator == ">="
+            p.fact == "battery_health_pct"
+            and p.operator == ">="
             and re.fullmatch(r"\d+(?:\.\d+)?", p.value)
             and Decimal(p.value) == Decimal(negative_floor[1])
             for p in candidate.conditions
@@ -305,7 +306,9 @@ def plan_turn(factory, run_id, owner, frame_value, now):
 
                     status, answer, evidence = public_approval_status(db, session, now)
                 else:
-                    status, answer, evidence = public_answer(db, product, intent.topic)
+                    status, answer, evidence = public_answer(
+                        db, product, intent.topic, intent.source_quote
+                    )
             elif not safe or conflict:
                 answer = "输入有冲突或条件不完整，请明确要保留的方案和条件。"
             elif intent.type in {"PROPOSE_OFFER", "CHANGE_TERMS"} or intent in changes:
@@ -371,21 +374,8 @@ def plan_turn(factory, run_id, owner, frame_value, now):
                 if alternatives:
                     status, answer = "CHOICE_REQUIRED", "已保留此备选及原条件，请选择一个方案。"
                 elif missing:
-                    labels = {
-                        "amount": "报价金额",
-                        "delivery": "自提或快递",
-                        "payer": "运费由谁承担",
-                        "region": "收货区域（无需完整地址）",
-                    }
-                    prompts = [labels[m] for m in missing if m in labels]
                     status = "WAITING_INFO"
-                    answer = (
-                        ("请补充：" + "、".join(prompts) + "。")
-                        if prompts
-                        else "报价前提尚未满足，已保留草案；需要卖家核实资料或配送规则。"
-                    )
-                    if "unsupported_commitment" in missing:
-                        answer = "当前不支持所要求的额外承诺，保留原条件，请重新协商。"
+                    answer = clarification(candidate, missing)
                 elif len(actions) + len(changes) <= 1:
                     quote, terms, _ = quote_in_transaction(db, product, candidate, now)
                     command = command.model_copy(

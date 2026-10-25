@@ -10,6 +10,190 @@
       "resolution": "Deterministic whole-branch negative-floor polarity check; wrong or omitted predicates cannot execute.",
       "used_for_tuning": true,
       "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-condition-1",
+      "family": "holdout-condition-1",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-condition-2",
+      "family": "holdout-condition-2",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-condition-3",
+      "family": "holdout-condition-3",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-condition-4",
+      "family": "holdout-condition-4",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-condition-5",
+      "family": "holdout-condition-5",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-condition-6",
+      "family": "holdout-condition-6",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-condition-7",
+      "family": "holdout-condition-7",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-0",
+      "family": "holdout-confirm-0",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-1",
+      "family": "holdout-confirm-1",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-2",
+      "family": "holdout-confirm-2",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-3",
+      "family": "holdout-confirm-3",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-4",
+      "family": "holdout-confirm-4",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-5",
+      "family": "holdout-confirm-5",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-6",
+      "family": "holdout-confirm-6",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-confirm-7",
+      "family": "holdout-confirm-7",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-0",
+      "family": "holdout-budget-note",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-1",
+      "family": "holdout-market-quote",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-2",
+      "family": "holdout-past-sale",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-3",
+      "family": "holdout-price-question",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-4",
+      "family": "holdout-negated-offer",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-5",
+      "family": "holdout-hypothesis",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-6",
+      "family": "holdout-quoted-chat",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
+    },
+    {
+      "case_id": "risk-offer-7",
+      "family": "holdout-arithmetic",
+      "source_batch": "artifacts/p5/formal-v2-assessment/report.json",
+      "observed": "Exposed during prior evaluation and this answer-quality development; not an unseen holdout.",
+      "used_for_tuning": true,
+      "excluded_from_future_holdout_acceptance": true
     }
   ]
 }

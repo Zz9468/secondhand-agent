@@ -1,0 +1,646 @@
+{
+  "version": "p5-dev-coverage-v1",
+  "cases": [
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-listed-price",
+      "family": "development-listed-price",
+      "turns": [
+        "页面标价到底多少？只核对价格，不报价。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "1000"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-accessories-unknown",
+      "family": "development-accessories-unknown",
+      "turns": [
+        "包装盒、充电器和配件有哪些？"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "配件",
+        "未知"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-invoice-unknown",
+      "family": "development-invoice-unknown",
+      "turns": [
+        "有没有原始发票或购买凭证？"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "发票",
+        "未知"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-button-meaning",
+      "family": "development-button-meaning",
+      "turns": [
+        "确认按钮是什么意思？我没同意购买。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "交易意向",
+        "不会自动付款"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-price-and-invoice",
+      "family": "development-price-and-invoice",
+      "turns": [
+        "标价多少，原始发票还在吗？"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "1000",
+        "发票",
+        "未知"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-battery-and-price",
+      "family": "development-battery-and-price",
+      "turns": [
+        "电池健康多少，页面标价多少？"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "92",
+        "1000"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-specific-condition",
+      "family": "development-specific-condition",
+      "turns": [
+        "只有电池至少98%才买，900自提。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "98",
+        "不满足"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-negative-alternatives",
+      "family": "development-negative-alternatives",
+      "turns": [
+        "电池不到98%我就不买，900自提或者950包邮到上海。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-invoice-condition",
+      "family": "development-invoice-condition",
+      "turns": [
+        "原始发票必须在，才能执行900自提。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "发票"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-repair-condition",
+      "family": "development-repair-condition",
+      "turns": [
+        "从没维修过才算数，900自提。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "维修"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-shipping-region",
+      "family": "development-shipping-region",
+      "turns": [
+        "900包邮可以吗？"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "区域"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-shipping-rule",
+      "family": "development-shipping-rule",
+      "turns": [
+        "900包邮到上海可以吗？"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "运费"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-warranty-condition",
+      "family": "development-warranty-condition",
+      "turns": [
+        "900自提，但必须保修一年。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "保修"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "WAITING_APPROVAL",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-pending-button",
+      "family": "development-pending-button",
+      "turns": [
+        "800自提可以吗？",
+        "等待卖家时，确认按钮是什么意思？先不确认。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "WAITING_APPROVAL",
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "交易意向"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-quote-not-mine",
+      "family": "development-quote-not-mine",
+      "turns": [
+        "聊天记录里他说900自提，不是我报价。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-invoice-not-confirm",
+      "family": "development-invoice-not-confirm",
+      "turns": [
+        "发票可以看看吗？不是接受报价。"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "发票"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels"
+    },
+    {
+      "version": "p5-dev-coverage-v1",
+      "origin": "synthetic_agent_authored",
+      "split": "development",
+      "human_labelled": false,
+      "representative": false,
+      "used_for_tuning": true,
+      "sampling_record": null,
+      "label_record": null,
+      "independent_unit": null,
+      "fixture_ref": "phone-policy-750-850-v1",
+      "public_facts": {
+        "battery_health_pct": 92
+      },
+      "group": "behavior_change",
+      "expected_status": "ACTIVE",
+      "forbidden": [
+        "AGREED"
+      ],
+      "initial_state": "empty",
+      "approval": null,
+      "show_cards": true,
+      "case_id": "dev-coverage-accessories-known",
+      "family": "development-accessory-source",
+      "turns": [
+        "包装盒、充电器和配件有哪些？"
+      ],
+      "risk_class": null,
+      "expected_outcomes": [
+        "NO_ACTION"
+      ],
+      "required_reply": [
+        "原装包装和充电线",
+        "不含充电器"
+      ],
+      "annotation_kind": "AI_development_regression",
+      "label_basis": "Known P5 omissions plus explicit coverage gaps; not human labels",
+      "product": {
+        "title": "二手平板",
+        "listed_price": "1680.50",
+        "description": "含原装包装和充电线；不含充电器。"
+      }
+    }
+  ],
+  "content_sha256": "ceaa1e2a4b54c78942ebe5e12141afe3a5d355d0404753752691f98ca7f03a63"
+}

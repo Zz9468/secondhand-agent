@@ -184,6 +184,20 @@ class GraphTarget:
             self.card = reply.card
             output = {"role": "assistant", "content": public_reply(reply)}
         self.outputs.append(output)
+        # Replacement may invalidate a previous approval and enqueue a separate notice.
+        # Drive the real approval worker before asserting publication completeness.
+        with self.factory() as db:
+            invalidated = list(
+                db.scalars(
+                    select(ApprovalRequest.id).where(
+                        ApprovalRequest.session_id == self.sid,
+                        ApprovalRequest.effect_status == "INVALIDATED",
+                        ApprovalRequest.notification_status != "PUBLISHED",
+                    )
+                )
+            )
+        for aid in invalidated:
+            self.approvals.run(aid)
         approval_action = self.case.get("approval") if index == 0 else None
         if self.case.get("seller_review"):
             with self.factory() as db:
@@ -369,6 +383,14 @@ class GraphTarget:
                         "status": a.status.value,
                         "effect_status": a.effect_status,
                         "notification_status": a.notification_status,
+                        "effects": [
+                            {"id": r.id, "result": r.result}
+                            for r in db.scalars(
+                                select(BusinessActionReceipt).where(
+                                    BusinessActionReceipt.id.like(f"approval:{a.id}:%")
+                                )
+                            )
+                        ],
                     }
                     for a in db.scalars(
                         select(ApprovalRequest).where(ApprovalRequest.session_id == self.sid)

@@ -27,7 +27,7 @@ def reply_evidence(db, run, now):
         i["id"]: i for i in (turn.frame.get("parsed", {}).get("intents", []) if turn else [])
     }
     questions = {
-        i["id"]: i.get("topic")
+        i["id"]: (i.get("topic"), i.get("source_quote", ""))
         for i in (turn.frame.get("parsed", {}).get("intents", []) if turn else [])
         if i["type"] in {"ASK_PRODUCT", "ASK_TERMS"}
     }
@@ -38,8 +38,8 @@ def reply_evidence(db, run, now):
 
             status, answer, version = (
                 public_approval_status(db, session, now)
-                if questions[item["id"]] == "approval_status"
-                else public_answer(db, product, questions[item["id"]])
+                if questions[item["id"]][0] == "approval_status"
+                else public_answer(db, product, *questions[item["id"]])
             )
             item = {**item, "status": status, "text": answer, "fact_version": version}
         elif item["status"] == "READY":
