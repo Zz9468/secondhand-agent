@@ -13,7 +13,19 @@ from tests.graph.test_business import receipt, submit
 
 def test_migration_matches_orm_after_upgrade_downgrade_upgrade(graph_factory):
     with graph_factory.kw["bind"].connect() as connection:
-        assert compare_metadata(MigrationContext.configure(connection), Base.metadata) == []
+        from app.p0.store import metadata as probe_metadata
+
+        # P0 and graph tests intentionally share an isolated DB. Only the registered
+        # probe tables are out of scope; unknown application tables must still fail.
+        context = MigrationContext.configure(
+            connection,
+            opts={
+                "include_object": lambda obj, name, kind, reflected, compare_to: (
+                    kind != "table" or name not in probe_metadata.tables
+                )
+            },
+        )
+        assert compare_metadata(context, Base.metadata) == []
 
 
 def test_wrong_replacement_target_does_not_reuse_identical_current_terms(case):
