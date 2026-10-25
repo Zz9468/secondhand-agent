@@ -126,7 +126,7 @@ def safe_result(row):
         "status": row["status"],
         "business_pass": row.get("business_pass", False),
         "risk_error": row.get("risk_error"),
-        "local_evidence_sha256": digest(row),
+        "local_evidence_sha256": digest({k: v for k, v in row.items() if k != "remote_returned"}),
         "causal_pass": all(
             r["causal_score"]["status"] == "PASS" for r in row.get("runs", []) if r.get("receipt")
         ),
