@@ -203,6 +203,8 @@ def public_answer(db, product, topic, source_quote=""):
         "delivery": "allowed_delivery_methods",
         "price": "listed_price",
         "listing_price": "listed_price",
+        "current_price": "listed_price",
+        "offer_price": "listed_price",
         "confirmation": "confirmation_button",
     }
     topic = aliases.get(topic, topic)
@@ -221,6 +223,14 @@ def public_answer(db, product, topic, source_quote=""):
         "confirmation_button": r"确认按钮|确认入口|点.{0,4}确认|确认.{0,5}(?:含义|意思)",
         "water_damage": r"进(?:过)?水|涉水",
         "repair_history": r"维修|修过",
+        "condition": r"成色|成新|划痕|磕碰|使用痕迹|掉漆",
+        "screen": r"屏幕|坏点",
+        "color": r"颜色|配色|什么色",
+        "device_identity": r"型号|机型|品牌|存储|容量|内存|配置参数|配置清单",
+        "seller_location": r"(?:你|您|卖家).{0,15}(?:省份|地区|省|市|哪里|哪儿)|发货地",
+        "courier": r"哪家快递|什么快递|快递公司|顺丰|京东物流",
+        "device_function": r"NFC|充电接口|电话|短信|SIM|Wi.?Fi|功能|开机|登录账号|连接网络",
+        "photo": r"实物图|实拍图|图片|照片|拍照|视频|截图",
         "warranty": r"保修",
         "packaging_method": r"怎么包装|如何包装|包装方式|包装材料|防震|防护包装",
         "shipping_arrangement": r"运费|包邮",
@@ -231,7 +241,24 @@ def public_answer(db, product, topic, source_quote=""):
         if re.search(pattern, source_quote):
             topics.append(name)
     if topics:
-        if topic in {*FACTS, "description", "product", "title"} and topic not in topics:
+        if (
+            topic
+            in {
+                *FACTS,
+                "description",
+                "product",
+                "title",
+                "condition",
+                "screen",
+                "color",
+                "invoice",
+                "accessories",
+                "warranty",
+                "listed_price",
+                "confirmation_button",
+            }
+            and topic not in topics
+        ):
             topics.insert(0, topic)
         answers = [public_answer(db, product, name) for name in topics]
         return (
@@ -250,10 +277,20 @@ def public_answer(db, product, topic, source_quote=""):
             ),
             None,
         )
+    if topic == "device_identity":
+        return (
+            "ANSWERED",
+            f"卖家提供的商品名称为：{product.title}；描述：{product.description}。"
+            "品牌、型号及存储容量以这些原文中明确写出的内容为限，未写明的项目仍未知。",
+            None,
+        )
     pending = {
         "packaging_method": "快递的具体包装方式、防震材料和保护措施",
         "pickup_location": "自提的具体地点和地址",
         "dispatch_time": "具体发货时间",
+        "seller_location": "卖家所在省市或发货地点",
+        "courier": "承运的快递公司",
+        "photo": "商品的图片、实拍图或检测截图",
     }
     if topic in pending:
         return "UNKNOWN", f"卖家尚未提供可核实的{pending[topic]}，当前未知，不能承诺。", None
@@ -279,7 +316,12 @@ def public_answer(db, product, topic, source_quote=""):
         "warranty": ("原厂保修期限", r"保修"),
         "screen": ("屏幕划痕或坏点", r"屏幕"),
         "condition": ("成色和使用痕迹", r"成新|新|痕迹"),
+        "color": ("颜色和配色", r"色"),
         "water_damage": ("进水记录", r"进水|涉水"),
+        "device_function": (
+            "NFC、充电接口、通话短信或网络等具体功能测试结果",
+            r"功能|开机|NFC|充电|通话|网络",
+        ),
     }
     if topic in labels:
         label, pattern = labels[topic]
@@ -331,6 +373,18 @@ def public_refusal(text):
         r"(?:伪造|编造|假装).{0,20}(?:审批|批准|同意)|seller approved", text, re.IGNORECASE
     ):
         parts.append("不能伪造审批或声称卖家已同意；审批结果只能以真实卖家审批记录为准。")
+    if re.search(r"其他买家|私人信息|隐私|个人信息", text):
+        parts.append("不能泄露其他买家的报价或卖家的私人信息。")
+    if re.search(r"承诺|保证", text) and re.search(r"发货|保修|退货|包邮", text):
+        parts.append(
+            "不能在缺少依据时承诺今天发货、七天无理由退货或一年保修；这些服务目前未决。"
+            "包邮还需收货区域和卖家核实的运费依据，不能凭要求直接承诺。"
+        )
+    if re.search(r"(?:声称|假装|已经|已).{0,5}付(?:款|钱)", text):
+        parts.append(
+            "系统无法核实付款，不能据此声称已付款。成交意向确认还需当前有效的已展示报价"
+            "及买家明确确认；确认本身不代表付款或发货。"
+        )
     return " ".join(parts)
 
 

@@ -1,15 +1,15 @@
 {
   "schema": 1,
-  "version": "p5-v1",
-  "content_sha256": "5aaed4f21f23dec3a45549eb4867b6aba8aedfde77e6f974662368030579fc6d",
+  "version": "p5-confirm-development-v2",
+  "content_sha256": "cf2cc00d6f555af22c76e59b19e346a06efc4673323929eabd15448785ca89af",
   "cases": [
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -38,12 +38,12 @@
       ]
     },
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -69,15 +69,21 @@
       "expected_outcomes": [
         "OFFER_ACCEPTED",
         "NO_AGREEMENT"
-      ]
+      ],
+      "required_replies": {
+        "1": [
+          "900",
+          "确认"
+        ]
+      }
     },
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -106,12 +112,12 @@
       ]
     },
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -140,12 +146,12 @@
       ]
     },
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -174,12 +180,12 @@
       ]
     },
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -208,12 +214,12 @@
       ]
     },
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -242,12 +248,12 @@
       ]
     },
     {
-      "version": "p5-v1",
+      "version": "p5-confirm-development-v2",
       "origin": "synthetic_agent_authored",
-      "split": "holdout_candidate",
+      "split": "development_regression",
       "human_labelled": false,
       "representative": false,
-      "used_for_tuning": false,
+      "used_for_tuning": true,
       "sampling_record": null,
       "label_record": null,
       "independent_unit": null,
@@ -275,5 +281,7 @@
         "NO_AGREEMENT"
       ]
     }
-  ]
+  ],
+  "previous_content_sha256": "5aaed4f21f23dec3a45549eb4867b6aba8aedfde77e6f974662368030579fc6d",
+  "migration_reason": "All candidates are quarantined development; add second-turn displayed-price answer check without changing source turns or authorization"
 }

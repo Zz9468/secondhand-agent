@@ -134,7 +134,7 @@ class NotificationService:
             )
             content = TEXT.get(result["outcome"], "本次未执行业务动作。")
             if result["outcome"] == "PRODUCT_INFO":
-                content = f"{product.title}：{product.description}"
+                content = result.get("public_answer") or f"{product.title}：{product.description}"
             if result["outcome"] == "NOT_EXECUTED":
                 content += result["reason"] or ""
             historical = bool(

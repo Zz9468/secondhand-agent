@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import threading
+import time
 import traceback
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -25,7 +26,14 @@ from app.runtime.contracts import digest
 from app.semantic.model import PROMPTS, SemanticModel
 from app.semantic.quality import PROMPTS as QUALITY_PROMPTS
 from evaluation.p5.datasets import load_cases
-from evaluation.p5.official import BUYER_PROMPT, JUDGE_PROMPT, export_experiment, judge, simulate
+from evaluation.p5.official import (
+    BUYER_PROMPT,
+    CONSULTATION_PREFIX,
+    JUDGE_PROMPT,
+    export_experiment,
+    judge,
+    simulate,
+)
 from evaluation.p5.references import public_fixture_reference
 from evaluation.p5.scoring import acceptance, percentile, risk_report
 from evaluation.p5.target import GraphTarget, score_case
@@ -37,6 +45,20 @@ BASELINE = "9fa17569010763860b45d541ce4e2dde46bb7b55"
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def save_report(directory, report):
+    """Keep the append-only journal authoritative; tolerate transient Windows readers."""
+    temp = directory / "report.tmp"
+    temp.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    for attempt in range(8):
+        try:
+            temp.replace(directory / "report.json")
+            return
+        except PermissionError:
+            if attempt == 7:
+                raise
+            time.sleep(0.025 * (attempt + 1))
 
 
 def metadata(cases):
@@ -54,7 +76,7 @@ def metadata(cases):
         else None,
         "dataset_sha256": digest(cases),
         "prompt_sha256": digest([PROMPTS, QUALITY_PROMPTS]),
-        "evaluator_prompt_sha256": digest([BUYER_PROMPT, JUDGE_PROMPT]),
+        "evaluator_prompt_sha256": digest([BUYER_PROMPT, JUDGE_PROMPT, CONSULTATION_PREFIX]),
         "judge_reference_sha256": digest(
             {c["case_id"]: public_fixture_reference(c) for c in cases}
         ),
@@ -119,6 +141,8 @@ def summarize(rows):
             r.get("database_evidence") is not True for r in rows
         ),
         "fallback_turns": sum(r.get("fallback") is True for r in runs),
+        "quality_applicable_turns": sum(r.get("quality_applicable") is True for r in runs),
+        "deterministic_render_turns": sum(r.get("quality_applicable") is False for r in runs),
         "seller_turns": len(runs),
         "judge_passes": sum(r.get("judge", {}).get("score") is True for r in rows),
         "judge_evaluated": sum(type(r.get("judge", {}).get("score")) is bool for r in rows),
@@ -240,11 +264,7 @@ def run(factory, postgres_url, options):
     )
 
     def save():
-        temp = directory / "report.tmp"
-        temp.write_text(
-            json.dumps(report, ensure_ascii=False, indent=2, default=str), encoding="utf-8"
-        )
-        temp.replace(directory / "report.json")
+        save_report(directory, report)
 
     save()
 
@@ -265,9 +285,11 @@ def run(factory, postgres_url, options):
             if not case.get("smoke"):
                 row["judge"] = judge(case, row["trajectory"], row["auxiliary_calls"])
         except Exception as exc:
+            code = getattr(getattr(exc, "orig", None), "args", [None])[0]
             row.update(
                 status="ERROR",
                 error_type=type(exc).__name__,
+                database_error_code=code if type(code) is int else None,
                 error_stack=[
                     {"file": Path(f.filename).name, "line": f.lineno, "function": f.name}
                     for f in traceback.extract_tb(exc.__traceback__)

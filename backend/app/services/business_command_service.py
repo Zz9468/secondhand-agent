@@ -1,10 +1,18 @@
 """唯一事务所有者；回执、通知义务和 Outbox 与业务变更原子提交。"""
 
+import re
 from datetime import timedelta
 
 from sqlalchemy import select
 
-from app.db.models import NegotiationSession, NegotiationStatus, Product, SellerPolicy
+from app.db.models import (
+    NegotiationSession,
+    NegotiationStatus,
+    Offer,
+    OfferStatus,
+    Product,
+    SellerPolicy,
+)
 from app.db.models.graph import BusinessActionReceipt, NotificationDelivery, OutboxEvent
 from app.runtime.contracts import Conflict, digest, thread_id, utcnow
 from app.runtime.input_queue import bounded_transaction, lock_owner
@@ -202,6 +210,22 @@ class BusinessCommandService:
                     "description": product.description,
                 }
             )
+            if (
+                run.payload["kind"] == "QUERY"
+                and not reason
+                and re.search(r"为什么|为何|理由|解释", run.payload.get("text", ""))
+            ):
+                rejected = db.scalar(
+                    select(Offer)
+                    .where(Offer.session_id == session.id, Offer.status == OfferStatus.REJECTED)
+                    .order_by(Offer.id.desc())
+                    .limit(1)
+                )
+                if rejected:
+                    result["public_answer"] = (
+                        f"此前{rejected.price}元报价未通过当前价格及交易条件校验，未被接受。"
+                        "可以调整价格或配送方案后重新提出；卖家的私有定价规则不公开。"
+                    )
             notification_in_transaction(db, run, result, self.clock())
             db.add(
                 OutboxEvent(

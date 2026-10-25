@@ -69,6 +69,45 @@ def frozen_context(db, run, session, now):
     return context
 
 
+def answer_question(db, run, session, product, topic, source_quote, now):
+    """Answer public questions against the input's actual display, never the latest offer."""
+    if topic == "approval_status":
+        from app.services.approval_lifecycle import public_approval_status
+
+        return public_approval_status(db, session, now)
+    if topic in {
+        "price",
+        "listing_price",
+        "listed_price",
+        "current_price",
+        "offer_price",
+    } and not re.search(r"标价|页面|挂牌|公开价格", source_quote):
+        context = frozen_context(db, run, session, now)
+        offer = db.get(Offer, context.offer_id) if context and context.offer_id else None
+        if (
+            offer
+            and offer.session_id == session.id
+            and session.current_offer_id == offer.id
+            and offer.expires_at > now
+            and offer.status.value in {"ACCEPTED", "PROPOSED"}
+        ):
+            pending = (
+                "该报价已接受，但仍等待你独立确认，尚未记录最终成交意向。"
+                if offer.status.value == "ACCEPTED"
+                else "该报价尚待卖家审批，尚未接受或确认成交意向。"
+            )
+            return (
+                "ANSWERED",
+                (
+                    f"你已查看的当前报价为{offer.price}元；页面公开标价为{product.listed_price}元。"
+                    + pending
+                    + "询问价格本身不会触发确认。"
+                ),
+                None,
+            )
+    return public_answer(db, product, topic, source_quote)
+
+
 def bound_draft(db, run, session, now):
     payload = ChatInput.model_validate(run.payload)
     if payload.draft_id:
@@ -308,14 +347,9 @@ def plan_turn(factory, run_id, owner, frame_value, now):
         for intent in ordered:
             status, answer, evidence = "CLARIFY", "请明确本次希望执行的操作。", None
             if intent.type in {"ASK_PRODUCT", "ASK_TERMS"}:
-                if intent.topic == "approval_status":
-                    from app.services.approval_lifecycle import public_approval_status
-
-                    status, answer, evidence = public_approval_status(db, session, now)
-                else:
-                    status, answer, evidence = public_answer(
-                        db, product, intent.topic, intent.source_quote
-                    )
+                status, answer, evidence = answer_question(
+                    db, run, session, product, intent.topic, intent.source_quote, now
+                )
             elif not safe or conflict:
                 answer = "输入有冲突或条件不完整，请明确要保留的方案和条件。"
                 requirements = [
@@ -345,7 +379,10 @@ def plan_turn(factory, run_id, owner, frame_value, now):
                 if original:
                     candidate = merge_candidate(original, candidate)
                 elif continuation and candidate.amount is None:
-                    answer = "无法绑定唯一有效且已展示的草案，请引用方案或完整重述报价。"
+                    missing, _, _, _ = assess(db, product, candidate, now)
+                    answer = clarification(candidate, missing) + (
+                        "无法绑定唯一有效且已展示的草案，请引用方案或完整重述报价。"
+                    )
                     results.append({"id": intent.id, "status": status, "text": answer})
                     statuses[intent.id] = status
                     continue

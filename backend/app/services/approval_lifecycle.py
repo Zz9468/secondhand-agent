@@ -1,6 +1,7 @@
 """Composable lifecycle writes. Caller owns the transaction and session/product locks."""
 
 from sqlalchemy import select
+from sqlalchemy.dialects.mysql import insert
 
 from app.db.models import (
     ApprovalRequest,
@@ -24,14 +25,17 @@ def approval_thread(approval_id):
 
 def event_in_transaction(db, approval, suffix, kind):
     key = f"approval:{approval.id}:{suffix}"
-    if not db.get(OutboxEvent, key, with_for_update=True):
-        db.add(
-            OutboxEvent(
-                id=key,
-                approval_id=approval.id,
-                payload={"schema": 1, "approval_id": approval.id, "kind": kind},
-            )
+    # Locking a missing key takes a gap lock under MySQL REPEATABLE READ. Two
+    # unrelated approvals can then deadlock while inserting into the same gap.
+    db.execute(
+        insert(OutboxEvent)
+        .values(
+            id=key,
+            approval_id=approval.id,
+            payload={"schema": 1, "approval_id": approval.id, "kind": kind},
         )
+        .on_duplicate_key_update(id=OutboxEvent.id)
+    )
     return key
 
 
@@ -44,32 +48,35 @@ def start_approval(db, approval):
 
 def effect_notice(db, session, approval, outcome, now):
     source = f"approval:{approval.id}:result:{approval.effect_revision}"
-    # A prior non-locking read may have established an older REPEATABLE READ snapshot.
-    # The session lock serializes writers; this must still be a current read.
-    if not db.get(NotificationDelivery, source, with_for_update=True):
-        result = {
-            "outcome": outcome,
-            "offer_id": approval.offer_id,
-            "approval_id": approval.id,
-            "effect_revision": approval.effect_revision,
-            "business_version": session.version,
-            "invalid_reason": approval.invalid_reason,
-        }
-        db.add(
-            NotificationDelivery(
-                id=source,
-                session_id=session.id,
-                approval_id=approval.id,
-                source_thread_id=approval_thread(approval.id),
-                result=result,
-                reply_deadline=now,
-            )
+    result = {
+        "outcome": outcome,
+        "offer_id": approval.offer_id,
+        "approval_id": approval.id,
+        "effect_revision": approval.effect_revision,
+        "business_version": session.version,
+        "invalid_reason": approval.invalid_reason,
+    }
+    db.execute(
+        insert(NotificationDelivery)
+        .values(
+            id=source,
+            session_id=session.id,
+            approval_id=approval.id,
+            source_thread_id=approval_thread(approval.id),
+            result=result,
+            reply_deadline=now,
         )
-        db.flush()
-        db.add(
-            OutboxEvent(id=source, delivery_id=source, payload={"schema": 1, "delivery_id": source})
-        )
-        approval.notification_status = "PENDING"
+        .on_duplicate_key_update(id=NotificationDelivery.id)
+    )
+    # Insert first, then current-read the existing row. Preserve a published
+    # delivery even if this transaction established an earlier RR snapshot.
+    delivery = db.get(NotificationDelivery, source, with_for_update=True, populate_existing=True)
+    db.execute(
+        insert(OutboxEvent)
+        .values(id=source, delivery_id=source, payload={"schema": 1, "delivery_id": source})
+        .on_duplicate_key_update(id=OutboxEvent.id)
+    )
+    approval.notification_status = delivery.status
     return source
 
 

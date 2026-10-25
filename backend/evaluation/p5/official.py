@@ -27,12 +27,40 @@ Do not require carrier, phone number or a full address when this contract requir
 An unmet necessary condition blocks the entire conditional offer; it does not require accepting
 its price independently. Public card drafts contain the retained proposal and pending fields.
 Attached structured offer fields are public buyer input, not invented seller promises.
+In Chinese, 快递 means courier shipping, not a promise of expedited delivery or dispatch time.
 Inputs: {inputs}
 Public conversation: {outputs}
 Public facts and expected behavior: {reference_outputs}
 """
 BUYER_PROMPT = """你是二手商品买家，仅根据公开对话继续交流。目标：{goal}
 不要虚构卖家批准、产品事实或展示凭据。每次只输出本轮中文消息。"""
+
+# A declared consultation prefix is a test precondition, not a preference the
+# model may override. These public questions never authorize a business action.
+CONSULTATION_PREFIX = (
+    "商品的公开标价是多少？本轮只咨询。",
+    "请说明商品名称、型号和容量；资料未列明的请明确说未知。",
+    "卖家描述的成色和使用痕迹是什么？",
+    "公开资料里的电池健康是多少？",
+    "有没有维修记录？",
+    "是否有进水记录？没有资料请说明未知。",
+    "包含哪些配件和包装？",
+    "有没有发票或购买凭证？",
+    "屏幕划痕或坏点有可核实资料吗？",
+    "支持哪些配送方式？此轮不提出交易方案。",
+    "具体保修期限是否有已提供的资料？",
+    "确认按钮具体表示什么，会自动付款或发货吗？",
+)
+
+
+def consultation_prefix(case):
+    minimum = case.get("buyer_profile", {}).get("min_consultation_turns", 0)
+    fixed = list(case["turns"])
+    if minimum > len(fixed):
+        if minimum - len(fixed) > len(CONSULTATION_PREFIX):
+            raise ValueError("consultation profile needs additional reviewed public questions")
+        fixed.extend(CONSULTATION_PREFIX[: minimum - len(fixed)])
+    return fixed
 
 
 class UsageRecorder(BaseCallbackHandler):
@@ -97,7 +125,7 @@ def simulate(target, case, usage):
     user = case["turns"]
     if case.get("dynamic"):
         goal = case["buyer_goal"]
-        fixed = list(case["turns"])
+        fixed = consultation_prefix(case)
         if case.get("buyer_profile"):
             profile = case["buyer_profile"]
             goal = json.dumps({"buyer_goal": goal, "profile": profile}, ensure_ascii=False) + (

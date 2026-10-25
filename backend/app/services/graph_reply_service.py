@@ -33,13 +33,10 @@ def reply_evidence(db, run, now):
     }
     for item in turn.results if turn else []:
         if item["id"] in questions:
-            from app.semantic.evidence import public_answer
-            from app.services.approval_lifecycle import public_approval_status
+            from app.semantic.service import answer_question
 
-            status, answer, version = (
-                public_approval_status(db, session, now)
-                if questions[item["id"]][0] == "approval_status"
-                else public_answer(db, product, *questions[item["id"]])
+            status, answer, version = answer_question(
+                db, run, session, product, *questions[item["id"]], now
             )
             item = {**item, "status": status, "text": answer, "fact_version": version}
         elif item["status"] == "READY":

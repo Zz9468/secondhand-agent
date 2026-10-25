@@ -35,10 +35,10 @@ def decorate(db, run, session, result, content, card, now):
             status, text, _ = public_approval_status(db, session, now)
             items.append({**item, "status": status, "text": text})
         elif run.graph_version == "negotiation-v3" and item["id"] in questions:
-            from app.semantic.evidence import public_answer
+            from app.semantic.service import answer_question
 
-            status, answer, version = public_answer(
-                db, db.get(Product, session.product_id), *questions[item["id"]]
+            status, answer, version = answer_question(
+                db, run, session, db.get(Product, session.product_id), *questions[item["id"]], now
             )
             items.append({**item, "status": status, "text": answer, "fact_version": version})
         elif item["status"] == "READY":

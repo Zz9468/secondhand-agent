@@ -112,3 +112,55 @@ def test_comparison_missing_or_regressing_results_fail_closed():
     bad = [{"case_id": "a", "business_pass": False}]
     assert comparison(cases, good, [])["status"] == "INSUFFICIENT_EVIDENCE"
     assert comparison(cases, bad, good)["status"] == "FAIL"
+
+
+def test_long_history_prefix_is_enforced_without_model_authorization():
+    from evaluation.p5.official import consultation_prefix
+
+    for case in load_cases():
+        if case["case_id"].startswith("release120-v4_long_history"):
+            prefix = consultation_prefix(case)
+            assert prefix[: len(case["turns"])] == case["turns"]
+            assert len(prefix) == case["buyer_profile"]["min_consultation_turns"] == 12
+
+
+def test_windows_reader_cannot_abort_durable_report_on_transient_replace(tmp_path, monkeypatch):
+    import json
+    from pathlib import Path
+
+    from evaluation.p5.runner import save_report
+
+    replace = Path.replace
+    attempts = []
+
+    def transient(path, target):
+        attempts.append(1)
+        if len(attempts) < 3:
+            raise PermissionError("synthetic Windows reader")
+        return replace(path, target)
+
+    monkeypatch.setattr(Path, "replace", transient)
+    save_report(tmp_path, {"results": [{"status": "ERROR"}]})
+    assert len(attempts) == 3
+    assert json.loads((tmp_path / "report.json").read_text())["results"][0]["status"] == "ERROR"
+
+
+def test_previous_answer_cannot_mask_an_omitted_current_question():
+    from evaluation.p5.target import score_case
+
+    case = {
+        "case_id": "per-turn-answer",
+        "expected_status": "ACTIVE",
+        "required_replies": {"1": ["900"]},
+    }
+    snapshot = {
+        "session_status": "ACTIVE",
+        "offers": [],
+        "runs": [
+            {"receipt": None, "message": {"id": 1}, "reply": "报价900元"},
+            {"receipt": None, "message": {"id": 2}, "reply": "页面标价1000元"},
+        ],
+    }
+    assert "intent_coverage_turn_1" in score_case(case, snapshot)["failures"]
+    snapshot["runs"][1]["reply"] = "已展示报价900元，尚待独立确认"
+    assert score_case(case, snapshot)["business_pass"]

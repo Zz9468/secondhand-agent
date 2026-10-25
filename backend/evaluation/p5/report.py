@@ -144,6 +144,11 @@ def build(report, cases, tests):
             if r.get("judge", {}).get("score") is False
         ],
         "quality": quality,
+        "quality_label_scope": (
+            "Automatic checks use AI-authored/development source labels. "
+            "These observed recall/coverage values do not establish the human-labelled "
+            "quality criterion; human review remains INSUFFICIENT_EVIDENCE."
+        ),
         "tests": tests,
         "missing_repetitions": missing_repetitions,
         "business_failures": business_failures,

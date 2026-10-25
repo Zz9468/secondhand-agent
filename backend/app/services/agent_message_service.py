@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 from sqlalchemy import select
+from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.orm import Session
 
 from app.db.models import (
@@ -19,12 +20,12 @@ class AgentMessageService:
     def context(db: Session, session_id: int) -> AgentSessionContext:
         # A common parent lock also serializes first-time context row creation.
         db.get(NegotiationSession, session_id, with_for_update=True)
-        row = db.get(AgentSessionContext, session_id, with_for_update=True)
-        if row is None:
-            row = AgentSessionContext(session_id=session_id)
-            db.add(row)
-            db.flush()
-        return row
+        db.execute(
+            insert(AgentSessionContext)
+            .values(session_id=session_id)
+            .on_duplicate_key_update(session_id=AgentSessionContext.session_id)
+        )
+        return db.get(AgentSessionContext, session_id, with_for_update=True, populate_existing=True)
 
     @classmethod
     def append(

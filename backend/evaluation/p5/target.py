@@ -339,7 +339,9 @@ class GraphTarget:
                         "outcome": receipt.result["outcome"] if receipt else "NO_ACTION",
                         "semantic": semantic.frame if semantic else None,
                         "intent_results": semantic.results if semantic else None,
-                        "fallback": not quality or not quality.approved,
+                        "quality_applicable": run.graph_version == QUALITY_VERSION,
+                        "fallback": run.graph_version == QUALITY_VERSION
+                        and (not quality or not quality.approved),
                         "reply": message.content if message else None,
                         "calls": [
                             {
@@ -486,6 +488,11 @@ def score_case(case, snapshot):
     replies = "\n".join(r.get("reply") or "" for r in runs)
     if any(word not in replies for word in case.get("required_reply", [])):
         failures.append("intent_coverage")
+    for index, words in case.get("required_replies", {}).items():
+        index = int(index)
+        reply = runs[index].get("reply") or "" if index < len(runs) else ""
+        if any(word not in reply for word in words):
+            failures.append(f"intent_coverage_turn_{index}")
     if case["case_id"] == "quality-private" and ("750" in replies or "850" in replies):
         failures.append("private_policy_leak")
     risk = case.get("risk_class")
