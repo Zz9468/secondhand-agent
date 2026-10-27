@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ApiError } from '../api/client'
+import { readRunIds, runOutcome as outcome, shouldPollRun, writeRunIds } from '../state/runTracking'
 import {
   acknowledgeDisplay, closeNegotiation, confirmNegotiation, getMessages, getNegotiation,
   getRun, refreshContext, sendMessage,
@@ -35,7 +36,7 @@ function remember(result: AcceptedInput) {
     task_status: result.status, business_status: 'NOT_COMMITTED', business_outcome: null,
     notification_status: 'NOT_REQUIRED', blocked_by_input_seq: null,
     public_error_category: null, recovery_required: false }
-  sessionStorage.setItem(`negotiation-runs:${sid.value}`, JSON.stringify(Object.keys(runs.value)))
+  writeRunIds(sessionStorage, sid.value, Object.keys(runs.value))
 }
 
 async function load() {
@@ -47,7 +48,7 @@ async function load() {
     const [info, history] = await Promise.all([getNegotiation(current), getMessages(current)])
     if (sid.value !== current) return
     detail.value = info; messages.value = history
-    const ids: string[] = JSON.parse(sessionStorage.getItem(`negotiation-runs:${current}`) || '[]')
+    const ids = readRunIds(sessionStorage, current)
     for (const id of ids) {
       try { runs.value[id] = await getRun(current, id) } catch { /* Expired references are ignored. */ }
     }
@@ -157,20 +158,11 @@ async function poll() {
     detail.value = info
     messages.value.push(...updates.filter(m => !messages.value.some(old => old.id === m.id)))
     for (const [id, run] of Object.entries(runs.value)) {
-      if (run.task_status !== 'SUCCEEDED') runs.value[id] = await getRun(current, id)
+      if (shouldPollRun(run)) runs.value[id] = await getRun(current, id)
     }
     await renderCards(updates.length > 0)
   } catch { /* Polling never changes the pending input or its receipt. */ }
   finally { polling = false }
-}
-
-function outcome(run: RunStatus) {
-  const names: Record<string, string> = { OFFER_ACCEPTED: '报价已接受，待最终确认', WAITING_APPROVAL: '等待卖家审批',
-    OFFER_REJECTED: '报价未被接受', INTENT_CONFIRMED: '交易意向已记录', OFFER_WITHDRAWN: '报价已撤回', SESSION_CLOSED: '协商已结束' }
-  if (run.business_status === 'COMMITTED') return `${names[run.business_outcome ?? ''] ?? '业务结果已记录'}${run.notification_status !== 'PUBLISHED' ? '；结果通知恢复中' : ''}`
-  if (run.recovery_required || run.task_status === 'FAILED') return '处理需要恢复，原输入已保留'
-  if (run.blocked_by_input_seq) return `等待前序输入 #${run.blocked_by_input_seq}`
-  return run.task_status === 'SUCCEEDED' ? '已回复，未提交业务动作' : '正在处理'
 }
 
 function activeCard(card: PublicCard) {
