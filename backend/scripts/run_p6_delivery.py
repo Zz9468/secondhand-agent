@@ -19,6 +19,12 @@ from app.runtime.database import graph_session_factory
 from scripts.backup_p6 import backup
 from scripts.bootstrap_p6 import ROOT, prepare
 from scripts.export_graph_execution import explain
+from scripts.predeploy_delivery import (
+    browser_check,
+    ledger_snapshot,
+    require_free_ports,
+    restore_application,
+)
 from scripts.verify_p6_backup import verify
 
 
@@ -32,7 +38,8 @@ def wait_for(check, *, seconds=180):
     raise TimeoutError("delivery verification timed out")
 
 
-def run(output):
+def run(output, *, browser=False):
+    require_free_ports((33307, 55433, 18100, 15174))
     output.mkdir(parents=True, exist_ok=False)
     project = "secondhand-p6-" + uuid4().hex[:10]
     env_file = output / "deployment.env"
@@ -238,18 +245,29 @@ def run(output):
             report["unknown_cost_calls"] = sum(c.actual_cost is None for c in calls)
             report["known_estimated_cost"] = str(sum(c.actual_cost or 0 for c in calls))
             report["message_count"] = db.scalar(select(func.count()).select_from(Message))
+        if browser:
+            report["browser"] = browser_check(output, project, env_file)
+            checked("production_browser_faults_and_buyer_seller_lifecycle")
         compose("stop", "api", "worker", "watchdog")
         report["backup"] = backup(command, output / "backup")
         checked("quiescent_dual_database_backup")
         report["restore_drill"] = verify(command, output / "backup")
         checked("restore_to_disposable_databases")
+        if browser:
+            report["restored_application"] = restore_application(
+                output, wait_for, report["restore_drill"]["restored_table_counts"]
+            )
+            checked("restored_complete_application_and_permissions")
         report["status"] = "PASS"
     except Exception as exc:
         report["status"], report["error_category"] = "FAIL", type(exc).__name__
         report["error"] = str(exc)
         raise
     finally:
-        compose("logs", "--no-color", "--tail", "80", "api", "worker", "watchdog")
+        try:
+            compose("logs", "--no-color", "--tail", "80", "api", "worker", "watchdog")
+        except Exception as exc:
+            report["log_collection_error"] = type(exc).__name__
         if factory:
             try:
                 with factory() as db:
@@ -257,6 +275,7 @@ def run(output):
                     report["model_calls"] = len(calls)
                     report["unknown_cost_calls"] = sum(c.actual_cost is None for c in calls)
                     report["known_estimated_cost"] = str(sum(c.actual_cost or 0 for c in calls))
+                report["ledger"] = ledger_snapshot(factory)
             except Exception:
                 report["ledger_read_failed"] = True
             finally:
@@ -265,15 +284,28 @@ def run(output):
             json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
         )
         # Keep this run's volumes as evidence; no user/runtime volume is deleted.
-        compose("down")
+        try:
+            compose("down")
+        except Exception as exc:
+            report.update(status="FAIL", cleanup_error=type(exc).__name__)
+            raise
+        finally:
+            (output / "report.json").write_text(
+                json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--allow-real-model", action="store_true", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--browser",
+        action="store_true",
+        help="Also run isolated production browser and restored-application checks",
+    )
     args = parser.parse_args()
-    run(args.output.resolve())
+    run(args.output.resolve(), browser=args.browser)
 
 
 if __name__ == "__main__":

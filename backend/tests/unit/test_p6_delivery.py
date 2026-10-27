@@ -1,4 +1,5 @@
 import json
+import socket
 
 import pytest
 from dotenv import dotenv_values
@@ -6,6 +7,7 @@ from sqlalchemy.engine import make_url
 
 from scripts.backup_p6 import backup
 from scripts.bootstrap_p6 import prepare
+from scripts.predeploy_delivery import require_free_ports
 from scripts.verify_p6_backup import verify
 
 
@@ -43,3 +45,25 @@ def test_restore_refuses_tampered_dump_before_creating_databases(tmp_path):
     )
     with pytest.raises(ValueError, match="hash mismatch"):
         verify(["never-run"], tmp_path)
+
+
+def test_delivery_port_preflight_rejects_an_existing_listener():
+    with socket.socket() as listener:
+        listener.bind(("127.0.0.1", 0))
+        listener.listen()
+        with pytest.raises(OSError):
+            require_free_ports([listener.getsockname()[1]])
+
+
+def test_delivery_preflight_failure_preserves_existing_output(monkeypatch, tmp_path):
+    from scripts import run_p6_delivery
+
+    def occupied(ports):
+        raise OSError("port occupied")
+
+    marker = tmp_path / "previous-evidence.json"
+    marker.write_text("keep", encoding="utf-8")
+    monkeypatch.setattr(run_p6_delivery, "require_free_ports", occupied)
+    with pytest.raises(OSError, match="occupied"):
+        run_p6_delivery.run(tmp_path)
+    assert marker.read_text(encoding="utf-8") == "keep"

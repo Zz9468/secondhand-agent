@@ -62,7 +62,7 @@ jobs:
         working-directory: backend
       - run: npm ci && npx playwright install --with-deps chromium
         working-directory: frontend
-      - name: Predeploy browser baseline (expected failures listed separately)
+      - name: Predeploy browser regressions (isolated databases)
         run: python -m scripts.run_p0_tests tests/graph/test_predeploy_browser.py --junitxml=../artifacts/browser-harness.xml
         working-directory: backend
         env:
