@@ -28,16 +28,21 @@ from app.db.models.graph import (
     BusinessActionReceipt,
     GraphRecoveryAction,
     NegotiationInput,
+    NotificationDelivery,
     OutboxEvent,
 )
 from app.main import create_app
+from app.runtime.approval_runner import ApprovalRunner
 from app.runtime.graph_runner import GraphRunner
 from app.runtime.input_queue import InputQueue
+from app.runtime.recovery import RecoveryConflict
 from app.semantic.contracts import QUALITY_VERSION, ChatInput
 from app.semantic.model import SemanticModel
 from app.semantic.quality import QualityModel
 from app.services.graph_approval_service import GraphApprovalService
 from app.services.graph_recovery_service import GraphRecoveryService
+from app.services.graph_status_service import GraphStatusService
+from app.services.notification_service import NotificationService
 from tests.graph.conftest import Clock
 from tests.graph.test_p4_quality import FakeQuality
 from tests.graph.test_semantic import FakeSemanticModel, battery_condition, candidate, fact, intent
@@ -152,6 +157,9 @@ def test_predeploy_browser(graph_factory, monkeypatch):
         queue = InputQueue(graph_factory, clock=clock)
         queue.enroll(sid, buyer, version=QUALITY_VERSION)
         model, quality = FakeSemanticModel(), FakeQuality()
+        for amount in ("800", "900"):
+            text = f"{amount}自提"
+            model.values[text] = {"intents": [intent(text, candidate=candidate(amount))]}
         runner = GraphRunner(
             graph_factory,
             os.environ["P0_POSTGRES_URL"],
@@ -204,6 +212,66 @@ def test_predeploy_browser(graph_factory, monkeypatch):
         assert c.queue.read(run)["session_id"] == sid
         return c.runner.run(run)
 
+    @app.post("/api/__predeploy/lifecycle/{sid}/{run}/{action}")
+    def lifecycle(sid: int, run: str, action: str):
+        """Real runner faults/recovery; no manufactured public run statuses."""
+        c = cases[sid]
+        assert c.queue.read(run)["session_id"] == sid
+        if action in {"interrupt", "require-recovery"}:
+
+            def crash(point):
+                if action == "require-recovery" and point == "after_claim":
+                    raise RecoveryConflict("D2 injected recoverable worker failure")
+                if action == "interrupt" and point == "after_command":
+                    raise RuntimeError("D2 injected after committed command")
+
+            c.runner.fault = crash
+            try:
+                with pytest.raises((RuntimeError, RecoveryConflict), match="D2 injected"):
+                    c.runner.run(run)
+            finally:
+                c.runner.fault = lambda point: None
+        elif action == "notify-fail":
+            original_publish = NotificationService.publish
+
+            def fail_publish(service, run_id, **kwargs):
+                if run_id == run:
+                    raise RuntimeError("D2 injected notification failure")
+                return original_publish(service, run_id, **kwargs)
+
+            with monkeypatch.context() as patch:
+                patch.setattr(NotificationService, "publish", fail_publish)
+                for _ in range(3):
+                    c.clock.advance(31)
+                    with pytest.raises(RuntimeError, match="D2 injected notification"):
+                        c.runner.notify(f"turn:{run}:reply")
+        elif action == "notify":
+            c.clock.advance(31)
+            assert c.runner.notify(f"turn:{run}:reply")
+        elif action == "resume":
+            c.clock.advance(2)
+            assert c.runner.run(run)
+        elif action == "approve":
+            with graph_factory() as db:
+                approval = db.scalar(
+                    select(ApprovalRequest).where(ApprovalRequest.session_id == sid)
+                )
+                aid = approval.id
+            GraphApprovalService(graph_factory, clock=c.clock).review(
+                seller_id=c.seller,
+                approval_id=aid,
+                request_id=uuid4().hex,
+                comment=None,
+                approved=True,
+                expected_revision=0,
+            )
+            ApprovalRunner(graph_factory, os.environ["P0_POSTGRES_URL"], clock=c.clock).run(aid)
+        else:
+            raise AssertionError(f"unknown lifecycle action: {action}")
+        status = GraphStatusService(graph_factory).get(sid, c.buyer, run)
+        observations.append({"lifecycle": action, "sid": sid, "status": status})
+        return status
+
     @app.get("/api/__predeploy/inspect/{sid}")
     def inspect(sid: int):
         assert sid in cases
@@ -220,6 +288,15 @@ def test_predeploy_browser(graph_factory, monkeypatch):
             )
             snapshot = {
                 "sid": sid,
+                "session_status": db.get(NegotiationSession, sid).status.value,
+                "deliveries": [
+                    {"source": d.id, "status": d.status, "message_id": d.public_message_id}
+                    for d in db.scalars(
+                        select(NotificationDelivery).where(
+                            NotificationDelivery.input_id.in_([r.id for r in inputs])
+                        )
+                    )
+                ],
                 "inputs": [
                     {
                         "run_id": r.id,

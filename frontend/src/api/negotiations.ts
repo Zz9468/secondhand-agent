@@ -79,7 +79,7 @@ export interface NegotiationDetail {
   negotiation: {
     id: number
     product_id: number
-    status: string
+    status: NegotiationStatus
     current_offer_id: number | null
     confirmed_offer_id: number | null
     confirmed_at: string | null
@@ -184,16 +184,18 @@ export async function listBuyerNegotiations(): Promise<BuyerNegotiationSummary[]
   return result.negotiations
 }
 
-export function getNegotiation(sessionId: number): Promise<NegotiationDetail> {
-  return requestJson<NegotiationDetail>(`/api/negotiations/${sessionId}`)
+export function getNegotiation(sessionId: number, signal?: AbortSignal): Promise<NegotiationDetail> {
+  return requestJson<NegotiationDetail>(`/api/negotiations/${sessionId}`, { signal })
 }
 
 export async function getMessages(
   sessionId: number,
   afterId = 0,
+  signal?: AbortSignal,
 ): Promise<ChatMessage[]> {
   const result = await requestJson<MessageListResponse>(
     `/api/negotiations/${sessionId}/messages?after_id=${afterId}`,
+    { signal },
   )
   return result.messages
 }
@@ -238,8 +240,8 @@ export function closeNegotiation(
   )
 }
 
-export function getRun(sid: number, run: string): Promise<RunStatus> {
-  return requestJson(`/api/negotiations/${sid}/runs/${run}`)
+export function getRun(sid: number, run: string, signal?: AbortSignal): Promise<RunStatus> {
+  return requestJson(`/api/negotiations/${sid}/runs/${run}`, { signal })
 }
 
 export function acknowledgeDisplay(sid: number, context: string, view: string, request: string): Promise<{ display_receipt_id: string }> {

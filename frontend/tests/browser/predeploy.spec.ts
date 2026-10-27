@@ -27,6 +27,14 @@ async function send(page: Page, content = 'D0 request persistence') {
   await page.getByRole('textbox', { name: '聊天消息' }).fill(content)
   await page.getByRole('button', { name: '发送', exact: true }).click()
 }
+async function lifecycle(request: APIRequestContext, data: Seed, run: string, action: string) {
+  const response = await request.post(`/api/__predeploy/lifecycle/${data.sid}/${run}/${action}`)
+  expect(response.status()).toBe(200)
+  return response.json()
+}
+async function wake(page: Page) {
+  await page.evaluate(() => window.dispatchEvent(new Event('online')))
+}
 // Crucially route.fetch waits for the real backend to COMMIT before aborting delivery.
 async function loseAcceptedResponse(page: Page, path: string, expectedStatus = 202) {
   await page.route(path, async route => {
@@ -218,8 +226,181 @@ test('R10 synthetic successful task must follow pending notification to publishe
   for (let i = 0; i < 2; i++) await page.waitForResponse(r => r.url().endsWith(`/api/negotiations/${data.sid}`))
   await evidence(info, { source: 'synthetic public run statuses, real Vue polling', polls, published,
     database: await inspect(request, data) })
-  test.fail(true, 'D0 DEV-03: SUCCEEDED stops querying notification updates (D2)')
   await expect(page.locator('.outcome-banner')).not.toContainText('结果通知恢复中')
+  expect(polls).toBeGreaterThan(1)
+  const completedPolls = polls
+  for (let i = 0; i < 2; i++) await page.waitForResponse(r => r.url().endsWith(`/api/negotiations/${data.sid}`))
+  expect(polls).toBe(completedPolls)
+})
+
+test('D2 R10 real closed session follows notification failure, seller recovery and finalization', async ({ page, request }, info) => {
+  const data = await seed(request, 'offer')
+  await open(page, data)
+  await page.getByRole('button', { name: '结束协商', exact: true }).click()
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  const run = (await inspect(request, data)).inputs[1].run_id
+  const interrupted = await lifecycle(request, data, run, 'interrupt')
+  expect(interrupted).toMatchObject({ business_status: 'COMMITTED', task_status: 'RETRY_WAIT', notification_status: 'PENDING' })
+  await expect(page.locator('.outcome-banner')).toContainText('协商已结束；结果通知恢复中')
+  await expect(page.locator('.composer')).toHaveCount(0)
+  const failed = await lifecycle(request, data, run, 'notify-fail')
+  expect(failed.notification_status).toBe('MANUAL_REQUIRED')
+  await expect(page.locator('.outcome-banner')).toContainText('需要卖家恢复')
+  await login(request, data.seller)
+  const recovery = await request.post(`/api/seller/graph-recovery/turn:${run}:reply`, { data: {
+    action: 'NOTIFY', request_id: 'd2-notification-recovery', reason: 'D2 isolated notification retry',
+  } })
+  expect(recovery.status()).toBe(200)
+  const published = await lifecycle(request, data, run, 'notify')
+  expect(published).toMatchObject({ task_status: 'RETRY_WAIT', notification_status: 'PUBLISHED' })
+  await wake(page)
+  await expect(page.locator('.outcome-banner')).toContainText('处理收尾中')
+  const finished = await lifecycle(request, data, run, 'resume')
+  expect(finished).toMatchObject({ task_status: 'SUCCEEDED', notification_status: 'PUBLISHED' })
+  await expect(page.locator('.outcome-banner')).toHaveText('输入 #2：协商已结束')
+  await expect(page.locator('.message-list')).toContainText('协商已关闭')
+  const after = await inspect(request, data)
+  expect(after.inputs).toHaveLength(2)
+  expect(after.business_receipts).toBe(2)
+  expect(after.recovery_actions).toBe(1)
+  expect(after.deliveries).toHaveLength(2)
+  await evidence(info, { interrupted, failed, published, finished, after })
+})
+
+test('D2 R09 R13 real manual recovery resumes the original input and FIFO follower', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await open(page, data)
+  await send(page, '900自提')
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  const run = (await inspect(request, data)).inputs[0].run_id
+  const failed = await lifecycle(request, data, run, 'require-recovery')
+  expect(failed.recovery_required).toBe(true)
+  await expect(page.locator('.outcome-banner')).toContainText('原输入已保留')
+  await send(page, '900自提')
+  await expect(page.locator('.outcome-banner').nth(1)).toContainText('等待前序输入 #1')
+  await login(request, data.seller)
+  expect((await request.post(`/api/seller/graph-recovery/${run}`, { data: {
+    action: 'RETRY', request_id: 'd2-manual-recovery', reason: 'D2 isolated worker retry',
+  } })).status()).toBe(200)
+  await lifecycle(request, data, run, 'resume')
+  await wake(page)
+  await expect(page.locator('.outcome-banner').first()).toContainText('报价已接受')
+  await expect(page.locator('.outcome-banner').nth(1)).toContainText('已排队')
+  const beforeSecond = await inspect(request, data)
+  expect(beforeSecond.inputs[0].manual_retry_count).toBe(1)
+  await lifecycle(request, data, beforeSecond.inputs[1].run_id, 'resume')
+  await expect(page.locator('.outcome-banner').nth(1)).toContainText('报价已接受')
+  const after = await inspect(request, data)
+  expect(after.inputs).toHaveLength(2)
+  expect(after.business_receipts).toBe(2)
+  expect(after.recovery_actions).toBe(1)
+  await evidence(info, { failed, beforeSecond, after })
+})
+
+test('D2 R10 completed input keeps observing real seller approval and new confirmation card', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await open(page, data)
+  await send(page, '800自提')
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  const run = (await inspect(request, data)).inputs[0].run_id
+  const waiting = await lifecycle(request, data, run, 'resume')
+  expect(waiting).toMatchObject({ task_status: 'SUCCEEDED', business_outcome: 'WAITING_APPROVAL', notification_status: 'PUBLISHED' })
+  await expect(page.locator('.outcome-banner')).toHaveText('输入 #1：等待卖家审批')
+  await expect(page.locator('.approval-waiting')).toBeVisible()
+  let runReads = 0
+  page.on('request', r => { if (r.url().includes(`/runs/${run}`)) runReads++ })
+  await lifecycle(request, data, run, 'approve')
+  await expect(page.locator('.outcome-banner')).toContainText('审批状态已更新')
+  await expect(page.locator('.approval-waiting')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '确认交易意向', exact: true })).toBeEnabled()
+  expect(runReads).toBe(0)
+  await evidence(info, { waiting, runReads, after: await inspect(request, data) })
+})
+
+test('D2 R13 failed initial read recovers online and after visibility wake without a write', async ({ page, request }, info) => {
+  const data = await seed(request)
+  let fail = true, details = 0
+  await page.route(`**/api/negotiations/${data.sid}`, async route => {
+    details++
+    if (fail) await route.fulfill({ status: 503, json: { detail: 'D2 temporary read failure' } })
+    else await route.continue()
+  })
+  await login(page.request, data.buyer)
+  await page.goto(`/negotiations/${data.sid}`)
+  await expect(page.locator('.sync-notice')).toContainText('状态同步暂时中断')
+  fail = false
+  await page.context().setOffline(true)
+  await expect(page.locator('.sync-notice')).toContainText('网络已断开')
+  await page.context().setOffline(false)
+  await expect(page.getByRole('textbox', { name: '聊天消息' })).toBeVisible()
+  await expect(page.locator('.sync-notice')).toHaveCount(0)
+  // Deterministic document lifecycle events; not evidence of OS tab throttling.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  fail = true
+  const paused = details
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' })
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await expect(page.locator('.sync-notice')).toContainText('状态同步暂时中断')
+  expect(details).toBeGreaterThan(paused)
+  fail = false
+  await wake(page)
+  await expect(page.locator('.sync-notice')).toHaveCount(0)
+  expect((await inspect(request, data)).inputs).toHaveLength(0)
+  await evidence(info, { details, paused, inputs: 0, visibility: 'synthetic DOM events', network: 'browser context offline/online' })
+})
+
+test('D2 R10 one failed run read does not suppress other results or duplicate inputs', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await open(page, data)
+  await send(page)
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  const first = (await inspect(request, data)).inputs[0].run_id
+  await page.route(`**/api/negotiations/${data.sid}/runs/${first}`, route => route.fulfill({ status: 503, json: {} }))
+  await send(page, '900自提')
+  await expect(page.locator('.outcome-banner')).toHaveCount(2)
+  const second = (await inspect(request, data)).inputs[1].run_id
+  await page.route(`**/api/negotiations/${data.sid}/runs/${second}`, route => route.fulfill({ json: {
+    run_id: second, input_seq: 2, task_status: 'SUCCEEDED', business_status: 'NOT_COMMITTED',
+    business_outcome: null, notification_status: 'PUBLISHED', recovery_required: false, blocked_by_input_seq: null,
+  } }))
+  await wake(page)
+  await expect(page.locator('.outcome-banner').nth(1)).toContainText('已回复')
+  await expect(page.locator('.sync-notice')).toContainText('状态同步暂时中断')
+  const after = await inspect(request, data)
+  expect(after.inputs).toHaveLength(2)
+  await evidence(info, { source: 'synthetic read failure and terminal second-run status; real UI and two accepted inputs', after })
+})
+
+test('D2 R06 leaving a page aborts a hung run query and the next session syncs', async ({ page, request }, info) => {
+  const a = await seed(request)
+  const related = await request.post(`/api/__predeploy/seed/empty?buyer_sid=${a.sid}`)
+  expect(related.status()).toBe(200)
+  const b: Seed = await related.json()
+  await open(page, a)
+  let entered = false, aborted = false, release!: () => void
+  const gate = new Promise<void>(resolve => { release = resolve })
+  page.on('requestfailed', r => { if (r.url().includes(`/api/negotiations/${a.sid}/runs/`)) aborted = true })
+  await page.route(`**/api/negotiations/${a.sid}/runs/*`, async route => {
+    entered = true
+    await gate
+    // The cancellation is expected; the old response must never reach the new page.
+    await route.fulfill({ status: 503, json: {} }).catch(() => {})
+  })
+  await send(page)
+  await expect.poll(() => entered).toBe(true)
+  await page.getByRole('link', { name: '← 我的协商', exact: true }).click()
+  await page.locator(`a[href="/negotiations/${b.sid}"]`).click()
+  await expect(page.getByRole('textbox', { name: '聊天消息' })).toBeVisible()
+  release()
+  await expect.poll(() => aborted).toBe(true)
+  await expect(page.locator('.outcome-banner')).toHaveCount(0)
+  await expect(page.locator('.sync-notice')).toHaveCount(0)
+  await evidence(info, { aborted, a: await inspect(request, a), b: await inspect(request, b) })
 })
 
 test('R11 approval response lost can be recovered from existing seller detail', async ({ page, request }, info) => {

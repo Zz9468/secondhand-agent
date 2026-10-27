@@ -4,7 +4,8 @@ import { useRoute } from 'vue-router'
 import PendingOperations from '../components/PendingOperations.vue'
 import { useAuth } from '../state/auth'
 import { usePendingOperations } from '../state/usePendingOperations'
-import { runOutcome as outcome, shouldPollRun } from '../state/runTracking'
+import { runOutcome as outcome, runPollDelay, shouldPollRun } from '../state/runTracking'
+import { createPolling } from '../state/polling'
 import {
   acknowledgeDisplay, getMessages, getNegotiation,
   getRun, refreshContext,
@@ -29,13 +30,13 @@ const text = ref('')
 const error = ref('')
 const busy = ref(false)
 const loading = ref(true)
+const syncNotice = ref('')
 const messageList = ref<HTMLElement | null>(null)
 const terminal = computed(() => ['AGREED', 'CLOSED'].includes(detail.value?.negotiation.status ?? ''))
 const unified = computed(() => ['negotiation-v2', 'negotiation-v3'].includes(detail.value?.graph_version ?? ''))
-let timer: number | undefined
 let observer: IntersectionObserver | undefined
 const acknowledging = new Set<string>()
-let polling = false
+let mounted = false
 
 const { operations, notice, operationError, operationBusy, begin, check, retry, newIntent } = usePendingOperations(
   () => String(sid.value), (op, result) => {
@@ -46,26 +47,19 @@ const { operations, notice, operationError, operationBusy, begin, check, retry, 
       blocked_by_input_seq: null, public_error_category: null, recovery_required: false,
     }
     if (op.kind === 'message') text.value = ''
-    void poll()
+    polling.refresh()
   },
 )
 watch(operationBusy, value => { busy.value = value }, { immediate: true, flush: 'sync' })
 
-async function load() {
+function load() {
+  polling.stop()
   pageGeneration++
-  const alive = pageGuard()
-  const current = sid.value
   viewId = crypto.randomUUID()
   loading.value = true
   messages.value = []; detail.value = null; receipts.value = {}; runs.value = {}
-  text.value = ''; error.value = ''; acknowledging.clear()
-  try {
-    const [info, history] = await Promise.all([getNegotiation(current), getMessages(current)])
-    if (!alive()) return
-    detail.value = info; messages.value = history
-    await renderCards(true)
-  } catch (e) { if (alive()) error.value = e instanceof Error ? e.message : '会话加载失败' }
-  finally { if (alive()) loading.value = false }
+  text.value = ''; error.value = ''; syncNotice.value = ''; acknowledging.clear()
+  resumeSync()
 }
 
 async function renderCards(scroll = false) {
@@ -128,27 +122,55 @@ async function refresh(card: PublicCard) {
   } catch (e) { if (alive()) error.value = e instanceof Error ? e.message : '方案已失效，请重新协商' }
 }
 
-async function poll() {
-  const alive = pageGuard()
-  if (polling || !detail.value) return
-  polling = true
+async function syncPage(signal: AbortSignal, cycleAlive: () => boolean) {
+  const pageAlive = pageGuard()
+  const alive = () => pageAlive() && cycleAlive()
   const current = sid.value
-  try {
-    const after = Math.max(0, ...messages.value.map(m => m.id))
-    const [updates, info] = await Promise.all([getMessages(current, after), getNegotiation(current)])
+  const after = Math.max(0, ...messages.value.map(m => m.id))
+  // Apply successful reads independently: one failed run cannot starve other inputs.
+  const results = await Promise.allSettled([
+    getMessages(current, after, signal).then(updates => {
+      if (!alive()) return
+      messages.value.push(...updates.filter(m => !messages.value.some(old => old.id === m.id)))
+      return renderCards(updates.length > 0)
+    }),
+    getNegotiation(current, signal).then(info => {
+      if (!alive()) return
+      const firstLoad = detail.value === null
+      detail.value = info
+      // History may arrive before the workspace exists. Scroll once it mounts,
+      // so display acknowledgements still require genuinely visible cards.
+      return renderCards(firstLoad)
+    }),
+    ...Object.entries(runs.value).filter(([, run]) => shouldPollRun(run)).map(([id]) =>
+      getRun(current, id, signal).then(result => { if (alive()) runs.value[id] = result })),
+  ])
+  if (!alive()) return
+  loading.value = false
+  if (results.some(r => r.status === 'rejected')) throw new Error('status sync failed')
+  syncNotice.value = ''
+}
+
+const polling = createPolling({ sync: syncPage, delay: () => runPollDelay(Object.values(runs.value)),
+  onError: () => { syncNotice.value = '状态同步暂时中断，将自动重试；原操作仍保留。' },
+})
+function resumeSync() {
+  if (!mounted || !auth.currentUser.value) return
+  if (!navigator.onLine || document.visibilityState !== 'visible') {
+    polling.stop()
+    if (!navigator.onLine) syncNotice.value = '网络已断开，连接恢复后将核对最新状态。'
+    return
+  }
+  polling.start()
+  void recheckUntracked()
+  void renderCards()
+}
+async function recheckUntracked() {
+  const alive = pageGuard()
+  for (const op of [...operations.value]) {
     if (!alive()) return
-    detail.value = info
-    messages.value.push(...updates.filter(m => !messages.value.some(old => old.id === m.id)))
-    for (const [id, run] of Object.entries(runs.value)) {
-      if (shouldPollRun(run)) {
-        const result = await getRun(current, id)
-        if (!alive()) return
-        runs.value[id] = result
-      }
-    }
-    await renderCards(updates.length > 0)
-  } catch { /* Polling never changes the pending input or its receipt. */ }
-  finally { polling = false }
+    if (op.status !== 'rejected' && (!op.runId || !runs.value[op.runId])) await check(op)
+  }
 }
 
 function activeCard(card: PublicCard) {
@@ -158,28 +180,39 @@ function activeCard(card: PublicCard) {
 
 watch([sid, auth.version], () => {
   if (auth.currentUser.value) void load()
-  else { pageGeneration++; detail.value = null; messages.value = []; runs.value = {}; receipts.value = {} }
+  else { polling.stop(); pageGeneration++; detail.value = null; messages.value = []; runs.value = {}; receipts.value = {} }
 }, { immediate: true, flush: 'sync' })
 onMounted(() => {
+  mounted = true
   observer = new IntersectionObserver(entries => entries.forEach(entry => {
     if (entry.isIntersecting) void markDisplayed((entry.target as HTMLElement).dataset.context ?? '')
   }), { threshold: 0.5 })
   void renderCards()
-  timer = window.setInterval(() => void poll(), 2000)
+  window.addEventListener('online', resumeSync)
+  window.addEventListener('offline', resumeSync)
+  document.addEventListener('visibilitychange', resumeSync)
+  resumeSync()
 })
-onUnmounted(() => { pageGeneration++; if (timer) clearInterval(timer); observer?.disconnect() })
+onUnmounted(() => {
+  mounted = false; pageGeneration++; polling.stop(); observer?.disconnect()
+  window.removeEventListener('online', resumeSync)
+  window.removeEventListener('offline', resumeSync)
+  document.removeEventListener('visibilitychange', resumeSync)
+})
 </script>
 
 <template>
   <section class="buyer-page negotiation-page">
     <div class="buyer-page-heading"><div><RouterLink class="back-link" to="/buyer/negotiations">← 我的协商</RouterLink><h1>协商会话 #{{ sid }}</h1></div></div>
     <p v-if="loading" class="loading-card">正在读取会话…</p>
+    <p v-if="syncNotice" class="sync-notice" role="status">{{ syncNotice }}</p>
     <section v-if="detail" class="workspace">
       <aside class="product-panel">
         <h2>{{ detail.product.title }}</h2><p class="product-description">{{ detail.product.description }}</p>
         <div class="listed-price"><span>公开标价</span><strong>¥{{ detail.product.listed_price }}</strong></div>
         <p>议价进度 {{ detail.negotiation.round_count }} / {{ detail.negotiation.max_rounds }} 轮</p>
         <p v-if="terminal">{{ detail.negotiation.status === 'AGREED' ? '已记录交易意向' : '协商已结束' }}</p>
+        <p v-if="detail.negotiation.status === 'WAITING_APPROVAL'" class="approval-waiting">等待卖家审批</p>
         <p class="privacy-note">确认交易意向不代表付款、锁定库存或完成交易。</p>
       </aside>
       <section class="chat-panel">
@@ -207,7 +240,7 @@ onUnmounted(() => { pageGeneration++; if (timer) clearInterval(timer); observer?
             </section>
           </article>
         </div>
-        <p v-for="run in Object.values(runs)" :key="run.run_id" class="outcome-banner">输入 #{{ run.input_seq }}：{{ outcome(run) }}</p>
+        <p v-for="run in Object.values(runs)" :key="run.run_id" class="outcome-banner">输入 #{{ run.input_seq }}：{{ outcome(run, detail.negotiation.status) }}</p>
         <PendingOperations :operations="operations" :busy="operationBusy" :notice="notice" :error="operationError"
           @check="check" @retry="retry" @new-intent="newIntent" />
         <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
