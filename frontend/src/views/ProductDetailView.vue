@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { createNegotiation } from '../api/negotiations'
 import { getPublicProduct, type PublicProduct } from '../api/products'
 import { useAuth } from '../state/auth'
+import DemoNotice from '../components/DemoNotice.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -68,6 +69,7 @@ watch(productId, () => void loadProduct(), { immediate: true })
 <template>
   <section class="public-detail-page">
     <RouterLink class="back-link" to="/buyer">← 返回商品大厅</RouterLink>
+    <DemoNotice />
 
     <section v-if="loading" class="loading-card">正在读取商品详情…</section>
 

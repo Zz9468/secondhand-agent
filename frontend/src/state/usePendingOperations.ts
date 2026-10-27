@@ -1,6 +1,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { ApiError, requestJson } from '../api/client'
 import { useAuth } from './auth'
+import { rejectedOperationMessage } from './operationFeedback'
 import { createOperation, lookupPath, operationPath, pendingOperationStore,
   type OperationKind, type OperationPayload, type PendingOperation } from './pendingOperations'
 
@@ -83,8 +84,9 @@ export function usePendingOperations(scope: () => string,
           // Rejecting this retry cannot prove an earlier in-flight POST failed.
           const rejected: PendingOperation = { ...op, payload: undefined, status: retry ? 'blocked' : 'rejected' }
           update(rejected)
+          if (!retry && notice.value.startsWith('暂未查到')) notice.value = ''
           try { pendingOperationStore.save(rejected) } catch { notice.value = '本地记录更新失败；刷新后请重新核对。' }
-          operationError.value = `${e.message}。请刷新相关状态后明确发起新操作，不会自动更换请求编号。`
+          operationError.value = rejectedOperationMessage(e)
         } else {
           operationError.value = '提交结果待核实，原操作已保存。请核对原操作或显式重试。'
         }

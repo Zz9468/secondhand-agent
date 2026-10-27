@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from '@playwright/test'
 
-interface Seed { sid: number; buyer: string; seller: string; run: string | null }
+interface Seed { sid: number; buyer: string; seller: string; run: string | null; product: number }
 async function seed(request: APIRequestContext, mode = 'empty'): Promise<Seed> {
   const response = await request.post(`/api/__predeploy/seed/${mode}`)
   expect(response.status()).toBe(200)
@@ -175,6 +175,7 @@ test('R08 repeated send click during HTTP submission creates one input', async (
   const button = page.locator('.composer button')
   await expect(button).toBeDisabled()
   await button.dispatchEvent('click')
+  await page.getByRole('textbox', { name: '聊天消息' }).press('Control+Enter')
   release()
   await expect(page.locator('.outcome-banner')).toHaveCount(1)
   const after = await inspect(request, data)
@@ -203,7 +204,6 @@ test('R08 later unsent text survives the earlier submission response', async ({ 
   const after = await inspect(request, data)
   expect(after.inputs).toHaveLength(1)
   await evidence(info, after)
-  test.fail(true, 'D0 DEV-04: successful earlier response clears the newer draft (D3)')
   await expect(input).toHaveValue('这条还未发送，请保留')
 })
 
@@ -276,6 +276,7 @@ test('D2 R09 R13 real manual recovery resumes the original input and FIFO follow
   const failed = await lifecycle(request, data, run, 'require-recovery')
   expect(failed.recovery_required).toBe(true)
   await expect(page.locator('.outcome-banner')).toContainText('原输入已保留')
+  await expect(page.locator('.queue-notice')).toContainText('恢复任务')
   await send(page, '900自提')
   await expect(page.locator('.outcome-banner').nth(1)).toContainText('等待前序输入 #1')
   await login(request, data.seller)
@@ -783,3 +784,229 @@ for (const kind of ['approval', 'recovery']) {
     await evidence(info, { before, after, originalAndReplayReachedRealAPI: true })
   })
 }
+
+for (const action of ['confirm', 'close'] as const) {
+  test(`D3 R08 repeated ${action} clicks during and after acceptance create one input`, async ({ page, request }, info) => {
+    const data = await seed(request, action === 'confirm' ? 'offer' : 'empty')
+    await open(page, data)
+    const button = page.getByRole('button', { name: action === 'confirm' ? '确认交易意向' : '结束协商', exact: true })
+    await expect(button).toBeEnabled()
+    let release!: () => void
+    const gate = new Promise<void>(resolve => { release = resolve })
+    let posts = 0
+    await page.route(`**/api/negotiations/${data.sid}/${action}`, async route => {
+      posts++
+      const response = await route.fetch()
+      expect(response.status()).toBe(202)
+      await gate
+      await route.fulfill({ response })
+    })
+    await button.click()
+    await expect(button).toBeDisabled()
+    await button.dispatchEvent('click')
+    release()
+    await expect(page.locator('.outcome-banner')).toHaveCount(1)
+    await expect(button).toBeDisabled()
+    await button.dispatchEvent('click')
+    await page.reload()
+    await expect(page.locator('.outcome-banner')).toHaveCount(1)
+    await expect(button).toBeDisabled()
+    const input = page.getByRole('textbox', { name: '聊天消息' })
+    await input.fill('后续草稿')
+    await expect(page.getByRole('button', { name: '发送', exact: true })).toBeEnabled()
+    const after = await inspect(request, data)
+    expect(posts).toBe(1)
+    expect(after.inputs).toHaveLength(action === 'confirm' ? 2 : 1)
+    await evidence(info, { posts, after })
+  })
+}
+
+for (const draftChange of ['unchanged', 'edit-and-restore'] as const) {
+  test(`D3 R08 ${draftChange} draft is tied to its edit revision`, async ({ page, request }, info) => {
+    const data = await seed(request)
+    await open(page, data)
+    let release!: () => void
+    const gate = new Promise<void>(resolve => { release = resolve })
+    await page.route(`**/api/negotiations/${data.sid}/messages`, async route => {
+      if (route.request().method() !== 'POST') return route.continue()
+      const response = await route.fetch()
+      expect(response.status()).toBe(202)
+      await gate
+      await route.fulfill({ response })
+    })
+    await send(page, '原始消息')
+    const input = page.getByRole('textbox', { name: '聊天消息' })
+    if (draftChange === 'edit-and-restore') {
+      await input.fill('新的编辑')
+      await input.fill('原始消息')
+    }
+    release()
+    await expect(page.locator('.outcome-banner')).toHaveCount(1)
+    await expect(input).toHaveValue(draftChange === 'unchanged' ? '' : '原始消息')
+    expect((await inspect(request, data)).inputs).toHaveLength(1)
+    await evidence(info, { draftChange, draft: await input.inputValue() })
+  })
+}
+
+test('D3 R08 selecting a draft preserves unsent message text', async ({ page, request }, info) => {
+  const data = await seed(request, 'draft')
+  await open(page, data)
+  const input = page.getByRole('textbox', { name: '聊天消息' })
+  await input.fill('尚未发送的补充内容')
+  const choice = page.getByRole('button', { name: '选择并继续此方案', exact: true }).first()
+  await expect(choice).toBeEnabled()
+  await choice.click()
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  await expect(input).toHaveValue('尚未发送的补充内容')
+  expect((await inspect(request, data)).inputs).toHaveLength(2)
+  await evidence(info, await inspect(request, data))
+})
+
+test('D3 R08 original-operation lookup cannot erase a newer draft or silently send it', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await open(page, data)
+  await loseAcceptedResponse(page, `**/api/negotiations/${data.sid}/messages`)
+  await send(page, '900自提')
+  await expect(page.getByRole('alert')).toContainText('结果待核实')
+  const input = page.getByRole('textbox', { name: '聊天消息' })
+  await input.fill('新的未发草稿')
+  await page.getByRole('button', { name: '发送', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('请先核对')
+  expect((await inspect(request, data)).inputs).toHaveLength(1)
+  await page.getByRole('button', { name: '核对原操作', exact: true }).click()
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  await expect(input).toHaveValue('新的未发草稿')
+  await send(page, '900自提')
+  await expect(page.locator('.outcome-banner')).toHaveCount(2)
+  await expect(page.locator('.queue-notice')).toContainText('未完成输入：2 条')
+  await expect(page.locator('.outcome-banner').nth(1)).toContainText('等待前序输入 #1')
+  const before = await inspect(request, data)
+  await lifecycle(request, data, before.inputs[0].run_id, 'resume')
+  await lifecycle(request, data, before.inputs[1].run_id, 'resume')
+  await wake(page)
+  await expect(page.locator('.queue-notice')).toHaveCount(0)
+  const after = await inspect(request, data)
+  expect(after.business_receipts).toBe(2)
+  await evidence(info, { before, after })
+})
+
+for (const action of ['modify', 'close'] as const) {
+  test(`D3 waiting approval permits ${action} without waiting for agreement`, async ({ page, request }, info) => {
+    const data = await seed(request, 'approval')
+    await open(page, data)
+    await expect(page.locator('.approval-waiting')).toContainText('仍可补充或修改报价')
+    if (action === 'modify') await send(page, '900自提')
+    else await page.getByRole('button', { name: '结束协商', exact: true }).click()
+    await expect(page.locator('.outcome-banner')).toHaveCount(1)
+    const queued = await inspect(request, data)
+    expect(queued.inputs).toHaveLength(2)
+    await lifecycle(request, data, queued.inputs[1].run_id, 'resume')
+    await wake(page)
+    await expect(page.locator('.approval-waiting')).toHaveCount(0)
+    if (action === 'modify') await expect(page.getByRole('button', { name: '确认交易意向', exact: true })).toBeEnabled()
+    else await expect(page.getByText('协商已结束', { exact: true })).toBeVisible()
+    const after = await inspect(request, data)
+    expect(after.session_status).toBe(action === 'modify' ? 'ACTIVE' : 'CLOSED')
+    expect(after.business_receipts).toBe(2)
+    await evidence(info, after)
+  })
+}
+
+test('D3 R12 full queue gives actionable guidance and preserves unsent text', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await open(page, data)
+  const path = `/api/negotiations/${data.sid}/messages`
+  const payload = { request_id: 'd3-queue-0', content: '900自提', client_view_id: 'd3-capacity-view' }
+  for (let index = 0; index < 20; index++) {
+    expect((await page.request.post(path, { data: { ...payload, request_id: `d3-queue-${index}` } })).status()).toBe(202)
+  }
+  await send(page, '队列已满时这条草稿必须保留')
+  await expect(page.getByRole('alert')).toContainText('会话队列已满（20 条未完成输入）')
+  await expect(page.getByRole('textbox', { name: '聊天消息' })).toHaveValue('队列已满时这条草稿必须保留')
+  await expect(page.getByRole('button', { name: '重试原操作', exact: true })).toHaveCount(0)
+  const replay = await page.request.post(path, { data: payload })
+  expect(replay.status()).toBe(202)
+  expect((await replay.json()).idempotent_replay).toBe(true)
+  const after = await inspect(request, data)
+  expect(after.inputs).toHaveLength(20)
+  await evidence(info, after)
+})
+
+test('D3 rate rejection is distinct from capacity and does not auto-retry', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await open(page, data)
+  let posts = 0
+  await page.route(`**/api/negotiations/${data.sid}/messages`, async route => {
+    if (route.request().method() !== 'POST') return route.continue()
+    posts++
+    await route.fulfill({ status: 429, json: { detail: 'synthetic edge rate limit' } })
+  })
+  await send(page, '暂存的消息')
+  await expect(page.getByRole('alert')).toContainText('请求过于频繁')
+  await expect(page.getByRole('alert')).not.toContainText('队列已满')
+  await expect(page.getByRole('textbox', { name: '聊天消息' })).toHaveValue('暂存的消息')
+  await page.reload()
+  await expect(page.locator('.pending-operations')).toContainText('本次提交未获接受')
+  expect(posts).toBe(1)
+  expect((await inspect(request, data)).inputs).toHaveLength(0)
+  await evidence(info, { source: 'synthetic 429, UI classification only; no edge rate-limit load test', posts })
+})
+
+test('D3 R05 expired display requires refreshed visible evidence before confirmation', async ({ page, request }, info) => {
+  const data = await seed(request, 'offer')
+  await open(page, data)
+  const confirm = page.getByRole('button', { name: '确认交易意向', exact: true })
+  await expect(confirm).toBeEnabled()
+  await lifecycle(request, data, data.run!, 'expire-display')
+  await confirm.click()
+  await expect(page.getByRole('alert')).toContainText('展示依据已失效或不匹配')
+  expect((await inspect(request, data)).inputs).toHaveLength(1)
+  await expect(page.getByRole('button', { name: '重试原操作', exact: true })).toHaveCount(0)
+  let release!: () => void
+  const gate = new Promise<void>(resolve => { release = resolve })
+  await page.route(`**/api/negotiations/${data.sid}/interaction-contexts/refresh`, async route => {
+    const response = await route.fetch()
+    expect(response.status()).toBe(200)
+    await gate
+    await route.fulfill({ response })
+  })
+  await page.getByRole('button', { name: '刷新此方案', exact: true }).click()
+  await expect(confirm).toBeDisabled()
+  await confirm.dispatchEvent('click')
+  release()
+  await expect(confirm).toBeEnabled()
+  await confirm.click()
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  const after = await inspect(request, data)
+  expect(after.inputs).toHaveLength(2)
+  await evidence(info, after)
+})
+
+test('D3 expired real cookie explains login redirect without replaying an accepted input', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await open(page, data)
+  await send(page, '900自提')
+  await expect(page.locator('.outcome-banner')).toHaveCount(1)
+  await page.context().clearCookies()
+  await wake(page)
+  await expect(page).toHaveURL(/\/login\?redirect=/)
+  await expect(page.getByRole('alert')).toContainText('登录状态已失效或账号已变化')
+  await expect(page.getByRole('alert')).toContainText('不要因登录跳转认定原操作失败')
+  expect((await inspect(request, data)).inputs).toHaveLength(1)
+  await evidence(info, { after: await inspect(request, data), reason: 'real API 401 after removing auth cookie' })
+})
+
+test('D3 demo boundaries and steps are visible at login, catalog, product and negotiation', async ({ page, request }, info) => {
+  const data = await seed(request)
+  await page.goto('/login')
+  await expect(page.getByLabel('虚拟演示说明')).toContainText('仅记录交易意向')
+  await login(page.request, data.buyer)
+  for (const path of ['/buyer', `/products/${data.product}`, `/negotiations/${data.sid}`]) {
+    await page.goto(path)
+    await expect(page.getByLabel('虚拟演示说明')).toContainText('不要填写真实姓名')
+    await expect(page.getByLabel('虚拟演示说明')).toContainText('体验步骤')
+  }
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await evidence(info, { surfaces: ['login', 'catalog', 'product', 'negotiation'], mobileWidth: 390 })
+})

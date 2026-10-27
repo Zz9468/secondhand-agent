@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue'
 import { listPublicProducts, type PublicProduct } from '../api/products'
 import { listPublicSellers, type PublicSeller } from '../api/sellers'
 import ProductCard from '../components/ProductCard.vue'
+import DemoNotice from '../components/DemoNotice.vue'
 
 const products = ref<PublicProduct[]>([])
 const sellers = ref<PublicSeller[]>([])
@@ -46,6 +47,7 @@ onMounted(() => void loadCatalog())
       </div>
     </header>
 
+    <DemoNotice />
     <section v-if="loading" class="loading-card">正在读取已上架商品…</section>
 
     <section v-else-if="errorMessage" class="loading-card error-state">

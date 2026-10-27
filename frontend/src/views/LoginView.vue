@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useAuth } from '../state/auth'
+import DemoNotice from '../components/DemoNotice.vue'
 
 const auth = useAuth()
 const route = useRoute()
@@ -47,6 +48,8 @@ async function submit(): Promise<void> {
       <p class="eyebrow">WELCOME BACK</p>
       <h1>登录统一账号</h1>
       <p>登录后可以在买家模式和卖家模式之间随时切换。</p>
+      <DemoNotice />
+      <p v-if="auth.sessionNotice.value" class="error-banner" role="alert">{{ auth.sessionNotice.value }}</p>
       <p v-if="unavailableMessage" class="error-banner" role="alert">
         {{ unavailableMessage }}
       </p>

@@ -11,6 +11,7 @@ import socket
 import subprocess
 import threading
 import time
+from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
@@ -30,6 +31,7 @@ from app.db.models.graph import (
     NegotiationInput,
     NotificationDelivery,
     OutboxEvent,
+    PublicInteractionContext,
 )
 from app.main import create_app
 from app.runtime.approval_runner import ApprovalRunner
@@ -204,7 +206,7 @@ def test_predeploy_browser(graph_factory, monkeypatch):
                     task.status, task.attempt_count = "FAILED", task.max_attempts
             else:
                 runner.run(run)
-        return {"sid": sid, "buyer": buyer, "seller": seller, "run": run}
+        return {"sid": sid, "buyer": buyer, "seller": seller, "run": run, "product": pid}
 
     @app.post("/api/__predeploy/execute/{sid}/{run}")
     def execute(sid: int, run: str):
@@ -251,6 +253,14 @@ def test_predeploy_browser(graph_factory, monkeypatch):
         elif action == "resume":
             c.clock.advance(2)
             assert c.runner.run(run)
+        elif action == "expire-display":
+            with graph_factory() as db, db.begin():
+                for context in db.scalars(
+                    select(PublicInteractionContext).where(
+                        PublicInteractionContext.session_id == sid
+                    )
+                ):
+                    context.expires_at = c.clock() - timedelta(seconds=1)
         elif action == "approve":
             with graph_factory() as db:
                 approval = db.scalar(

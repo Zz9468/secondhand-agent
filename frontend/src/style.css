@@ -218,6 +218,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .error-state h1 { margin: 0; color: #263028; }
 .error-state button { margin-top: 1rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.demo-notice, .queue-notice { margin: 0.8rem 0; border: 1px solid #d4dfce; border-radius: 0.8rem; padding: 0.8rem 1rem; color: #405447; background: #f0f4eb; font-size: 0.85rem; line-height: 1.6; }
+.demo-notice p, .queue-notice p { margin: 0.35rem 0; }
+.operation-status { margin-block: 0.7rem; overflow-wrap: anywhere; }
+.operation-status summary { cursor: pointer; font-size: 0.8rem; }
 
 .seller-page { min-height: calc(100vh - 7.5rem); }
 .login-card { display: grid; gap: 1rem; width: min(28rem, 100%); margin: 8vh auto 0; padding: 2rem; border: 1px solid rgba(39, 75, 53, 0.14); border-radius: 1.5rem; background: rgba(251, 252, 247, 0.9); box-shadow: 0 2rem 5rem rgba(43, 58, 46, 0.11); }

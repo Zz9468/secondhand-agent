@@ -2,9 +2,10 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import PendingOperations from '../components/PendingOperations.vue'
+import DemoNotice from '../components/DemoNotice.vue'
 import { useAuth } from '../state/auth'
 import { usePendingOperations } from '../state/usePendingOperations'
-import { runOutcome as outcome, runPollDelay, shouldPollRun } from '../state/runTracking'
+import { needsManualRecovery, runOutcome as outcome, runPollDelay, shouldPollRun } from '../state/runTracking'
 import { createPolling } from '../state/polling'
 import {
   acknowledgeDisplay, getMessages, getNegotiation,
@@ -27,6 +28,10 @@ const messages = ref<ChatMessage[]>([])
 const runs = ref<Record<string, RunStatus>>({})
 const receipts = ref<Record<string, string>>({})
 const text = ref('')
+// A matching string is insufficient: editing and restoring the same text is a new draft.
+let draftRevision = 0
+const submittedDrafts = new Map<string, number>()
+watch(text, () => { draftRevision++ }, { flush: 'sync' })
 const error = ref('')
 const busy = ref(false)
 const loading = ref(true)
@@ -36,6 +41,7 @@ const terminal = computed(() => ['AGREED', 'CLOSED'].includes(detail.value?.nego
 const unified = computed(() => ['negotiation-v2', 'negotiation-v3'].includes(detail.value?.graph_version ?? ''))
 let observer: IntersectionObserver | undefined
 const acknowledging = new Set<string>()
+const refreshing = ref(new Set<string>())
 let mounted = false
 
 const { operations, notice, operationError, operationBusy, begin, check, retry, newIntent } = usePendingOperations(
@@ -46,11 +52,18 @@ const { operations, notice, operationError, operationBusy, begin, check, retry, 
       business_status: 'NOT_COMMITTED', business_outcome: null, notification_status: 'NOT_REQUIRED',
       blocked_by_input_seq: null, public_error_category: null, recovery_required: false,
     }
-    if (op.kind === 'message') text.value = ''
+    if (submittedDrafts.get(op.requestId) === draftRevision) text.value = ''
+    submittedDrafts.delete(op.requestId)
     polling.refresh()
   },
 )
 watch(operationBusy, value => { busy.value = value }, { immediate: true, flush: 'sync' })
+const unfinishedRuns = computed(() => Object.values(runs.value).filter(shouldPollRun))
+const manualRecovery = computed(() => unfinishedRuns.value.some(needsManualRecovery))
+function actionPending(kind: 'confirm' | 'close') {
+  return operations.value.some(op => op.kind === kind && op.status === 'accepted'
+    && (!op.runId || !runs.value[op.runId] || shouldPollRun(runs.value[op.runId]!)))
+}
 
 function load() {
   polling.stop()
@@ -59,6 +72,8 @@ function load() {
   loading.value = true
   messages.value = []; detail.value = null; receipts.value = {}; runs.value = {}
   text.value = ''; error.value = ''; syncNotice.value = ''; acknowledging.clear()
+  submittedDrafts.clear()
+  refreshing.value.clear()
   resumeSync()
 }
 
@@ -72,11 +87,11 @@ async function renderCards(scroll = false) {
 async function markDisplayed(context: string) {
   const alive = pageGuard()
   const current = sid.value
-  if (!context || receipts.value[context] || acknowledging.has(context) || document.visibilityState !== 'visible') return
+  if (!context || receipts.value[context] || acknowledging.has(context) || refreshing.value.has(context) || document.visibilityState !== 'visible') return
   acknowledging.add(context)
   try {
     const result = await acknowledgeDisplay(current, context, viewId, `display-${context}`)
-    if (alive()) receipts.value[context] = result.display_receipt_id
+    if (alive() && !refreshing.value.has(context)) receipts.value[context] = result.display_receipt_id
   } catch { /* An invalid card never grants confirmation; the card offers refresh. */ }
   finally { acknowledging.delete(context) }
 }
@@ -91,35 +106,45 @@ function latestReceipt(): string | null {
 
 async function submit(option?: DraftOption) {
   if (busy.value || terminal.value || (!option && !text.value.trim())) return
+  const requestId = crypto.randomUUID().replaceAll('-', '')
+  if (!option) submittedDrafts.set(requestId, draftRevision)
   await begin(String(sid.value), 'message', {
-    request_id: crypto.randomUUID().replaceAll('-', ''), content: option ? '继续' : text.value.trim(),
+    request_id: requestId, content: option ? '继续' : text.value.trim(),
     client_view_id: viewId, display_receipt_id: latestReceipt(),
     ...(option ? { draft_id: option.draft_id, draft_version: option.draft_version } : {}),
   })
+  if (!operations.value.some(op => op.requestId === requestId && ['unknown', 'blocked'].includes(op.status))) {
+    submittedDrafts.delete(requestId)
+  }
 }
 
 async function confirm(card: PublicCard) {
   const context = card.context_id
-  if (!card.offer_id || !context || !receipts.value[context] || busy.value) return
+  if (!activeCard(card) || !card.offer_id || !context || !receipts.value[context] || busy.value || actionPending('confirm')) return
   await begin(String(sid.value), 'confirm', { request_id: crypto.randomUUID().replaceAll('-', ''),
     offer_id: card.offer_id, client_view_id: viewId, display_receipt_id: receipts.value[context]! })
 }
 
 async function close() {
-  if (busy.value) return
+  if (busy.value || terminal.value || actionPending('close')) return
   await begin(String(sid.value), 'close', { request_id: crypto.randomUUID().replaceAll('-', ''), client_view_id: viewId })
 }
 
 async function refresh(card: PublicCard) {
   const alive = pageGuard()
-  if (!card.context_id) return
+  const context = card.context_id
+  if (!context || refreshing.value.has(context)) return
   const current = sid.value
+  refreshing.value.add(context)
+  delete receipts.value[context]
+  error.value = ''
   try {
-    const result = await refreshContext(current, card.context_id, crypto.randomUUID())
+    const result = await refreshContext(current, context, crypto.randomUUID())
     if (!alive()) return
     card.context_id = result.context_id
     await renderCards()
   } catch (e) { if (alive()) error.value = e instanceof Error ? e.message : '方案已失效，请重新协商' }
+  finally { if (alive()) refreshing.value.delete(context) }
 }
 
 async function syncPage(signal: AbortSignal, cycleAlive: () => boolean) {
@@ -204,6 +229,7 @@ onUnmounted(() => {
 <template>
   <section class="buyer-page negotiation-page">
     <div class="buyer-page-heading"><div><RouterLink class="back-link" to="/buyer/negotiations">← 我的协商</RouterLink><h1>协商会话 #{{ sid }}</h1></div></div>
+    <DemoNotice />
     <p v-if="loading" class="loading-card">正在读取会话…</p>
     <p v-if="syncNotice" class="sync-notice" role="status">{{ syncNotice }}</p>
     <section v-if="detail" class="workspace">
@@ -212,11 +238,11 @@ onUnmounted(() => {
         <div class="listed-price"><span>公开标价</span><strong>¥{{ detail.product.listed_price }}</strong></div>
         <p>议价进度 {{ detail.negotiation.round_count }} / {{ detail.negotiation.max_rounds }} 轮</p>
         <p v-if="terminal">{{ detail.negotiation.status === 'AGREED' ? '已记录交易意向' : '协商已结束' }}</p>
-        <p v-if="detail.negotiation.status === 'WAITING_APPROVAL'" class="approval-waiting">等待卖家审批</p>
+        <p v-if="detail.negotiation.status === 'WAITING_APPROVAL'" class="approval-waiting">等待卖家审批；仍可补充或修改报价，也可结束协商。</p>
         <p class="privacy-note">确认交易意向不代表付款、锁定库存或完成交易。</p>
       </aside>
       <section class="chat-panel">
-        <div class="chat-heading"><h2>和卖家助手协商</h2><button v-if="unified && !terminal" type="button" :disabled="busy" @click="close">结束协商</button></div>
+        <div class="chat-heading"><h2>和卖家助手协商</h2><button v-if="unified && !terminal" type="button" :disabled="busy || actionPending('close')" @click="close">结束协商</button></div>
         <div ref="messageList" class="message-list" aria-live="polite">
           <p v-if="!messages.length">可以直接提问或报价，例如“电池怎么样？900 自提可以吗？”</p>
           <article v-for="message in messages" :key="message.id" class="message" :data-role="message.role">
@@ -226,7 +252,7 @@ onUnmounted(() => {
               <template v-if="message.card.kind !== 'drafts'">
                 <strong>¥{{ message.card.amount }}</strong>
                 <p>{{ message.card.terms?.delivery_method === 'pickup' ? '自提' : message.card.shipping_paid_by === 'seller' ? '卖家包邮' : '快递，买家承担运费' }}</p>
-                <button v-if="activeCard(message.card)" type="button" :disabled="busy || !receipts[message.card.context_id || '']" @click="confirm(message.card)">确认交易意向</button>
+                <button v-if="activeCard(message.card)" type="button" :disabled="busy || actionPending('confirm') || !receipts[message.card.context_id || '']" @click="confirm(message.card)">确认交易意向</button>
                 <p v-else>此卡片当前不可确认</p>
               </template>
               <div v-for="(option, index) in message.card.drafts" :key="option.draft_id">
@@ -236,11 +262,17 @@ onUnmounted(() => {
                 <p v-for="commitment in option.candidate.commitments" :key="commitment">要求：{{ commitment }}</p>
                 <button v-if="!terminal" type="button" :disabled="busy || !receipts[message.card.context_id || '']" @click="submit(option)">选择并继续此方案</button>
               </div>
-              <button v-if="message.card.context_id && !terminal" type="button" class="ghost-button" @click="refresh(message.card)">刷新此方案</button>
+              <button v-if="message.card.context_id && !terminal" type="button" class="ghost-button" :disabled="refreshing.has(message.card.context_id)" @click="refresh(message.card)">刷新此方案</button>
             </section>
           </article>
         </div>
-        <p v-for="run in Object.values(runs)" :key="run.run_id" class="outcome-banner">输入 #{{ run.input_seq }}：{{ outcome(run, detail.negotiation.status) }}</p>
+        <section v-if="unfinishedRuns.length" class="queue-notice" aria-label="输入处理进度" role="status">
+          <p>本页跟踪的未完成输入：{{ unfinishedRuns.length }} 条。输入按顺序处理，无需重复点击；可以继续编辑下一条消息。</p>
+          <p v-if="manualRecovery">需要卖家在“卖家模式 → 恢复任务”中处置；原输入会保留，后续输入需等待前序恢复。</p>
+          <p v-if="actionPending('confirm')">确认操作已接受，正在核对结果。</p>
+          <p v-if="actionPending('close')">结束操作已接受，正在核对结果。</p>
+        </section>
+        <p v-for="run in Object.values(runs).sort((a, b) => a.input_seq - b.input_seq)" :key="run.run_id" class="outcome-banner">输入 #{{ run.input_seq }}：{{ outcome(run, detail.negotiation.status) }}</p>
         <PendingOperations :operations="operations" :busy="operationBusy" :notice="notice" :error="operationError"
           @check="check" @retry="retry" @new-intent="newIntent" />
         <p v-if="error" class="error-banner" role="alert">{{ error }}</p>

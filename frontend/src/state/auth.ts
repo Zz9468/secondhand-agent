@@ -15,6 +15,7 @@ import { pendingOperationStore } from './pendingOperations'
 const currentUser = ref<UserIdentity | null>(null)
 const initialized = ref(false)
 const version = ref(0)
+const sessionNotice = ref('')
 
 function assignUser(user: UserIdentity | null, invalidate = false): void {
   if (invalidate || user?.id !== currentUser.value?.id) {
@@ -92,6 +93,7 @@ if (authSyncChannel !== null) {
 }
 
 setUnauthorizedHandler(() => {
+  if (currentUser.value) sessionNotice.value = '登录状态已失效或账号已变化，请重新登录并检查协商历史；不要因登录跳转认定原操作失败。'
   assignUser(null, true)
   initialized.value = true
 })
@@ -125,6 +127,7 @@ async function login(payload: LoginPayload): Promise<UserIdentity> {
   await logoutPromise
   assignUser(null, true)
   const user = await loginUser(payload)
+  sessionNotice.value = ''
   assignUser(user)
   initialized.value = true
   publishAuthChange()
@@ -135,6 +138,7 @@ async function register(payload: RegisterPayload): Promise<UserIdentity> {
   await logoutPromise
   assignUser(null, true)
   const user = await registerUser(payload)
+  sessionNotice.value = ''
   assignUser(user)
   initialized.value = true
   publishAuthChange()
@@ -143,6 +147,7 @@ async function register(payload: RegisterPayload): Promise<UserIdentity> {
 
 async function logout(): Promise<void> {
   if (logoutPromise) return logoutPromise
+  sessionNotice.value = ''
   assignUser(null, true)
   logoutPromise = (async () => {
     await logoutUser()
@@ -190,6 +195,7 @@ document.addEventListener('visibilitychange', () => {
 })
 
 const auth = {
+  sessionNotice: computed(() => sessionNotice.value),
   version: computed(() => version.value),
   currentUser: computed(() => currentUser.value),
   initialized: computed(() => initialized.value),

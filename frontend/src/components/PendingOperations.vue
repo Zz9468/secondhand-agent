@@ -11,12 +11,13 @@ const names = { message: '消息/方案', confirm: '确认交易意向', close: 
     <article v-for="op in operations" :key="op.requestId" class="operation-status">
       <p>{{ names[op.kind] }} · {{ op.target }} ·
         {{ op.status === 'accepted' ? (op.kind === 'recovery' ? '已登记恢复操作' : '已核对原操作，服务端已接受') : op.status === 'rejected' ? '本次提交未获接受，请刷新状态后操作' : op.status === 'blocked' ? '此次重试已被拒绝，原操作仍需核对' : '结果待核实，原操作已保存' }}</p>
-      <small>请求 {{ op.requestId }}</small>
+      <details><summary>操作编号</summary><small>{{ op.requestId }}</small></details>
       <template v-if="op.status === 'unknown' || op.status === 'blocked'">
         <button type="button" :disabled="busy" @click="$emit('check', op)">核对原操作</button>
         <button v-if="op.status === 'unknown'" type="button" :disabled="busy" @click="$emit('retry', op)">重试原操作</button>
       </template>
     </article>
+    <p v-if="operations.some(op => op.status === 'unknown' || op.status === 'blocked')">请先核对原操作；重试会沿用原编号和原始内容。只有不同的意图才选择“另行发起新操作”。</p>
     <button v-if="operations.some(op => op.status === 'unknown' || op.status === 'blocked')" type="button" :disabled="busy" @click="$emit('newIntent')">另行发起新操作</button>
   </section>
 </template>
