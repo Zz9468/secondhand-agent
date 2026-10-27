@@ -45,7 +45,7 @@ def reply_evidence(db, run, now):
                 "status": delivery.result["outcome"],
                 "text": TEXT.get(delivery.result["outcome"], "本次未执行业务动作。"),
             }
-        if run.config.get("quality_version") == "p4-v2":
+        if run.config.get("quality_version") in {"p4-v2", "p4-v3"}:
             original = intents.get(item["id"], {})
             item = {
                 **item,

@@ -8,6 +8,7 @@ from app.core.config import Settings
 from app.semantic.contracts import IntentFrame
 from app.semantic.model import (
     LEGACY_PROMPT,
+    P4_PROMPT_VERSION,
     PROMPT_VERSION,
     SemanticModel,
     SemanticResponseError,
@@ -58,6 +59,10 @@ def test_known_endpoint_cost_bound_and_unknown_price_refusal():
         "p2-intents-v7",
         "p2-intents-v8",
         PROMPT_VERSION,
+        "p4-intents-v1",
+        "p5-intents-v1",
+        "p5-intents-v2",
+        P4_PROMPT_VERSION,
     ],
 )
 def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch, prompt_version):
@@ -110,7 +115,16 @@ def test_sdk_has_no_implicit_retries_or_private_context(monkeypatch, prompt_vers
     response_format = captured["request"]["response_format"]
     assert response_format["type"] == (
         "json_schema"
-        if prompt_version in {"p2-intents-v7", "p2-intents-v8", PROMPT_VERSION}
+        if prompt_version
+        in {
+            "p2-intents-v7",
+            "p2-intents-v8",
+            PROMPT_VERSION,
+            "p4-intents-v1",
+            "p5-intents-v1",
+            "p5-intents-v2",
+            P4_PROMPT_VERSION,
+        }
         else "json_object"
     )
     if prompt_version == PROMPT_VERSION:

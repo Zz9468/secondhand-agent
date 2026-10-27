@@ -264,10 +264,25 @@ def safe_frame(frame, text):
     if re.search(r"不(?:接受|考虑|同意|想要|愿意).*(?:自提|包邮|报价)", text) and actions:
         return ordered, False
     for item in actions:
-        if item.type == "CONFIRM_INTENT" and re.search(
-            r"不行|不要|不想|不接受|不同意|不确认|别确认|勿确认|不能|拒绝", item.source_quote
-        ):
-            return ordered, False
+        if item.type == "CONFIRM_INTENT":
+            # A partial quote such as "同意" must not omit the buyer's "不同意".
+            if re.search(
+                r"不行|不要|不想|不接受|不同意|不确认|别确认|勿确认|不能|拒绝", text
+            ):
+                return ordered, False
+            # The model may quote only "确认" and omit the buyer's veto or submission
+            # request. Inspect the full input; these checks only deny authority and
+            # never turn a conflicting frame into an automatically chosen proposal.
+            if re.search(
+                r"(?:不|别|勿|不要|不能|拒绝)(?:最终)?确认"
+                r"|不(?:同意|接受)[^，。；！？!?]{0,6}(?:成交|购买|交易)",
+                text,
+            ) or re.search(
+                r"(?:提交|报送|发出)[^，。；！？!?]{0,16}(?:报价|出价|提议)"
+                r"|(?:报价|出价|提议)[^。；！？!?]{0,16}(?:提交|报送|发出)",
+                text,
+            ):
+                return ordered, False
         if item.type == "CLOSE_SESSION" and (
             not re.search(r"结束|关闭|终止|不买", item.source_quote)
             or re.search(

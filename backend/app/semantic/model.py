@@ -153,9 +153,47 @@ PROMPTS[P4_PROMPT_VERSION] = (
 )
 
 
+P4_PROMPT_VERSION = "p5-intents-v2"
+PROMPTS[P4_PROMPT_VERSION] = (
+    PROMPTS["p5-intents-v1"]
+    + """
+提交报价与最终确认是不同操作：提交/报送/发出报价只是请求处理报价，不是同意成交。
+买家给出金额和条款并说“现在提交这个报价”“请提交我的报价”“麻烦提交”，
+整个请求只生成一个PROPOSE_OFFER；修改已展示条款则只生成CHANGE_TERMS。
+不能从“提交”“确认提交报价”额外生成CONFIRM_INTENT，也不能生成第二个重复报价意图。
+例如“请提交我的报价：800元自提。”只有PROPOSE_OFFER，amount=800、delivery=pickup、payer=buyer。
+条件报价仍保留全部前提和额外承诺，提交措辞不能去掉条件或授权。
+只有买家独立同意已展示报价的成交意向才是CONFIRM_INTENT，展示有效性仍由程序验证。
+否定确认、询问确认按钮、仅有预算均不能确认。source_quote须保留相关否定，不能截掉“不/别”。
+若真的同时要求修改报价和最终确认，保留冲突并澄清，不能替买家选择一个动作。
+"""
+)
+
+
+P4_PROMPT_VERSION = "p5-intents-v3"
+PROMPTS[P4_PROMPT_VERSION] = (
+    PROMPTS["p5-intents-v2"]
+    + """
+提交是同一个提案的操作动词，不是依赖于提案的第二个意图。
+例如已有报价时“改成900元包邮到上海，请提交修改后的报价。”只有一条CHANGE_TERMS：
+candidate={"amount":"900","delivery":"shipping","payer":"seller","region":"上海",
+"conditions":[],"commitments":[]}。source_quote可引用整个输入；depends_on为空。
+禁止为“请提交修改后的报价”再生成PROPOSE_OFFER或PROVIDE_INFO；不能重复提交同一组条款。
+这里的数字和地区仅为示例，实际值必须取自current_input，不能从历史或示例复制。
+"""
+)
+
+
 def parsing_contexts(context, prompt_version):
     yield context
-    if prompt_version in {"p2-intents-v8", "p3-intents-v1", "p4-intents-v1", P4_PROMPT_VERSION}:
+    if prompt_version in {
+        "p2-intents-v8",
+        "p3-intents-v1",
+        "p4-intents-v1",
+        "p5-intents-v1",
+        "p5-intents-v2",
+        P4_PROMPT_VERSION,
+    }:
         yield {
             **context,
             "validation_feedback": (
@@ -171,6 +209,8 @@ def output_format(prompt_version):
         "p2-intents-v8",
         "p3-intents-v1",
         "p4-intents-v1",
+        "p5-intents-v1",
+        "p5-intents-v2",
         P4_PROMPT_VERSION,
     }:
         return {"type": "json_object"}

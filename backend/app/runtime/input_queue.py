@@ -158,6 +158,7 @@ class InputQueue:
                 }
                 if session.graph_version == QUALITY_VERSION:
                     from app.semantic.model import P4_PROMPT_VERSION
+                    from app.semantic.quality import QUALITY_PROMPT_VERSION
 
                     config.update(
                         schema="p4-v1",
@@ -165,7 +166,7 @@ class InputQueue:
                         max_tokens=180000,
                         max_cost=None,
                         active_seconds=120,
-                        quality_version="p4-v2",
+                        quality_version=QUALITY_PROMPT_VERSION,
                         prompt_version=P4_PROMPT_VERSION,
                     )
             frozen_config = dict(CONFIG if config is None else config)
