@@ -2,7 +2,7 @@ from datetime import timedelta
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi import Cookie, Depends, Header, HTTPException, Request, status
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.agent.decision_provider import DecisionProvider, LangChainDecisionProvider
@@ -52,8 +52,11 @@ def get_current_user(
     settings: SettingsDependency,
     session_factory: SessionFactoryDependency,
     token: Annotated[str | None, Cookie(alias=USER_SESSION_COOKIE)] = None,
+    expected_user: Annotated[str | None, Header(alias="X-Expected-User")] = None,
 ) -> UserPrincipal:
     user_id = _required_user_subject(token, settings=settings)
+    if expected_user is not None and expected_user != user_id:
+        raise HTTPException(status_code=401, detail="登录账号已改变，请刷新后核对原操作")
     user = AuthService(session_factory).get_active_user(user_id)
     if user is None:
         raise HTTPException(

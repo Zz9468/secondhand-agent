@@ -1,18 +1,26 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ApiError } from '../api/client'
-import { readRunIds, runOutcome as outcome, shouldPollRun, writeRunIds } from '../state/runTracking'
+import PendingOperations from '../components/PendingOperations.vue'
+import { useAuth } from '../state/auth'
+import { usePendingOperations } from '../state/usePendingOperations'
+import { runOutcome as outcome, shouldPollRun } from '../state/runTracking'
 import {
-  acknowledgeDisplay, closeNegotiation, confirmNegotiation, getMessages, getNegotiation,
-  getRun, refreshContext, sendMessage,
-  type AcceptedInput, type ChatMessage, type DraftOption, type NegotiationDetail,
-  type PublicCard, type RunStatus, type SendMessagePayload,
+  acknowledgeDisplay, getMessages, getNegotiation,
+  getRun, refreshContext,
+  type ChatMessage, type DraftOption, type NegotiationDetail,
+  type PublicCard, type RunStatus,
 } from '../api/negotiations'
 
 const route = useRoute()
 const sid = computed(() => Number(route.params.sessionId))
-const viewId = crypto.randomUUID()
+let viewId = crypto.randomUUID()
+const auth = useAuth()
+let pageGeneration = 0
+function pageGuard() {
+  const generation = pageGeneration, version = auth.version.value
+  return () => generation === pageGeneration && version === auth.version.value
+}
 const detail = ref<NegotiationDetail | null>(null)
 const messages = ref<ChatMessage[]>([])
 const runs = ref<Record<string, RunStatus>>({})
@@ -24,37 +32,40 @@ const loading = ref(true)
 const messageList = ref<HTMLElement | null>(null)
 const terminal = computed(() => ['AGREED', 'CLOSED'].includes(detail.value?.negotiation.status ?? ''))
 const unified = computed(() => ['negotiation-v2', 'negotiation-v3'].includes(detail.value?.graph_version ?? ''))
-let pending: { sid: number; payload: SendMessagePayload } | null = null
-let pendingButton: { key: string; request: string; receipt: string } | null = null
 let timer: number | undefined
 let observer: IntersectionObserver | undefined
 const acknowledging = new Set<string>()
 let polling = false
 
-function remember(result: AcceptedInput) {
-  runs.value[result.run_id] = { run_id: result.run_id, input_seq: result.input_seq,
-    task_status: result.status, business_status: 'NOT_COMMITTED', business_outcome: null,
-    notification_status: 'NOT_REQUIRED', blocked_by_input_seq: null,
-    public_error_category: null, recovery_required: false }
-  writeRunIds(sessionStorage, sid.value, Object.keys(runs.value))
-}
+const { operations, notice, operationError, operationBusy, begin, check, retry, newIntent } = usePendingOperations(
+  () => String(sid.value), (op, result) => {
+    if (typeof result.run_id !== 'string') return
+    runs.value[result.run_id] = 'task_status' in result ? result as unknown as RunStatus : {
+      run_id: result.run_id, input_seq: Number(result.input_seq), task_status: String(result.status),
+      business_status: 'NOT_COMMITTED', business_outcome: null, notification_status: 'NOT_REQUIRED',
+      blocked_by_input_seq: null, public_error_category: null, recovery_required: false,
+    }
+    if (op.kind === 'message') text.value = ''
+    void poll()
+  },
+)
+watch(operationBusy, value => { busy.value = value }, { immediate: true, flush: 'sync' })
 
 async function load() {
+  pageGeneration++
+  const alive = pageGuard()
   const current = sid.value
+  viewId = crypto.randomUUID()
   loading.value = true
   messages.value = []; detail.value = null; receipts.value = {}; runs.value = {}
-  pending = null; pendingButton = null; error.value = ''
+  text.value = ''; error.value = ''; acknowledging.clear()
   try {
     const [info, history] = await Promise.all([getNegotiation(current), getMessages(current)])
-    if (sid.value !== current) return
+    if (!alive()) return
     detail.value = info; messages.value = history
-    const ids = readRunIds(sessionStorage, current)
-    for (const id of ids) {
-      try { runs.value[id] = await getRun(current, id) } catch { /* Expired references are ignored. */ }
-    }
     await renderCards(true)
-  } catch (e) { error.value = e instanceof Error ? e.message : '会话加载失败' }
-  finally { if (sid.value === current) loading.value = false }
+  } catch (e) { if (alive()) error.value = e instanceof Error ? e.message : '会话加载失败' }
+  finally { if (alive()) loading.value = false }
 }
 
 async function renderCards(scroll = false) {
@@ -65,12 +76,13 @@ async function renderCards(scroll = false) {
 }
 
 async function markDisplayed(context: string) {
+  const alive = pageGuard()
   const current = sid.value
   if (!context || receipts.value[context] || acknowledging.has(context) || document.visibilityState !== 'visible') return
   acknowledging.add(context)
   try {
     const result = await acknowledgeDisplay(current, context, viewId, `display-${context}`)
-    if (sid.value === current) receipts.value[context] = result.display_receipt_id
+    if (alive()) receipts.value[context] = result.display_receipt_id
   } catch { /* An invalid card never grants confirmation; the card offers refresh. */ }
   finally { acknowledging.delete(context) }
 }
@@ -85,80 +97,54 @@ function latestReceipt(): string | null {
 
 async function submit(option?: DraftOption) {
   if (busy.value || terminal.value || (!option && !text.value.trim())) return
-  const current = sid.value
-  const content = option ? '继续' : text.value.trim()
-  // Retries preserve the complete original input, including its display reference.
-  if (!pending || pending.sid !== current || pending.payload.content !== content
-      || pending.payload.draft_id !== option?.draft_id) {
-    pending = { sid: current, payload: { request_id: crypto.randomUUID().replaceAll('-', ''),
-      content, client_view_id: viewId, display_receipt_id: latestReceipt(),
-      ...(option ? { draft_id: option.draft_id, draft_version: option.draft_version } : {}) } }
-  }
-  busy.value = true; error.value = ''
-  try {
-    const result = await sendMessage(current, pending.payload)
-    if (sid.value !== current) return
-    remember(result); pending = null; text.value = ''
-    await poll()
-  } catch (e) {
-    if (e instanceof ApiError && [400, 404, 409, 422].includes(e.status)) pending = null
-    error.value = e instanceof Error ? e.message : '发送失败，可重试原输入'
-  }
-  finally { busy.value = false }
+  await begin(String(sid.value), 'message', {
+    request_id: crypto.randomUUID().replaceAll('-', ''), content: option ? '继续' : text.value.trim(),
+    client_view_id: viewId, display_receipt_id: latestReceipt(),
+    ...(option ? { draft_id: option.draft_id, draft_version: option.draft_version } : {}),
+  })
 }
 
 async function confirm(card: PublicCard) {
   const context = card.context_id
   if (!card.offer_id || !context || !receipts.value[context] || busy.value) return
-  const current = sid.value
-  const key = `${current}:confirm:${context}`
-  if (pendingButton?.key !== key) pendingButton = { key, request: crypto.randomUUID().replaceAll('-', ''), receipt: receipts.value[context]! }
-  busy.value = true; error.value = ''
-  try {
-    const result = await confirmNegotiation(current, card.offer_id, pendingButton.request, viewId, pendingButton.receipt)
-    if (sid.value !== current) return
-    remember(result); pendingButton = null; await poll()
-  } catch (e) { error.value = e instanceof Error ? e.message : '确认失败' }
-  finally { busy.value = false }
+  await begin(String(sid.value), 'confirm', { request_id: crypto.randomUUID().replaceAll('-', ''),
+    offer_id: card.offer_id, client_view_id: viewId, display_receipt_id: receipts.value[context]! })
 }
 
 async function close() {
   if (busy.value) return
-  const current = sid.value
-  const key = `${current}:close`
-  if (pendingButton?.key !== key) pendingButton = { key, request: crypto.randomUUID().replaceAll('-', ''), receipt: '' }
-  busy.value = true; error.value = ''
-  try {
-    const result = await closeNegotiation(current, pendingButton.request, viewId)
-    if (sid.value !== current) return
-    remember(result); pendingButton = null; await poll()
-  } catch (e) { error.value = e instanceof Error ? e.message : '结束协商失败' }
-  finally { busy.value = false }
+  await begin(String(sid.value), 'close', { request_id: crypto.randomUUID().replaceAll('-', ''), client_view_id: viewId })
 }
 
 async function refresh(card: PublicCard) {
+  const alive = pageGuard()
   if (!card.context_id) return
   const current = sid.value
   try {
     const result = await refreshContext(current, card.context_id, crypto.randomUUID())
-    if (sid.value !== current) return
+    if (!alive()) return
     card.context_id = result.context_id
     await renderCards()
-  } catch (e) { error.value = e instanceof Error ? e.message : '方案已失效，请重新协商' }
+  } catch (e) { if (alive()) error.value = e instanceof Error ? e.message : '方案已失效，请重新协商' }
 }
 
 async function poll() {
+  const alive = pageGuard()
   if (polling || !detail.value) return
   polling = true
   const current = sid.value
   try {
     const after = Math.max(0, ...messages.value.map(m => m.id))
     const [updates, info] = await Promise.all([getMessages(current, after), getNegotiation(current)])
-    if (current !== sid.value) return
+    if (!alive()) return
     detail.value = info
     messages.value.push(...updates.filter(m => !messages.value.some(old => old.id === m.id)))
     for (const [id, run] of Object.entries(runs.value)) {
-      if (shouldPollRun(run)) runs.value[id] = await getRun(current, id)
+      if (shouldPollRun(run)) {
+        const result = await getRun(current, id)
+        if (!alive()) return
+        runs.value[id] = result
+      }
     }
     await renderCards(updates.length > 0)
   } catch { /* Polling never changes the pending input or its receipt. */ }
@@ -170,7 +156,10 @@ function activeCard(card: PublicCard) {
     && (!card.expires_at || Date.parse(card.expires_at) > Date.now())
 }
 
-watch(sid, () => void load(), { immediate: true })
+watch([sid, auth.version], () => {
+  if (auth.currentUser.value) void load()
+  else { pageGeneration++; detail.value = null; messages.value = []; runs.value = {}; receipts.value = {} }
+}, { immediate: true, flush: 'sync' })
 onMounted(() => {
   observer = new IntersectionObserver(entries => entries.forEach(entry => {
     if (entry.isIntersecting) void markDisplayed((entry.target as HTMLElement).dataset.context ?? '')
@@ -178,7 +167,7 @@ onMounted(() => {
   void renderCards()
   timer = window.setInterval(() => void poll(), 2000)
 })
-onUnmounted(() => { if (timer) clearInterval(timer); observer?.disconnect() })
+onUnmounted(() => { pageGeneration++; if (timer) clearInterval(timer); observer?.disconnect() })
 </script>
 
 <template>
@@ -219,6 +208,8 @@ onUnmounted(() => { if (timer) clearInterval(timer); observer?.disconnect() })
           </article>
         </div>
         <p v-for="run in Object.values(runs)" :key="run.run_id" class="outcome-banner">输入 #{{ run.input_seq }}：{{ outcome(run) }}</p>
+        <PendingOperations :operations="operations" :busy="operationBusy" :notice="notice" :error="operationError"
+          @check="check" @retry="retry" @new-intent="newIntent" />
         <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
         <p v-if="!unified" class="outcome-banner">此会话使用旧版流程。新版统一聊天适用于新会话。</p>
         <form v-if="unified && !terminal" class="composer" @submit.prevent="submit()">

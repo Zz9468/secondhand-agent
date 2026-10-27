@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useAuth } from '../state/auth'
+import { usePendingOperations } from '../state/usePendingOperations'
+import PendingOperations from './PendingOperations.vue'
 import { requestJson } from '../api/client'
 
 interface RecoveryItem {
@@ -15,37 +18,26 @@ interface RecoveryItem {
 }
 const items = ref<RecoveryItem[]>([])
 const reason = ref('')
-const busy = ref(false)
+const auth = useAuth()
 const feedback = ref('')
-// Preserve the request id on network failure; a retry cannot grant multiple extra attempts.
-const pending = ref<{ target: string; action: string; reason: string; request_id: string } | null>(null)
+const { operations, notice, operationError, operationBusy: busy, begin, check, retry, newIntent } = usePendingOperations(
+  () => 'recovery', async () => { await refresh() },
+)
 
 async function refresh() {
+  const version = auth.version.value
   try {
-    items.value = (await requestJson<{ items: RecoveryItem[] }>('/api/seller/graph-recovery')).items
+    const result = (await requestJson<{ items: RecoveryItem[] }>('/api/seller/graph-recovery')).items
+    if (version === auth.version.value) items.value = result
   } catch (error) {
-    feedback.value = error instanceof Error ? error.message : '读取恢复任务失败'
+    if (version === auth.version.value) feedback.value = error instanceof Error ? error.message : '读取恢复任务失败'
   }
 }
 async function act(item: RecoveryItem, action: string) {
+  if (busy.value) return
   if (!reason.value.trim()) { feedback.value = '请填写处置原因'; return }
-  busy.value = true
-  if (!pending.value || pending.value.target !== item.target || pending.value.action !== action
-      || pending.value.reason !== reason.value) {
-    pending.value = { target: item.target, action, reason: reason.value, request_id: crypto.randomUUID() }
-  }
-  try {
-    await requestJson(`/api/seller/graph-recovery/${encodeURIComponent(item.target)}`, {
-      method: 'POST', body: JSON.stringify(pending.value),
-    })
-    pending.value = null
-    feedback.value = action === 'TERMINATE'
-      ? '已登记安全终止；已提交的业务结果仍会通知买家。'
-      : '已登记恢复操作，后台将继续处理。'
-    await refresh()
-  } catch (error) {
-    feedback.value = error instanceof Error ? error.message : '恢复操作失败'
-  } finally { busy.value = false }
+  feedback.value = ''
+  await begin(item.target, 'recovery', { action, reason: reason.value, request_id: crypto.randomUUID() })
 }
 onMounted(refresh)
 </script>
@@ -56,6 +48,8 @@ onMounted(refresh)
     <p>重试沿用原任务和剩余预算。安全终止停止后续处理，并保留已提交结果。</p>
     <button type="button" :disabled="busy" @click="refresh">刷新</button>
     <p v-if="feedback" role="status">{{ feedback }}</p>
+    <PendingOperations :operations="operations" :busy="busy" :notice="notice" :error="operationError"
+      @check="check" @retry="retry" @new-intent="newIntent" />
     <label>处置原因 <input v-model="reason" maxlength="500" placeholder="填写本次恢复原因" /></label>
     <p v-if="!items.length">当前没有需要人工处置的协商任务。</p>
     <article v-for="item in items" :key="item.target">

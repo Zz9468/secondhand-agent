@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 
 import {
   listSellerApprovals,
-  reviewSellerApproval,
   type ApprovalStatus,
   type SellerApproval,
 } from '../api/approvals'
@@ -29,6 +28,8 @@ import {
 } from '../api/sellerNegotiations'
 import { useAuth } from '../state/auth'
 import ProductEvidence from './ProductEvidence.vue'
+import PendingOperations from './PendingOperations.vue'
+import { usePendingOperations } from '../state/usePendingOperations'
 import GraphRecovery from './GraphRecovery.vue'
 
 interface ProductForm {
@@ -60,21 +61,19 @@ const activeSection = computed<SellerSection>(() => {
   return 'products'
 })
 const approvalComment = ref('')
-const pendingReviewRequest = ref<{
-  approvalId: number
-  action: 'approve' | 'reject'
-  requestId: string
-  comment: string | null
-  effectRevision: number | undefined
-} | null>(null)
 const loading = ref(true)
 const saving = ref(false)
 const deleting = ref(false)
-const reviewing = ref(false)
 const polling = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const form = reactive<ProductForm>(blankForm())
+
+const { operations, notice, operationError, operationBusy: reviewing, begin, check, retry, newIntent } = usePendingOperations(
+  () => 'approval', async (op) => {
+    await loadApprovals(Number(op.target), true)
+  },
+)
 
 const SELLER_POLL_INTERVAL_MS = 3000
 let sellerPollTimer: number | undefined
@@ -109,7 +108,10 @@ async function loadWorkspace(): Promise<void> {
 }
 
 async function loadProducts(preferredId?: number): Promise<void> {
-  products.value = await listSellerProducts()
+  const version = auth.version.value
+  const result = await listSellerProducts()
+  if (version !== auth.version.value) return
+  products.value = result
   const targetId = preferredId ?? selectedProduct.value?.id
   const target = products.value.find((product) => product.id === targetId)
   if (target) {
@@ -151,7 +153,10 @@ async function loadApprovals(
   preferredId?: number,
   preserveComment = false,
 ): Promise<void> {
-  approvals.value = await listSellerApprovals()
+  const version = auth.version.value
+  const result = await listSellerApprovals()
+  if (version !== auth.version.value) return
+  approvals.value = result
   const targetId = preferredId ?? selectedApproval.value?.id
   const nextApproval =
     approvals.value.find((approval) => approval.id === targetId) ??
@@ -176,7 +181,10 @@ async function showApprovals(): Promise<void> {
 }
 
 async function loadNegotiations(preferredId?: number): Promise<void> {
-  negotiations.value = await listSellerNegotiations()
+  const version = auth.version.value
+  const result = await listSellerNegotiations()
+  if (version !== auth.version.value) return
+  negotiations.value = result
   const targetId = preferredId ?? selectedNegotiation.value?.negotiation.id
   const nextNegotiation =
     negotiations.value.find((item) => item.id === targetId) ??
@@ -190,7 +198,8 @@ async function loadNegotiations(preferredId?: number): Promise<void> {
     activeSection.value === 'negotiations'
     || selectedNegotiation.value?.negotiation.id === nextNegotiation.id
   ) {
-    selectedNegotiation.value = await getSellerNegotiation(nextNegotiation.id)
+    const detail = await getSellerNegotiation(nextNegotiation.id)
+    if (version === auth.version.value) selectedNegotiation.value = detail
   }
 }
 
@@ -217,9 +226,6 @@ async function openApproval(approvalId: number): Promise<void> {
 function selectApproval(approval: SellerApproval): void {
   selectedApproval.value = approval
   approvalComment.value = approval.seller_comment ?? ''
-  if (pendingReviewRequest.value?.approvalId !== approval.id) {
-    pendingReviewRequest.value = null
-  }
   errorMessage.value = ''
   successMessage.value = ''
 }
@@ -238,49 +244,12 @@ async function navigateToSection(section: SellerSection): Promise<void> {
 
 async function reviewApproval(action: 'approve' | 'reject'): Promise<void> {
   const approval = selectedApproval.value
-  if (!approval || approval.status !== 'PENDING') return
-  reviewing.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
-  try {
-    const comment = approvalComment.value.trim() || null
-    const effectRevision = approval.effect_status ? approval.effect_revision : undefined
-    if (
-      pendingReviewRequest.value?.approvalId !== approval.id ||
-      pendingReviewRequest.value.action !== action ||
-      pendingReviewRequest.value.comment !== comment ||
-      pendingReviewRequest.value.effectRevision !== effectRevision
-    ) {
-      pendingReviewRequest.value = {
-        approvalId: approval.id,
-        action,
-        requestId: `${action}-${crypto.randomUUID()}`,
-        comment,
-        effectRevision,
-      }
-    }
-    const saved = await reviewSellerApproval(
-      approval.id,
-      action,
-      pendingReviewRequest.value.requestId,
-      pendingReviewRequest.value.comment,
-      pendingReviewRequest.value.effectRevision,
-    )
-    await loadApprovals(saved.id)
-    await loadNegotiations(approval.session_id)
-    pendingReviewRequest.value = null
-    successMessage.value = action === 'approve' ? '审批已同意。' : '审批已拒绝。'
-  } catch (error) {
-    errorMessage.value = readableError(error)
-    if (error instanceof ApiError && error.status === 409) {
-      await loadApprovals(approval.id)
-      if (selectedApproval.value?.status !== 'PENDING') {
-        pendingReviewRequest.value = null
-      }
-    }
-  } finally {
-    reviewing.value = false
-  }
+  if (!approval || approval.status !== 'PENDING' || reviewing.value) return
+  errorMessage.value = ''; successMessage.value = ''
+  await begin(String(approval.id), action, { request_id: `${action}-${crypto.randomUUID()}`,
+    comment: approvalComment.value.trim() || null,
+    ...(approval.effect_status ? { expected_effect_revision: approval.effect_revision } : {}),
+  })
 }
 
 function approvalStatusLabel(status: ApprovalStatus): string {
@@ -687,6 +656,8 @@ onUnmounted(() => {
       </form>
 
       <section v-else-if="activeSection === 'approvals'" class="approval-editor">
+        <PendingOperations :operations="operations" :busy="reviewing" :notice="notice" :error="operationError"
+          @check="check" @retry="retry" @new-intent="newIntent" />
         <div v-if="!selectedApproval" class="approval-empty">
           <p class="eyebrow">APPROVALS</p>
           <h1>暂无报价审批</h1>

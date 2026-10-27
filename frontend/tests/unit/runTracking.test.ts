@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import type { RunStatus } from '../../src/api/negotiations'
-import { readRunIds, runOutcome, shouldPollRun, writeRunIds } from '../../src/state/runTracking'
+import { runOutcome, shouldPollRun } from '../../src/state/runTracking'
 
 function run(overrides: Partial<RunStatus> = {}): RunStatus {
   return { run_id: 'one', input_seq: 1, task_status: 'PENDING', business_status: 'NOT_COMMITTED',
@@ -25,15 +25,4 @@ test('R09 blocked input identifies the FIFO head', () => {
 })
 test('R13 recovery preserves the original input in the status message', () => {
   expect(runOutcome(run({ task_status: 'FAILED', recovery_required: true }))).toContain('原输入已保留')
-})
-test('R07 accepted run references survive a storage round trip', () => {
-  const values = new Map<string, string>()
-  const storage = { getItem: (key: string) => values.get(key) ?? null,
-    setItem: (key: string, value: string) => { values.set(key, value) } }
-  writeRunIds(storage, 1, ['a', 'b'])
-  expect(readRunIds(storage, 1)).toEqual(['a', 'b'])
-  expect(readRunIds(storage, 2)).toEqual([])
-})
-test.fails('D0 expected failure R07: corrupt cache must not throw during history loading', () => {
-  expect(() => readRunIds({ getItem: () => '{broken' }, 1)).not.toThrow()
 })

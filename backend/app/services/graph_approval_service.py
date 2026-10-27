@@ -92,6 +92,24 @@ class GraphApprovalService:
     def __init__(self, factory, *, clock=utcnow, fault=lambda point: None):
         self.factory, self.clock, self.fault = factory, clock, fault
 
+    def get_request(self, seller_id, approval_id, request_id):
+        with self.factory() as db:
+            approval = db.get(ApprovalRequest, approval_id)
+            session = db.get(NegotiationSession, approval.session_id) if approval else None
+            product = db.get(Product, session.product_id) if session else None
+            if not product or product.seller_id != seller_id:
+                raise ApprovalNotFoundError("审批请求不存在")
+            receipt = db.get(
+                BusinessActionReceipt, digest(["seller-approval", seller_id, request_id])
+            )
+            if not receipt or receipt.result.get("approval_id") != approval_id:
+                raise ApprovalNotFoundError("审批请求不存在")
+            return {
+                "status": "RECORDED",
+                "approval_id": approval_id,
+                "decision": receipt.result["decision"],
+            }
+
     def review(self, *, seller_id, approval_id, request_id, comment, approved, expected_revision):
         request_id = ApprovalService._validated_request_id(request_id)
         comment = ApprovalService._validated_comment(comment)

@@ -9,12 +9,25 @@ import {
   type RegisterPayload,
   type UserIdentity,
 } from '../api/auth'
-import { ApiError, setUnauthorizedHandler } from '../api/client'
+import { ApiError, setRequestAccount, setUnauthorizedHandler } from '../api/client'
+import { pendingOperationStore } from './pendingOperations'
 
 const currentUser = ref<UserIdentity | null>(null)
 const initialized = ref(false)
+const version = ref(0)
+
+function assignUser(user: UserIdentity | null, invalidate = false): void {
+  if (invalidate || user?.id !== currentUser.value?.id) {
+    if (currentUser.value) pendingOperationStore.clear(currentUser.value.id)
+    setRequestAccount(user?.id ?? null)
+    currentUser.value = user
+    version.value++
+  }
+  currentUser.value = user
+}
 let initializationPromise: Promise<void> | null = null
 let reconciliationPromise: Promise<void> | null = null
+let logoutPromise: Promise<void> | null = null
 
 const AUTH_SYNC_CHANNEL = 'secondhand-auth-sync'
 const AUTH_SYNC_STORAGE_KEY = 'secondhand-auth-sync-event'
@@ -45,6 +58,7 @@ function reloadForExternalAuthChange(event: AuthSyncEvent): void {
   // 同一浏览器配置共享 HttpOnly Cookie。重新加载可同时清空旧账号的页面数据，
   // 避免界面仍显示账号 A，而后续写请求已经按账号 B 授权。
   reloadScheduled = true
+  assignUser(null, true)
   window.location.reload()
 }
 
@@ -55,10 +69,10 @@ function publishAuthChange(): void {
     return
   }
   // BroadcastChannel 不可用时使用 storage 事件；该事件不会回传到当前标签页。
-  window.localStorage.setItem(
-    AUTH_SYNC_STORAGE_KEY,
-    JSON.stringify({ ...event, nonce: crypto.randomUUID() }),
-  )
+  try {
+    window.localStorage.setItem(AUTH_SYNC_STORAGE_KEY,
+      JSON.stringify({ ...event, nonce: crypto.randomUUID() }))
+  } catch { /* The account-bound request header still prevents cross-cookie writes. */ }
 }
 
 if (authSyncChannel !== null) {
@@ -78,7 +92,7 @@ if (authSyncChannel !== null) {
 }
 
 setUnauthorizedHandler(() => {
-  currentUser.value = null
+  assignUser(null, true)
   initialized.value = true
 })
 
@@ -88,10 +102,10 @@ async function initialize(): Promise<void> {
 
   initializationPromise = (async () => {
     try {
-      currentUser.value = await getCurrentUser()
+      assignUser(await getCurrentUser())
       initialized.value = true
     } catch (error) {
-      currentUser.value = null
+      assignUser(null)
       if (error instanceof ApiError && error.status === 401) {
         initialized.value = true
         return
@@ -108,41 +122,53 @@ async function initialize(): Promise<void> {
 }
 
 async function login(payload: LoginPayload): Promise<UserIdentity> {
+  await logoutPromise
+  assignUser(null, true)
   const user = await loginUser(payload)
-  currentUser.value = user
+  assignUser(user)
   initialized.value = true
   publishAuthChange()
   return user
 }
 
 async function register(payload: RegisterPayload): Promise<UserIdentity> {
+  await logoutPromise
+  assignUser(null, true)
   const user = await registerUser(payload)
-  currentUser.value = user
+  assignUser(user)
   initialized.value = true
   publishAuthChange()
   return user
 }
 
 async function logout(): Promise<void> {
-  await logoutUser()
-  currentUser.value = null
-  initialized.value = true
-  publishAuthChange()
+  if (logoutPromise) return logoutPromise
+  assignUser(null, true)
+  logoutPromise = (async () => {
+    await logoutUser()
+    initialized.value = true
+    publishAuthChange()
+  })()
+  try { await logoutPromise }
+  finally { logoutPromise = null }
 }
 
 async function reconcileCurrentUser(): Promise<void> {
   if (!initialized.value || reconciliationPromise !== null || reloadScheduled) return
 
   const expectedUserId = currentUser.value?.id ?? null
+  const expectedVersion = version.value
   reconciliationPromise = (async () => {
     try {
       const user = await getCurrentUser()
+      if (expectedVersion !== version.value) return
       if (user.id !== expectedUserId) {
         reloadForExternalAuthChange({ source: 'external-cookie-change', version: 1 })
         return
       }
-      currentUser.value = user
+      assignUser(user)
     } catch (error) {
+      if (expectedVersion !== version.value && currentUser.value !== null) return
       if (error instanceof ApiError && error.status === 401 && expectedUserId !== null) {
         reloadForExternalAuthChange({ source: 'external-cookie-change', version: 1 })
       }
@@ -164,6 +190,7 @@ document.addEventListener('visibilitychange', () => {
 })
 
 const auth = {
+  version: computed(() => version.value),
   currentUser: computed(() => currentUser.value),
   initialized: computed(() => initialized.value),
   initialize,

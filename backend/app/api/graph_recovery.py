@@ -42,3 +42,19 @@ def recover(
         raise HTTPException(
             status_code=409, detail="恢复目标无权访问、正在运行或状态不支持操作"
         ) from exc
+
+
+@router.get("/{target}/requests/{request_id}")
+def get_recovery_request(
+    target: str,
+    request_id: str,
+    user: CurrentUser,
+    session_factory: SessionFactoryDependency,
+    settings: SettingsDependency,
+):
+    try:
+        return GraphRecoveryService(session_factory, settings.checkpoint_database_url).get_request(
+            user.id, target, request_id
+        )
+    except Conflict as exc:
+        raise HTTPException(status_code=404, detail="恢复请求不存在或无权访问") from exc

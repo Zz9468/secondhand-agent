@@ -159,3 +159,14 @@ class GraphRecoveryService:
                 )
             )
         return {"status": "RECORDED", "action": action}
+
+    def get_request(self, seller, target, request_id):
+        # Only audit reads: no PostgreSQL lock, lease, retry or budget changes.
+        with self.factory() as db:
+            old = db.get(GraphRecoveryAction, digest([seller, request_id]))
+            if not old or old.actor_id != seller or old.target != target:
+                raise Conflict("恢复请求不存在或无权访问")
+            session = db.get(NegotiationSession, old.session_id)
+            if not session or db.get(Product, session.product_id).seller_id != seller:
+                raise Conflict("恢复请求不存在或无权访问")
+            return {"status": "RECORDED", "action": old.action}

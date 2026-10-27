@@ -20,6 +20,6 @@ export default class Outcomes implements Reporter {
     const report = path.resolve(process.env.PREDEPLOY_REPORT_DIR ?? '../artifacts/predeploy/local-browser')
     fs.mkdirSync(report, { recursive: true })
     fs.writeFileSync(path.join(report, 'outcomes.json'), JSON.stringify({ status: result.status, counts, cases: this.cases }, null, 2))
-    process.stdout.write(`\nD0: ${counts.passed} passed; ${counts.expectedFailure} expected failures (unfixed defects); ${counts.unexpected} unexpected.\n`)
+    process.stdout.write(`\nPredeploy: ${counts.passed} passed; ${counts.expectedFailure} expected failures (unfixed defects); ${counts.unexpected} unexpected.\n`)
   }
 }

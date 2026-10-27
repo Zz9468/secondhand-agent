@@ -95,6 +95,19 @@ def approve_seller_approval(
     return SellerApprovalResponse.model_validate(approval)
 
 
+@router.get("/{approval_id}/requests/{request_id}")
+def get_approval_request(
+    approval_id: int,
+    request_id: str,
+    user: CurrentUser,
+    session_factory: SessionFactoryDependency,
+):
+    try:
+        return GraphApprovalService(session_factory).get_request(user.id, approval_id, request_id)
+    except ServiceError as exc:
+        _raise_http_error(exc)
+
+
 @router.post("/{approval_id}/reject", response_model=SellerApprovalResponse)
 def reject_seller_approval(
     approval_id: int,

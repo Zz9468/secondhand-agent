@@ -1,4 +1,4 @@
-"""D0 browser fixture: real isolated dual databases; no production test endpoints or models.
+"""Predeploy browser fixture: isolated dual databases and real cookie authentication.
 
 Opt in with RUN_PREDEPLOY_BROWSER=1 through scripts.run_p0_tests. The harness binds
 an ephemeral loopback port and is destroyed before the runner removes its databases.
@@ -18,10 +18,10 @@ from uuid import uuid4
 
 import pytest
 import uvicorn
-from fastapi import HTTPException, Request
+from pydantic import SecretStr
 from sqlalchemy import func, select
 
-from app.api.dependencies import get_current_user, get_session_factory_dependency
+from app.api.dependencies import get_session_factory_dependency
 from app.core.config import get_settings
 from app.db.models import ApprovalRequest, ModelExecutionTask, NegotiationSession, Product
 from app.db.models.graph import (
@@ -36,9 +36,11 @@ from app.runtime.input_queue import InputQueue
 from app.semantic.contracts import QUALITY_VERSION, ChatInput
 from app.semantic.model import SemanticModel
 from app.semantic.quality import QualityModel
+from app.services.graph_approval_service import GraphApprovalService
+from app.services.graph_recovery_service import GraphRecoveryService
 from tests.graph.conftest import Clock
 from tests.graph.test_p4_quality import FakeQuality
-from tests.graph.test_semantic import FakeSemanticModel, candidate, fact, intent
+from tests.graph.test_semantic import FakeSemanticModel, battery_condition, candidate, fact, intent
 from tests.integration.factories import create_negotiation
 
 
@@ -48,17 +50,20 @@ def test_predeploy_browser(graph_factory, monkeypatch):
     report = Path(os.environ.get("PREDEPLOY_REPORT_DIR", root / "artifacts/predeploy/browser"))
     report.mkdir(parents=True, exist_ok=True)
     cases, observations = {}, []
+    gates = {}
     external_attempts = []
 
     def no_external_model(*args, **kwargs):
         external_attempts.append("blocked")
-        raise AssertionError("D0 must never invoke a real model")
+        raise AssertionError("Predeploy browser tests must never invoke a real model")
 
     monkeypatch.setattr(SemanticModel, "__call__", no_external_model)
     monkeypatch.setattr(QualityModel, "generate", no_external_model)
     settings = get_settings().model_copy(
         update={
             "checkpoint_database_url": os.environ["P0_POSTGRES_URL"],
+            "auth_secret": SecretStr("d1-isolated-browser-only-auth-secret"),
+            "auth_cookie_secure": False,
             "graph_require_services": False,
             "graph_langsmith_tracing": False,
         }
@@ -67,24 +72,82 @@ def test_predeploy_browser(graph_factory, monkeypatch):
     app.dependency_overrides[get_session_factory_dependency] = lambda: graph_factory
     app.dependency_overrides[get_settings] = lambda: settings
 
-    def actor(request: Request):
-        # A fixture identity, not an authentication/real-cookie acceptance test.
-        user = request.headers.get("x-predeploy-actor")
-        for c in cases.values():
-            if user in {c.buyer, c.seller}:
-                return SimpleNamespace(id=user, username=user, display_name="D0 fixture user")
-        raise HTTPException(401, "fixture actor required")
+    original_enqueue = InputQueue.enqueue
 
-    app.dependency_overrides[get_current_user] = actor
+    def gated_enqueue(queue, sid, buyer, request_id, *args, **kwargs):
+        gate = gates.get((sid, request_id))
+        if gate and not gate["entered"].is_set():
+            gate["entered"].set()
+            assert gate["release"].wait(30), "test gate was not released"
+            try:
+                return original_enqueue(queue, sid, buyer, request_id, *args, **kwargs)
+            finally:
+                gate["finished"].set()
+        return original_enqueue(queue, sid, buyer, request_id, *args, **kwargs)
+
+    monkeypatch.setattr(InputQueue, "enqueue", gated_enqueue)
+
+    def wait_for_gate(key, call):
+        gate = gates.get(key)
+        if gate and not gate["entered"].is_set():
+            gate["entered"].set()
+            assert gate["release"].wait(30), "test gate was not released"
+            try:
+                return call()
+            finally:
+                gate["finished"].set()
+        return call()
+
+    original_review, original_act = GraphApprovalService.review, GraphRecoveryService.act
+
+    def gated_review(service, **kwargs):
+        return wait_for_gate(
+            (kwargs["approval_id"], kwargs["request_id"]),
+            lambda: original_review(service, **kwargs),
+        )
+
+    def gated_act(service, seller, target, action, request_id, reason):
+        return wait_for_gate(
+            (target, request_id),
+            lambda: original_act(service, seller, target, action, request_id, reason),
+        )
+
+    monkeypatch.setattr(GraphApprovalService, "review", gated_review)
+    monkeypatch.setattr(GraphRecoveryService, "act", gated_act)
+
+    @app.post("/api/__predeploy/seller-gate/{kind}/{target}/{request_id}/{action}")
+    def seller_gate(kind: str, target: str, request_id: str, action: str):
+        key = (int(target) if kind == "approval" else target), request_id
+        if action == "create":
+            gates[key] = {name: threading.Event() for name in ("entered", "release", "finished")}
+        elif action == "release":
+            gates[key]["release"].set()
+            assert gates[key]["finished"].wait(20)
+        return {name: event.is_set() for name, event in gates[key].items()}
+
+    @app.post("/api/__predeploy/gate/{sid}/{request_id}/{action}")
+    def gate_control(sid: int, request_id: str, action: str):
+        assert sid in cases
+        key = sid, request_id
+        if action == "create":
+            gates[key] = {name: threading.Event() for name in ("entered", "release", "finished")}
+        elif action == "release":
+            gates[key]["release"].set()
+            assert gates[key]["finished"].wait(20)
+        return {name: event.is_set() for name, event in gates[key].items()}
 
     @app.post("/api/__predeploy/seed/{mode}")
-    def seed(mode: str):
-        assert mode in {"empty", "offer", "approval", "failed"}
+    def seed(mode: str, buyer_sid: int | None = None):
+        assert mode in {"empty", "offer", "approval", "failed", "draft"}
         sid, buyer = create_negotiation(
             graph_factory,
             minimum_net_price=Decimal("750"),
             auto_accept_threshold=Decimal("850"),
         )
+        if buyer_sid is not None:
+            buyer = cases[buyer_sid].buyer
+            with graph_factory() as db, db.begin():
+                db.get(NegotiationSession, sid).buyer_id = buyer
         clock = Clock()
         queue = InputQueue(graph_factory, clock=clock)
         queue.enroll(sid, buyer, version=QUALITY_VERSION)
@@ -117,7 +180,11 @@ def test_predeploy_browser(graph_factory, monkeypatch):
         if mode != "empty":
             amount = "800" if mode == "approval" else "900"
             text = f"{amount}自提"
-            model.values[text] = {"intents": [intent(text, candidate=candidate(amount))]}
+            terms = candidate(amount)
+            if mode == "draft":
+                text = "如果电池至少90%，900自提"
+                terms = candidate(amount, conditions=[battery_condition()])
+            model.values[text] = {"intents": [intent(text, candidate=terms)]}
             run = queue.enqueue(
                 sid, buyer, uuid4().hex, ChatInput(text=text, client_view_id="fixture-view")
             )
@@ -130,6 +197,12 @@ def test_predeploy_browser(graph_factory, monkeypatch):
             else:
                 runner.run(run)
         return {"sid": sid, "buyer": buyer, "seller": seller, "run": run}
+
+    @app.post("/api/__predeploy/execute/{sid}/{run}")
+    def execute(sid: int, run: str):
+        c = cases[sid]
+        assert c.queue.read(run)["session_id"] == sid
+        return c.runner.run(run)
 
     @app.get("/api/__predeploy/inspect/{sid}")
     def inspect(sid: int):
@@ -151,6 +224,7 @@ def test_predeploy_browser(graph_factory, monkeypatch):
                     {
                         "run_id": r.id,
                         "request_id": r.request_id,
+                        "payload_hash": r.input_hash,
                         "task_status": db.get(ModelExecutionTask, r.task_id).status.value,
                         "manual_retry_count": db.get(
                             ModelExecutionTask, r.task_id
@@ -207,13 +281,15 @@ def test_predeploy_browser(graph_factory, monkeypatch):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                timeout=360,
+                timeout=600,
             )
             (report / "browser-console.txt").write_text(
                 result.stdout + result.stderr, encoding="utf-8"
             )
             assert result.returncode == 0, result.stdout + result.stderr
         finally:
+            for gate in gates.values():
+                gate["release"].set()
             server.should_exit = True
             thread.join(timeout=10)
             (report / "database-observations.json").write_text(

@@ -1,14 +1,5 @@
 import type { RunStatus } from '../api/negotiations'
 
-// D0 extracts the existing behavior unchanged. D1/D2 own persistence and lifecycle fixes.
-export function readRunIds(storage: Pick<Storage, 'getItem'>, sid: number): string[] {
-  return JSON.parse(storage.getItem(`negotiation-runs:${sid}`) || '[]')
-}
-
-export function writeRunIds(storage: Pick<Storage, 'setItem'>, sid: number, ids: string[]) {
-  storage.setItem(`negotiation-runs:${sid}`, JSON.stringify(ids))
-}
-
 export function shouldPollRun(run: RunStatus): boolean {
   return run.task_status !== 'SUCCEEDED'
 }

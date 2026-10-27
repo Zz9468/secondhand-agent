@@ -85,6 +85,6 @@ watch(auth.currentUser, (user) => {
     <p v-if="navigationError" class="error-banner" role="alert">
       {{ navigationError }}
     </p>
-    <RouterView />
+    <RouterView :key="auth.version.value" />
   </main>
 </template>
